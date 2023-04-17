@@ -1,5 +1,6 @@
 #![no_std]
 
+mod ai;
 mod dpc;
 mod dps;
 mod mi;
