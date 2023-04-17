@@ -13,3 +13,4 @@ repository = "https://github.com/icorbrey/nintendo64-pac"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+tock-registers = "0.8.1"
