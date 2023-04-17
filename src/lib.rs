@@ -4,6 +4,7 @@ mod ai;
 mod dpc;
 mod dps;
 mod mi;
+mod pi;
 mod rdram;
 mod sp;
 mod vi;
