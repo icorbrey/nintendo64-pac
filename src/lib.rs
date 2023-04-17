@@ -1,5 +1,6 @@
 #![no_std]
 
+mod dpc;
 mod rdram;
 mod sp;
 
