@@ -2,6 +2,7 @@
 
 mod dpc;
 mod dps;
+mod mi;
 mod rdram;
 mod sp;
 
