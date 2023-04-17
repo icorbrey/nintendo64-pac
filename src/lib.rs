@@ -1,6 +1,7 @@
 #![no_std]
 
 mod dpc;
+mod dps;
 mod rdram;
 mod sp;
 
