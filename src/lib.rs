@@ -1,6 +1,7 @@
 #![no_std]
 
 mod rdram;
+mod sp;
 
 pub struct Hardware;
 
