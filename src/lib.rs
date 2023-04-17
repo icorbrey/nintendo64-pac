@@ -7,6 +7,7 @@ mod mi;
 mod pi;
 mod rdram;
 mod ri;
+mod si;
 mod sp;
 mod vi;
 
