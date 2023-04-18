@@ -1,104 +1,125 @@
+//! # Audio Interface
+//!
+//! This module wraps the Nintendo 64's AI registers and provides type- and
+//! memory safe ways of interacting with it.
+
 use tock_registers::{
     interfaces::{Readable, Writeable},
     register_bitfields, register_structs,
     registers::{ReadWrite, WriteOnly},
 };
 
+/// The static address of the Nintendo 64's audio interface registers.
 const AI_REGS_BASE: usize = 0x0450_0000;
 
+/// A zero-size wrapper around the Nintendo 64 audio interface. This structure
+/// cannot be constructed on its own; see [`HARDWARE`][crate::HARDWARE] for
+/// more details.
 #[non_exhaustive]
 pub struct AudioInterface;
 
 impl AudioInterface {
-    fn registers<'a>(&self) -> &'a AudioInterfaceRegisters {
-        unsafe { &mut *(AI_REGS_BASE as *mut AudioInterfaceRegisters) }
+    /// Returns a reference to the audio interface registers.
+    fn registers<'a>(&self) -> &'a AiRegisters {
+        unsafe { &mut *(AI_REGS_BASE as *mut AiRegisters) }
     }
 
+    /// Sets the DRAM address.
     pub fn set_dram_address(&self, dram_address: u32) {
         self.registers()
             .dram_address
-            .write(DmaAddress::ADDRESS.val(dram_address));
+            .write(AiDmaAddress::ADDRESS.val(dram_address));
     }
 
+    /// Gets the transfer length (in v1 mode).
     pub fn length_v1(&self) -> u32 {
-        self.registers().length.read(Length::TRANSFER_LENGTH_V1)
+        self.registers().length.read(AiLength::TRANSFER_LENGTH_V1)
     }
 
+    /// Sets the transfer length (in v1 mode).
     pub fn set_length_v1(&self, length: u32) {
         self.registers()
             .length
-            .write(Length::TRANSFER_LENGTH_V1.val(length));
+            .write(AiLength::TRANSFER_LENGTH_V1.val(length));
     }
 
+    /// Gets the transfer length (in v2 mode).
     pub fn length_v2(&self) -> u32 {
-        self.registers().length.read(Length::TRANSFER_LENGTH_V2)
+        self.registers().length.read(AiLength::TRANSFER_LENGTH_V2)
     }
 
+    /// Sets the transfer length (in v2 mode).
     pub fn set_length_v2(&self, length: u32) {
         self.registers()
             .length
-            .write(Length::TRANSFER_LENGTH_V2.val(length));
+            .write(AiLength::TRANSFER_LENGTH_V2.val(length));
     }
 
+    /// Enables DMA.
     pub fn enable_dma(&self) {
-        self.registers().control.write(Control::DMA_ENABLE::SET);
+        self.registers().control.write(AiControl::DMA_ENABLE::SET);
     }
 
+    /// Disables DMA.
     pub fn disable_dma(&self) {
-        self.registers().control.write(Control::DMA_ENABLE::CLEAR);
+        self.registers().control.write(AiControl::DMA_ENABLE::CLEAR);
     }
 
-    pub fn status(&self) -> AudioInterfaceStatus {
+    /// Gets the status.
+    pub fn status(&self) -> Status {
         let registers = self.registers();
-        AudioInterfaceStatus {
-            is_full: registers.status.is_set(Status::FULL),
-            dac_counter: registers.status.read(Status::DAC_COUNTER),
-            bitclock_state: registers.status.is_set(Status::BITCLOCK_STATE),
-            abus_word_2: registers.status.is_set(Status::ABUS_WORD_2),
-            word_select: registers.status.is_set(Status::WORD_SELECT),
-            is_data_available: registers.status.is_set(Status::DATA_AVAILABLE),
-            is_dfifo2_loaded: registers.status.is_set(Status::DFIFO2_LOADED),
-            is_dma_enabled: registers.status.is_set(Status::DMA_ENABLE),
-            is_dma_requesting: registers.status.is_set(Status::DMA_REQUEST),
-            is_dma_busy: registers.status.is_set(Status::DMA_BUSY),
-            is_busy: registers.status.is_set(Status::BUSY),
+        Status {
+            is_full: registers.status.is_set(AiStatus::FULL),
+            dac_counter: registers.status.read(AiStatus::DAC_COUNTER),
+            bitclock_state: registers.status.is_set(AiStatus::BITCLOCK_STATE),
+            abus_word_2: registers.status.is_set(AiStatus::ABUS_WORD_2),
+            word_select: registers.status.is_set(AiStatus::WORD_SELECT),
+            is_data_available: registers.status.is_set(AiStatus::DATA_AVAILABLE),
+            is_dfifo2_loaded: registers.status.is_set(AiStatus::DFIFO2_LOADED),
+            is_dma_enabled: registers.status.is_set(AiStatus::DMA_ENABLE),
+            is_dma_requesting: registers.status.is_set(AiStatus::DMA_REQUEST),
+            is_dma_busy: registers.status.is_set(AiStatus::DMA_BUSY),
+            is_busy: registers.status.is_set(AiStatus::BUSY),
         }
     }
 
-    pub fn set_status(&self, status: AudioInterfaceStatus) {
+    /// Sets the status.
+    pub fn set_status(&self, status: Status) {
         self.registers().status.write(
-            Status::FULL.val(status.is_full.into())
-                + Status::DAC_COUNTER.val(status.dac_counter)
-                + Status::BITCLOCK_STATE.val(status.bitclock_state.into())
-                + Status::ABUS_WORD_2.val(status.abus_word_2.into())
-                + Status::WORD_SELECT.val(status.word_select.into())
-                + Status::DATA_AVAILABLE.val(status.is_data_available.into())
-                + Status::DFIFO2_LOADED.val(status.is_dfifo2_loaded.into())
-                + Status::DMA_ENABLE.val(status.is_dma_enabled.into())
-                + Status::DMA_REQUEST.val(status.is_dma_requesting.into())
-                + Status::DMA_BUSY.val(status.is_dma_busy.into())
-                + Status::BUSY.val(status.is_busy.into()),
+            AiStatus::FULL.val(status.is_full.into())
+                + AiStatus::DAC_COUNTER.val(status.dac_counter)
+                + AiStatus::BITCLOCK_STATE.val(status.bitclock_state.into())
+                + AiStatus::ABUS_WORD_2.val(status.abus_word_2.into())
+                + AiStatus::WORD_SELECT.val(status.word_select.into())
+                + AiStatus::DATA_AVAILABLE.val(status.is_data_available.into())
+                + AiStatus::DFIFO2_LOADED.val(status.is_dfifo2_loaded.into())
+                + AiStatus::DMA_ENABLE.val(status.is_dma_enabled.into())
+                + AiStatus::DMA_REQUEST.val(status.is_dma_requesting.into())
+                + AiStatus::DMA_BUSY.val(status.is_dma_busy.into())
+                + AiStatus::BUSY.val(status.is_busy.into()),
         )
     }
 
-    pub fn set_dac_rate(&self, dac_rate: AudioInterfaceDacRate) {
+    /// Sets the DAC rate.
+    pub fn set_dac_rate(&self, dac_rate: DacRate) {
         self.registers()
             .dacrate
-            .write(DacRate::DAC_RATE.val(match dac_rate {
-                AudioInterfaceDacRate::Ntsc => DacRate::DAC_RATE::Ntsc.into(),
-                AudioInterfaceDacRate::Mpal => DacRate::DAC_RATE::Mpal.into(),
-                AudioInterfaceDacRate::Pal => DacRate::DAC_RATE::Pal.into(),
+            .write(AiDacRate::DAC_RATE.val(match dac_rate {
+                DacRate::Ntsc => AiDacRate::DAC_RATE::Ntsc.into(),
+                DacRate::Mpal => AiDacRate::DAC_RATE::Mpal.into(),
+                DacRate::Pal => AiDacRate::DAC_RATE::Pal.into(),
             }))
     }
 
+    /// Sets the bit rate.
     pub fn set_bit_rate(&self, bit_rate: u32) {
         self.registers()
             .bitrate
-            .write(BitRate::BIT_RATE.val(bit_rate))
+            .write(AiBitRate::BIT_RATE.val(bit_rate))
     }
 }
 
-pub struct AudioInterfaceStatus {
+pub struct Status {
     pub is_full: bool,
     pub dac_counter: u32,
     pub bitclock_state: bool,
@@ -112,20 +133,20 @@ pub struct AudioInterfaceStatus {
     pub is_busy: bool,
 }
 
-pub enum AudioInterfaceDacRate {
+pub enum DacRate {
     Ntsc,
     Pal,
     Mpal,
 }
 
 register_structs! {
-    AudioInterfaceRegisters {
-        (0x0000 => pub dram_address: WriteOnly<u32, DmaAddress::Register>),
-        (0x0004 => pub length: ReadWrite<u32, Length::Register>),
-        (0x0008 => pub control: WriteOnly<u32, Control::Register>),
-        (0x000C => pub status: ReadWrite<u32, Status::Register>),
-        (0x0010 => pub dacrate: WriteOnly<u32, DacRate::Register>),
-        (0x0014 => pub bitrate: WriteOnly<u32, BitRate::Register>),
+    AiRegisters {
+        (0x0000 => pub dram_address: WriteOnly<u32, AiDmaAddress::Register>),
+        (0x0004 => pub length: ReadWrite<u32, AiLength::Register>),
+        (0x0008 => pub control: WriteOnly<u32, AiControl::Register>),
+        (0x000C => pub status: ReadWrite<u32, AiStatus::Register>),
+        (0x0010 => pub dacrate: WriteOnly<u32, AiDacRate::Register>),
+        (0x0014 => pub bitrate: WriteOnly<u32, AiBitRate::Register>),
         (0x0018 => @END),
     }
 }
@@ -133,20 +154,20 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    DmaAddress [
+    AiDmaAddress [
         ADDRESS OFFSET(0) NUMBITS(24) [],
     ],
 
-    Length [
+    AiLength [
         TRANSFER_LENGTH_V1 OFFSET(0)  NUMBITS(15) [],
         TRANSFER_LENGTH_V2 OFFSET(0)  NUMBITS(18) [],
     ],
 
-    Control [
+    AiControl [
         DMA_ENABLE         OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    Status [
+    AiStatus [
         CLEAR_INTERRUPT    OFFSET(0)  NUMBITS(32) [],
         FULL               OFFSET(0)  NUMBITS(1)  [],
         DAC_COUNTER        OFFSET(1)  NUMBITS(14) [],
@@ -161,7 +182,7 @@ register_bitfields! {
         BUSY               OFFSET(30) NUMBITS(1)  [],
     ],
 
-    DacRate [
+    AiDacRate [
         DAC_RATE           OFFSET(0)  NUMBITS(14) [
             Ntsc = 0x2E6D354,
             Pal  = 0x2F5B2D2,
@@ -169,7 +190,7 @@ register_bitfields! {
         ],
     ],
 
-    BitRate [
+    AiBitRate [
         BIT_RATE           OFFSET(0)  NUMBITS(4)  [],
     ],
 }
