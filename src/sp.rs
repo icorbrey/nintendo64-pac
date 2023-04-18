@@ -3,8 +3,27 @@ use tock_registers::{
     registers::{ReadOnly, ReadWrite},
 };
 
+const _SP_REGS_BASE: usize = 0x0404_0000;
+const _PC_REGS_BASE: usize = 0x0408_0000;
+
+pub struct StackPointer;
+
+impl StackPointer {
+    fn _registers<'a>(&self) -> &'a StackPointerRegisters {
+        unsafe { &mut *(_SP_REGS_BASE as *mut StackPointerRegisters) }
+    }
+}
+
+pub struct ProgramCounter;
+
+impl ProgramCounter {
+    fn _registers<'a>(&self) -> &'a ProgramCounterRegisters {
+        unsafe { &mut *(_PC_REGS_BASE as *mut ProgramCounterRegisters) }
+    }
+}
+
 register_structs! {
-    pub StackPointerRegisters {
+    StackPointerRegisters {
         (0x0000 => pub memory_address: ReadWrite<u32, MemoryAddress::Register>),
         (0x0004 => pub dma_address: ReadWrite<u32, DmaAddress::Register>),
         (0x0008 => pub read_dma_length: ReadWrite<u32, DmaLength::Register>),
@@ -16,8 +35,8 @@ register_structs! {
         (0x0020 => @END),
     },
 
-    pub ProgramCounterRegisters {
-        (0x0000 => pub program_counter: ReadWrite<u32, ProgramCounter::Register>),
+    ProgramCounterRegisters {
+        (0x0000 => pub program_counter: ReadWrite<u32, ProgramCounterControl::Register>),
         (0x0004 => pub imem_bist: ReadWrite<u32, ImemBist::Register>),
         (0x0008 => @END),
     }
@@ -100,7 +119,7 @@ register_bitfields! {
         SEMAPHORE                OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    ProgramCounter [
+    ProgramCounterControl [
         PROGRAM_COUNTER          OFFSET(0)  NUMBITS(12) [],
     ],
 

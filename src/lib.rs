@@ -10,6 +10,7 @@ use pi::PeripheralInterface;
 use rdram::Rdram;
 use ri::RdramInterface;
 use si::SerialInterface;
+use sp::{ProgramCounter, StackPointer};
 use vi::VideoInterface;
 
 pub mod ai;
@@ -27,9 +28,11 @@ pub static mut HARDWARE: Hardware = Hardware {
     peripheral_interface: Peripheral::new(PeripheralInterface),
     serial_interface: Peripheral::new(SerialInterface),
     audio_interface: Peripheral::new(AudioInterface),
+    program_counter: Peripheral::new(ProgramCounter),
     rdram_interface: Peripheral::new(RdramInterface),
     video_interface: Peripheral::new(VideoInterface),
     mips_interface: Peripheral::new(MipsInterface),
+    stack_pointer: Peripheral::new(StackPointer),
     rdram: Peripheral::new(Rdram),
     dpc: Peripheral::new(Dpc),
     dps: Peripheral::new(Dps),
@@ -39,9 +42,11 @@ pub struct Hardware {
     pub peripheral_interface: Peripheral<PeripheralInterface>,
     pub serial_interface: Peripheral<SerialInterface>,
     pub audio_interface: Peripheral<AudioInterface>,
+    pub program_counter: Peripheral<ProgramCounter>,
     pub rdram_interface: Peripheral<RdramInterface>,
     pub video_interface: Peripheral<VideoInterface>,
     pub mips_interface: Peripheral<MipsInterface>,
+    pub stack_pointer: Peripheral<StackPointer>,
     pub rdram: Peripheral<Rdram>,
     pub dpc: Peripheral<Dpc>,
     pub dps: Peripheral<Dps>,
