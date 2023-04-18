@@ -31,11 +31,11 @@ register_bitfields! {
         LOCATION                 OFFSET(12) NUMBITS(1)  [
             DataMemory = 0,
             InstructionMemory = 1,
-        ]
+        ],
     ],
 
     DmaAddress [
-        ADDRESS                  OFFSET(0)  NUMBITS(24) []
+        ADDRESS                  OFFSET(0)  NUMBITS(24) [],
     ],
 
     DmaLength [
@@ -85,23 +85,23 @@ register_bitfields! {
         CLEAR_SIGNAL_6           OFFSET(21) NUMBITS(1)  [],
         SET_SIGNAL_6             OFFSET(22) NUMBITS(1)  [],
         CLEAR_SIGNAL_7           OFFSET(23) NUMBITS(1)  [],
-        SET_SIGNAL_7             OFFSET(24) NUMBITS(1)  []
+        SET_SIGNAL_7             OFFSET(24) NUMBITS(1)  [],
     ],
 
     DmaFull [
-        DMA_FULL                 OFFSET(0)  NUMBITS(1)  []
+        DMA_FULL                 OFFSET(0)  NUMBITS(1)  [],
     ],
 
     DmaBusy [
-        DMA_BUSY                 OFFSET(0)  NUMBITS(1)  []
+        DMA_BUSY                 OFFSET(0)  NUMBITS(1)  [],
     ],
 
     Semaphore [
-        SEMAPHORE                OFFSET(0)  NUMBITS(1)  []
+        SEMAPHORE                OFFSET(0)  NUMBITS(1)  [],
     ],
 
     ProgramCounter [
-        PROGRAM_COUNTER          OFFSET(0)  NUMBITS(12) []
+        PROGRAM_COUNTER          OFFSET(0)  NUMBITS(12) [],
     ],
 
     ImemBist [
@@ -109,6 +109,6 @@ register_bitfields! {
         BIST_GO                  OFFSET(1)  NUMBITS(1)  [],
         BIST_CLEAR               OFFSET(2)  NUMBITS(1)  [],
         BIST_DONE                OFFSET(2)  NUMBITS(1)  [],
-        BIST_FAIL                OFFSET(3)  NUMBITS(4)  []
+        BIST_FAIL                OFFSET(3)  NUMBITS(4)  [],
     ]
 }

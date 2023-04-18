@@ -21,7 +21,7 @@ register_bitfields! {
     u32,
 
     DmaAddress [
-        ADDRESS       OFFSET(0)  NUMBITS(24) []
+        ADDRESS       OFFSET(0)  NUMBITS(24) [],
     ],
 
     Status [
@@ -39,6 +39,6 @@ register_bitfields! {
     ],
 
     ClockCounter [
-        CLOCK_COUNTER OFFSET(0)  NUMBITS(24) []
+        CLOCK_COUNTER OFFSET(0)  NUMBITS(24) [],
     ]
 }

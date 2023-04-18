@@ -18,18 +18,18 @@ register_bitfields! {
         BIST_GO    OFFSET(1) NUMBITS(1)  [],
         BIST_CLEAR OFFSET(2) NUMBITS(1)  [],
         BIST_DONE  OFFSET(2) NUMBITS(1)  [],
-        BIST_FAIL  OFFSET(3) NUMBITS(8)  []
+        BIST_FAIL  OFFSET(3) NUMBITS(8)  [],
     ],
 
     BufferTestMode [
-        TEST_MODE  OFFSET(0) NUMBITS(1)  []
+        TEST_MODE  OFFSET(0) NUMBITS(1)  [],
     ],
 
     BufferTestAddress [
-        TEST_ADDR  OFFSET(0) NUMBITS(7)  []
+        TEST_ADDR  OFFSET(0) NUMBITS(7)  [],
     ],
 
     BufferTestData [
-        TEST_DATA  OFFSET(0) NUMBITS(32) []
+        TEST_DATA  OFFSET(0) NUMBITS(32) [],
     ]
 }

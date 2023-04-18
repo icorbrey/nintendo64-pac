@@ -28,14 +28,14 @@ register_bitfields! {
         SET_EBUS_TEST_MODE      OFFSET(10) NUMBITS(1) [],
         CLEAR_DP_INTERRUPT      OFFSET(11) NUMBITS(1) [],
         CLEAR_RDRAM_REG         OFFSET(12) NUMBITS(1) [],
-        SET_RDRAM_REG           OFFSET(13) NUMBITS(1) []
+        SET_RDRAM_REG           OFFSET(13) NUMBITS(1) [],
     ],
 
     Version [
         IO                      OFFSET(0)  NUMBITS(8) [],
         RAC                     OFFSET(8)  NUMBITS(8) [],
         RDP                     OFFSET(16) NUMBITS(8) [],
-        RSP                     OFFSET(24) NUMBITS(8) []
+        RSP                     OFFSET(24) NUMBITS(8) [],
     ],
 
     Interrupts [
@@ -44,7 +44,7 @@ register_bitfields! {
         AI_INTERRUPT            OFFSET(2)  NUMBITS(1) [],
         VI_INTERRUPT            OFFSET(3)  NUMBITS(1) [],
         PI_INTERRUPT            OFFSET(4)  NUMBITS(1) [],
-        DP_INTERRUPT            OFFSET(5)  NUMBITS(1) []
+        DP_INTERRUPT            OFFSET(5)  NUMBITS(1) [],
     ],
 
     InterruptMasks [
@@ -66,6 +66,6 @@ register_bitfields! {
         CLEAR_PI_INTERRUPT_MASK OFFSET(8)  NUMBITS(1) [],
         SET_PI_INTERRUPT_MASK   OFFSET(9)  NUMBITS(1) [],
         CLEAR_DP_INTERRUPT_MASK OFFSET(10) NUMBITS(1) [],
-        SET_DP_INTERRUPT_MASK   OFFSET(11) NUMBITS(1) []
+        SET_DP_INTERRUPT_MASK   OFFSET(11) NUMBITS(1) [],
     ]
 }
