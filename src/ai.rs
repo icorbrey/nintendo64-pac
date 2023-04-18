@@ -3,8 +3,18 @@ use tock_registers::{
     registers::{ReadWrite, WriteOnly},
 };
 
+const _AI_REGS_BASE: usize = 0x0450_0000;
+
+pub struct AudioInterface;
+
+impl AudioInterface {
+    fn _registers<'a>(&self) -> &'a AudioInterfaceRegisters {
+        unsafe { &mut *(_AI_REGS_BASE as *mut AudioInterfaceRegisters) }
+    }
+}
+
 register_structs! {
-    pub AudioInterfaceRegisters {
+    AudioInterfaceRegisters {
         (0x0000 => pub dram_address: WriteOnly<u32, DmaAddress::Register>),
         (0x0004 => pub length: ReadWrite<u32, Length::Register>),
         (0x0008 => pub control: WriteOnly<u32, Control::Register>),
