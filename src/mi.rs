@@ -3,8 +3,18 @@ use tock_registers::{
     registers::{ReadOnly, ReadWrite},
 };
 
+const _MI_REGS_BASE: usize = 0x0430_0000;
+
+pub struct MipsInterface;
+
+impl MipsInterface {
+    fn _registers<'a>(&self) -> &'a MipsInterfaceRegisters {
+        unsafe { &mut *(_MI_REGS_BASE as *mut MipsInterfaceRegisters) }
+    }
+}
+
 register_structs! {
-    pub MipsInterfaceRegisters {
+    MipsInterfaceRegisters {
         (0x0000 => pub init_mode: ReadWrite<u32, InitMode::Register>),
         (0x0004 => pub version: ReadOnly<u32, Version::Register>),
         (0x0008 => pub interrupts: ReadOnly<u32, Interrupts::Register>),
