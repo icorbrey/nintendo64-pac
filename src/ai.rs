@@ -57,7 +57,11 @@ register_bitfields! {
     ],
 
     pub DacRate [
-        DAC_RATE           OFFSET(0)  NUMBITS(14) [],
+        DAC_RATE           OFFSET(0)  NUMBITS(14) [
+            Ntsc = 0x2E6D354,
+            Pal  = 0x2F5B2D2,
+            Mpal = 0x2E6025C,
+        ],
     ],
 
     pub BitRate [
