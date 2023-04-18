@@ -3,18 +3,18 @@ use tock_registers::{
     registers::{ReadWrite, WriteOnly},
 };
 
-const _AI_REGS_BASE: usize = 0x0450_0000;
+const AI_REGS_BASE: usize = 0x0450_0000;
 
 pub struct AudioInterface;
 
 impl AudioInterface {
-    fn _registers<'a>(&self) -> &'a AudioInterfaceRegisters {
-        unsafe { &mut *(_AI_REGS_BASE as *mut AudioInterfaceRegisters) }
+    pub fn registers<'a>(&self) -> &'a AudioInterfaceRegisters {
+        unsafe { &mut *(AI_REGS_BASE as *mut AudioInterfaceRegisters) }
     }
 }
 
 register_structs! {
-    AudioInterfaceRegisters {
+    pub AudioInterfaceRegisters {
         (0x0000 => pub dram_address: WriteOnly<u32, DmaAddress::Register>),
         (0x0004 => pub length: ReadWrite<u32, Length::Register>),
         (0x0008 => pub control: WriteOnly<u32, Control::Register>),
@@ -28,20 +28,20 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    DmaAddress [
+    pub DmaAddress [
         ADDRESS OFFSET(0) NUMBITS(24) [],
     ],
 
-    Length [
+    pub Length [
         TRANSFER_LENGTH_V1 OFFSET(0)  NUMBITS(15) [],
         TRANSFER_LENGTH_V2 OFFSET(0)  NUMBITS(18) [],
     ],
 
-    Control [
+    pub Control [
         DMA_ENABLE         OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    Status [
+    pub Status [
         CLEAR_INTERRUPT    OFFSET(0)  NUMBITS(32) [],
         FULL               OFFSET(0)  NUMBITS(1)  [],
         DAC_COUNTER        OFFSET(1)  NUMBITS(14) [],
@@ -56,11 +56,11 @@ register_bitfields! {
         BUSY               OFFSET(30) NUMBITS(1)  [],
     ],
 
-    DacRate [
+    pub DacRate [
         DAC_RATE           OFFSET(0)  NUMBITS(14) [],
     ],
 
-    BitRate [
+    pub BitRate [
         BIT_RATE           OFFSET(0)  NUMBITS(4)  [],
     ],
 }

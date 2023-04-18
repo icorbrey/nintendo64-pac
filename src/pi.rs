@@ -1,17 +1,17 @@
 use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
 
-const _PI_REGS_BASE: usize = 0x0460_0000;
+const PI_REGS_BASE: usize = 0x0460_0000;
 
 pub struct PeripheralInterface;
 
 impl PeripheralInterface {
-    fn _registers<'a>(&self) -> &'a PeripheralInterfaceRegisters {
-        unsafe { &mut *(_PI_REGS_BASE as *mut PeripheralInterfaceRegisters) }
+    pub fn registers<'a>(&self) -> &'a PeripheralInterfaceRegisters {
+        unsafe { &mut *(PI_REGS_BASE as *mut PeripheralInterfaceRegisters) }
     }
 }
 
 register_structs! {
-    PeripheralInterfaceRegisters {
+    pub PeripheralInterfaceRegisters {
         (0x0000 => pub dram_address: ReadWrite<u32, DmaAddress::Register>),
         (0x0004 => pub cartridge_address: ReadWrite<u32, CartridgeAddress::Register>),
         (0x0008 => pub read_length: ReadWrite<u32, Length::Register>),
@@ -32,19 +32,19 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    DmaAddress [
+    pub DmaAddress [
         ADDRESS          OFFSET(0) NUMBITS(24) [],
     ],
 
-    CartridgeAddress [
+    pub CartridgeAddress [
         ADDRESS          OFFSET(0) NUMBITS(32) [],
     ],
 
-    Length [
+    pub Length [
         DATA_LENGTH      OFFSET(0) NUMBITS(24) [],
     ],
 
-    Status [
+    pub Status [
         DMA_BUSY         OFFSET(0) NUMBITS(1)  [],
         IO_BUSY          OFFSET(1) NUMBITS(1)  [],
         ERROR            OFFSET(2) NUMBITS(1)  [],
@@ -53,19 +53,19 @@ register_bitfields! {
         CLEAR_INTERRUPT  OFFSET(1) NUMBITS(1)  [],
     ],
 
-    DeviceLatency [
+    pub DeviceLatency [
         LATENCY          OFFSET(0) NUMBITS(8)  [],
     ],
 
-    DevicePulseWidth [
+    pub DevicePulseWidth [
         PULSE_WIDTH      OFFSET(0) NUMBITS(8)  [],
     ],
 
-    DevicePageSize [
+    pub DevicePageSize [
         PAGE_SIZE        OFFSET(0) NUMBITS(4)  [],
     ],
 
-    DeviceRelease [
+    pub DeviceRelease [
         RELEASE          OFFSET(0) NUMBITS(2)  [],
     ],
 }

@@ -1,17 +1,17 @@
 use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
 
-const _VI_REGS_BASE: usize = 0x0440_0000;
+const VI_REGS_BASE: usize = 0x0440_0000;
 
 pub struct VideoInterface;
 
 impl VideoInterface {
-    fn _registers<'a>(&self) -> &'a VideoInterfaceRegisters {
-        unsafe { &mut *(_VI_REGS_BASE as *mut VideoInterfaceRegisters) }
+    pub fn registers<'a>(&self) -> &'a VideoInterfaceRegisters {
+        unsafe { &mut *(VI_REGS_BASE as *mut VideoInterfaceRegisters) }
     }
 }
 
 register_structs! {
-    VideoInterfaceRegisters {
+    pub VideoInterfaceRegisters {
         (0x0000 => pub status: ReadWrite<u32, Status::Register>),
         (0x0004 => pub origin: ReadWrite<u32, DmaAddress::Register>),
         (0x0008 => pub width: ReadWrite<u32, LineWidth::Register>),
@@ -33,7 +33,7 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    Status [
+    pub Status [
         COLOR_DEPTH            OFFSET(0) NUMBITS(2)  [
             None = 0,
             FullColor = 2,
@@ -51,36 +51,36 @@ register_bitfields! {
         ],
     ],
 
-    DmaAddress [
+    pub DmaAddress [
         ADDRESS                OFFSET(0)  NUMBITS(24) [],
     ],
 
-    LineWidth [
+    pub LineWidth [
         WIDTH                  OFFSET(0)  NUMBITS(12) [],
         LEAP_PATTERN           OFFSET(16) NUMBITS(5)  [],
     ],
 
-    HalfLine [
+    pub HalfLine [
         HALF_LINE              OFFSET(0)  NUMBITS(10) [],
     ],
 
-    Timing [
+    pub Timing [
         HORIZONTAL_SYNC_WIDTH  OFFSET(0)  NUMBITS(8)  [],
         COLOR_BURST_WIDTH      OFFSET(8)  NUMBITS(8)  [],
         VERTICAL_SYNC_WIDTH    OFFSET(16) NUMBITS(8)  [],
         COLOR_BURST_START      OFFSET(24) NUMBITS(8)  [],
     ],
 
-    Leap [
+    pub Leap [
         HORIZONTAL_SYNC_PERIOD OFFSET(0)  NUMBITS(12) [],
     ],
 
-    ScreenRange [
+    pub ScreenRange [
         END_ACTIVE_VIDEO       OFFSET(0)  NUMBITS(10) [],
         START_ACTIVE_VIDEO     OFFSET(16) NUMBITS(10) [],
     ],
 
-    ScreenScale [
+    pub ScreenScale [
         INVERSE_SCALE_FACTOR   OFFSET(0)  NUMBITS(12) [],
         SUBPIXEL_OFFSET        OFFSET(16) NUMBITS(12) [],
     ]

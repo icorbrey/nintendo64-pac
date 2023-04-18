@@ -3,18 +3,18 @@ use tock_registers::{
     registers::{ReadOnly, ReadWrite},
 };
 
-const _DPC_REGS_BASE: usize = 0x0410_0000;
+const DPC_REGS_BASE: usize = 0x0410_0000;
 
 pub struct Dpc;
 
 impl Dpc {
-    fn _registers<'a>(&self) -> &'a DpcRegisters {
-        unsafe { &mut *(_DPC_REGS_BASE as *mut DpcRegisters) }
+    pub fn registers<'a>(&self) -> &'a DpcRegisters {
+        unsafe { &mut *(DPC_REGS_BASE as *mut DpcRegisters) }
     }
 }
 
 register_structs! {
-    DpcRegisters {
+    pub DpcRegisters {
         (0x0000 => pub dma_start: ReadWrite<u32, DmaAddress::Register>),
         (0x0004 => pub dma_end: ReadWrite<u32, DmaAddress::Register>),
         (0x0008 => pub dma_current: ReadWrite<u32, DmaAddress::Register>),
@@ -30,11 +30,11 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    DmaAddress [
+    pub DmaAddress [
         ADDRESS       OFFSET(0)  NUMBITS(24) [],
     ],
 
-    Status [
+    pub Status [
         XBUS_DMEM_DMA OFFSET(0)  NUMBITS(1)  [],
         FREEZE        OFFSET(1)  NUMBITS(1)  [],
         FLUSH         OFFSET(2)  NUMBITS(1)  [],
@@ -48,7 +48,7 @@ register_bitfields! {
         START_VALID   OFFSET(10) NUMBITS(1)  [],
     ],
 
-    ClockCounter [
+    pub ClockCounter [
         CLOCK_COUNTER OFFSET(0)  NUMBITS(24) [],
     ]
 }

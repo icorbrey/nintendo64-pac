@@ -1,17 +1,17 @@
 use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
 
-const _DPS_REGS_BASE: usize = 0x0420_0000;
+const DPS_REGS_BASE: usize = 0x0420_0000;
 
 pub struct Dps;
 
 impl Dps {
-    fn _registers<'a>(&self) -> &'a DpsRegisters {
-        unsafe { &mut *(_DPS_REGS_BASE as *mut DpsRegisters) }
+    pub fn registers<'a>(&self) -> &'a DpsRegisters {
+        unsafe { &mut *(DPS_REGS_BASE as *mut DpsRegisters) }
     }
 }
 
 register_structs! {
-    DpsRegisters {
+    pub DpsRegisters {
         (0x0000 => pub texture_memory_bist: ReadWrite<u32, TmemBist::Register>),
         (0x0004 => pub buffer_test_mode: ReadWrite<u32, BufferTestMode::Register>),
         (0x0008 => pub buffer_test_address: ReadWrite<u32, BufferTestAddress::Register>),
@@ -23,7 +23,7 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    TmemBist [
+    pub TmemBist [
         BIST_CHECK OFFSET(0) NUMBITS(1)  [],
         BIST_GO    OFFSET(1) NUMBITS(1)  [],
         BIST_CLEAR OFFSET(2) NUMBITS(1)  [],
@@ -31,15 +31,15 @@ register_bitfields! {
         BIST_FAIL  OFFSET(3) NUMBITS(8)  [],
     ],
 
-    BufferTestMode [
+    pub BufferTestMode [
         TEST_MODE  OFFSET(0) NUMBITS(1)  [],
     ],
 
-    BufferTestAddress [
+    pub BufferTestAddress [
         TEST_ADDR  OFFSET(0) NUMBITS(7)  [],
     ],
 
-    BufferTestData [
+    pub BufferTestData [
         TEST_DATA  OFFSET(0) NUMBITS(32) [],
     ]
 }

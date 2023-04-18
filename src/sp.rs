@@ -3,27 +3,27 @@ use tock_registers::{
     registers::{ReadOnly, ReadWrite},
 };
 
-const _SP_REGS_BASE: usize = 0x0404_0000;
-const _PC_REGS_BASE: usize = 0x0408_0000;
+const SP_REGS_BASE: usize = 0x0404_0000;
+const PC_REGS_BASE: usize = 0x0408_0000;
 
 pub struct StackPointer;
 
 impl StackPointer {
-    fn _registers<'a>(&self) -> &'a StackPointerRegisters {
-        unsafe { &mut *(_SP_REGS_BASE as *mut StackPointerRegisters) }
+    pub fn registers<'a>(&self) -> &'a StackPointerRegisters {
+        unsafe { &mut *(SP_REGS_BASE as *mut StackPointerRegisters) }
     }
 }
 
 pub struct ProgramCounter;
 
 impl ProgramCounter {
-    fn _registers<'a>(&self) -> &'a ProgramCounterRegisters {
-        unsafe { &mut *(_PC_REGS_BASE as *mut ProgramCounterRegisters) }
+    pub fn registers<'a>(&self) -> &'a ProgramCounterRegisters {
+        unsafe { &mut *(PC_REGS_BASE as *mut ProgramCounterRegisters) }
     }
 }
 
 register_structs! {
-    StackPointerRegisters {
+    pub StackPointerRegisters {
         (0x0000 => pub memory_address: ReadWrite<u32, MemoryAddress::Register>),
         (0x0004 => pub dma_address: ReadWrite<u32, DmaAddress::Register>),
         (0x0008 => pub read_dma_length: ReadWrite<u32, DmaLength::Register>),
@@ -35,7 +35,7 @@ register_structs! {
         (0x0020 => @END),
     },
 
-    ProgramCounterRegisters {
+    pub ProgramCounterRegisters {
         (0x0000 => pub program_counter: ReadWrite<u32, ProgramCounterControl::Register>),
         (0x0004 => pub imem_bist: ReadWrite<u32, ImemBist::Register>),
         (0x0008 => @END),
@@ -45,7 +45,7 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    MemoryAddress [
+    pub MemoryAddress [
         ADDRESS                  OFFSET(0)  NUMBITS(12) [],
         LOCATION                 OFFSET(12) NUMBITS(1)  [
             DataMemory = 0,
@@ -53,17 +53,17 @@ register_bitfields! {
         ],
     ],
 
-    DmaAddress [
+    pub DmaAddress [
         ADDRESS                  OFFSET(0)  NUMBITS(24) [],
     ],
 
-    DmaLength [
+    pub DmaLength [
         LENGTH                   OFFSET(0)  NUMBITS(12) [],
         COUNT                    OFFSET(12) NUMBITS(8)  [],
         SKIP                     OFFSET(20) NUMBITS(12) [],
     ],
 
-    Status [
+    pub Status [
         HALT                     OFFSET(0)  NUMBITS(1)  [],
         BROKE                    OFFSET(1)  NUMBITS(1)  [],
         DMA_BUSY                 OFFSET(2)  NUMBITS(1)  [],
@@ -107,23 +107,23 @@ register_bitfields! {
         SET_SIGNAL_7             OFFSET(24) NUMBITS(1)  [],
     ],
 
-    DmaFull [
+    pub DmaFull [
         DMA_FULL                 OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    DmaBusy [
+    pub DmaBusy [
         DMA_BUSY                 OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    Semaphore [
+    pub Semaphore [
         SEMAPHORE                OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    ProgramCounterControl [
+    pub ProgramCounterControl [
         PROGRAM_COUNTER          OFFSET(0)  NUMBITS(12) [],
     ],
 
-    ImemBist [
+    pub ImemBist [
         BIST_CHECK               OFFSET(0)  NUMBITS(1)  [],
         BIST_GO                  OFFSET(1)  NUMBITS(1)  [],
         BIST_CLEAR               OFFSET(2)  NUMBITS(1)  [],

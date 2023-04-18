@@ -3,18 +3,18 @@ use tock_registers::{
     registers::{ReadOnly, ReadWrite},
 };
 
-const _MI_REGS_BASE: usize = 0x0430_0000;
+const MI_REGS_BASE: usize = 0x0430_0000;
 
 pub struct MipsInterface;
 
 impl MipsInterface {
-    fn _registers<'a>(&self) -> &'a MipsInterfaceRegisters {
-        unsafe { &mut *(_MI_REGS_BASE as *mut MipsInterfaceRegisters) }
+    pub fn registers<'a>(&self) -> &'a MipsInterfaceRegisters {
+        unsafe { &mut *(MI_REGS_BASE as *mut MipsInterfaceRegisters) }
     }
 }
 
 register_structs! {
-    MipsInterfaceRegisters {
+    pub MipsInterfaceRegisters {
         (0x0000 => pub init_mode: ReadWrite<u32, InitMode::Register>),
         (0x0004 => pub version: ReadOnly<u32, Version::Register>),
         (0x0008 => pub interrupts: ReadOnly<u32, Interrupts::Register>),
@@ -26,7 +26,7 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    InitMode [
+    pub InitMode [
         INIT_LENGTH             OFFSET(0)  NUMBITS(7) [],
         INIT_MODE               OFFSET(7)  NUMBITS(1) [],
         EBUS_TEST_MODE          OFFSET(8)  NUMBITS(1) [],
@@ -41,14 +41,14 @@ register_bitfields! {
         SET_RDRAM_REG           OFFSET(13) NUMBITS(1) [],
     ],
 
-    Version [
+    pub Version [
         IO                      OFFSET(0)  NUMBITS(8) [],
         RAC                     OFFSET(8)  NUMBITS(8) [],
         RDP                     OFFSET(16) NUMBITS(8) [],
         RSP                     OFFSET(24) NUMBITS(8) [],
     ],
 
-    Interrupts [
+    pub Interrupts [
         SP_INTERRUPT            OFFSET(0)  NUMBITS(1) [],
         SI_INTERRUPT            OFFSET(1)  NUMBITS(1) [],
         AI_INTERRUPT            OFFSET(2)  NUMBITS(1) [],
@@ -57,7 +57,7 @@ register_bitfields! {
         DP_INTERRUPT            OFFSET(5)  NUMBITS(1) [],
     ],
 
-    InterruptMasks [
+    pub InterruptMasks [
         SP_INTERRUPT_MASK       OFFSET(0)  NUMBITS(1) [],
         SI_INTERRUPT_MASK       OFFSET(1)  NUMBITS(1) [],
         AI_INTERRUPT_MASK       OFFSET(2)  NUMBITS(1) [],

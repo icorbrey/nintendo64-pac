@@ -1,12 +1,12 @@
 use tock_registers::{register_structs, registers::ReadWrite};
 
-const _RDRAM_REGS_BASE: usize = 0x03F0_0000;
+const RDRAM_REGS_BASE: usize = 0x03F0_0000;
 
 pub struct Rdram;
 
 impl Rdram {
-    fn _registers<'a>(&self) -> &'a RdramRegisters {
-        unsafe { &mut *(_RDRAM_REGS_BASE as *mut RdramRegisters) }
+    pub fn registers<'a>(&self) -> &'a RdramRegisters {
+        unsafe { &mut *(RDRAM_REGS_BASE as *mut RdramRegisters) }
     }
 }
 
