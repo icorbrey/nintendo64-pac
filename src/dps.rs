@@ -12,7 +12,7 @@ impl Dps {
 
 register_structs! {
     DpsRegisters {
-        (0x0000 => pub tmem_bist: ReadWrite<u32, TmemBist::Register>),
+        (0x0000 => pub texture_memory_bist: ReadWrite<u32, TmemBist::Register>),
         (0x0004 => pub buffer_test_mode: ReadWrite<u32, BufferTestMode::Register>),
         (0x0008 => pub buffer_test_address: ReadWrite<u32, BufferTestAddress::Register>),
         (0x000C => pub buffer_test_data: ReadWrite<u32, BufferTestData::Register>),

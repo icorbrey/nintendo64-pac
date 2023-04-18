@@ -22,7 +22,7 @@ register_structs! {
         (0x0010 => pub clock: ReadOnly<u32, ClockCounter::Register>),
         (0x0014 => pub buffer_busy: ReadOnly<u32, ClockCounter::Register>),
         (0x0018 => pub pipe_busy: ReadOnly<u32, ClockCounter::Register>),
-        (0x001C => pub tmem: ReadOnly<u32, ClockCounter::Register>),
+        (0x001C => pub texture_memory: ReadOnly<u32, ClockCounter::Register>),
         (0x0020 => @END),
     }
 }
