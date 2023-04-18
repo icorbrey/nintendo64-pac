@@ -3,8 +3,18 @@ use tock_registers::{
     registers::{ReadOnly, ReadWrite, WriteOnly},
 };
 
+const _RI_REGS_BASE: usize = 0x0470_0000;
+
+pub struct RdramInterface;
+
+impl RdramInterface {
+    fn _registers<'a>(&self) -> &'a RdramInterfaceRegisters {
+        unsafe { &mut *(_RI_REGS_BASE as *mut RdramInterfaceRegisters) }
+    }
+}
+
 register_structs! {
-    pub RdramRegisters {
+    RdramInterfaceRegisters {
         (0x0000 => pub mode: ReadWrite<u32, Mode::Register>),
         (0x0004 => pub config: ReadWrite<u32, Config::Register>),
         (0x0008 => pub current_load: WriteOnly<u32>),
