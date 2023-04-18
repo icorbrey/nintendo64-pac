@@ -1,5 +1,15 @@
 use tock_registers::{register_structs, registers::ReadWrite};
 
+const _RDRAM_REGS_BASE: usize = 0x03F0_0000;
+
+pub struct Rdram;
+
+impl Rdram {
+    fn _registers<'a>(&self) -> &'a RdramRegisters {
+        unsafe { &mut *(_RDRAM_REGS_BASE as *mut RdramRegisters) }
+    }
+}
+
 register_structs! {
     pub RdramRegisters {
         (0x0000 => pub config: ReadWrite<u32>),

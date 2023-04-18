@@ -7,6 +7,7 @@ use dpc::Dpc;
 use dps::Dps;
 use mi::MipsInterface;
 use pi::PeripheralInterface;
+use rdram::Rdram;
 use ri::RdramInterface;
 use si::SerialInterface;
 use vi::VideoInterface;
@@ -29,6 +30,7 @@ pub static mut HARDWARE: Hardware = Hardware {
     rdram_interface: Peripheral::new(RdramInterface),
     video_interface: Peripheral::new(VideoInterface),
     mips_interface: Peripheral::new(MipsInterface),
+    rdram: Peripheral::new(Rdram),
     dpc: Peripheral::new(Dpc),
     dps: Peripheral::new(Dps),
 };
@@ -40,6 +42,7 @@ pub struct Hardware {
     pub rdram_interface: Peripheral<RdramInterface>,
     pub video_interface: Peripheral<VideoInterface>,
     pub mips_interface: Peripheral<MipsInterface>,
+    pub rdram: Peripheral<Rdram>,
     pub dpc: Peripheral<Dpc>,
     pub dps: Peripheral<Dps>,
 }
