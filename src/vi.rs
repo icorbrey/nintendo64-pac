@@ -1,7 +1,17 @@
 use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
 
+const _VI_REGS_BASE: usize = 0x0440_0000;
+
+pub struct VideoInterface;
+
+impl VideoInterface {
+    fn _registers<'a>(&self) -> &'a VideoInterfaceRegisters {
+        unsafe { &mut *(_VI_REGS_BASE as *mut VideoInterfaceRegisters) }
+    }
+}
+
 register_structs! {
-    pub VideoInterfaceRegisters {
+    VideoInterfaceRegisters {
         (0x0000 => pub status: ReadWrite<u32, Status::Register>),
         (0x0004 => pub origin: ReadWrite<u32, DmaAddress::Register>),
         (0x0008 => pub width: ReadWrite<u32, LineWidth::Register>),

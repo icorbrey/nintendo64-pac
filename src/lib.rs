@@ -6,6 +6,7 @@ use ai::AudioInterface;
 use dpc::Dpc;
 use dps::Dps;
 use mi::MipsInterface;
+use vi::VideoInterface;
 
 pub mod ai;
 pub mod dpc;
@@ -20,6 +21,7 @@ pub mod vi;
 
 pub static mut HARDWARE: Hardware = Hardware {
     audio_interface: Peripheral::new(AudioInterface),
+    video_interface: Peripheral::new(VideoInterface),
     mips_interface: Peripheral::new(MipsInterface),
     dpc: Peripheral::new(Dpc),
     dps: Peripheral::new(Dps),
@@ -27,6 +29,7 @@ pub static mut HARDWARE: Hardware = Hardware {
 
 pub struct Hardware {
     pub audio_interface: Peripheral<AudioInterface>,
+    pub video_interface: Peripheral<VideoInterface>,
     pub mips_interface: Peripheral<MipsInterface>,
     pub dpc: Peripheral<Dpc>,
     pub dps: Peripheral<Dps>,
