@@ -1,4 +1,4 @@
-//! # Audio Interface
+//! # Audio Interface Wrapper
 //!
 //! This module wraps the Nintendo 64's AI registers and provides type- and
 //! memory safe ways of interacting with it.
@@ -9,12 +9,37 @@ use tock_registers::{
     registers::{ReadWrite, WriteOnly},
 };
 
+use crate::HARDWARE;
+
 /// The static address of the Nintendo 64's audio interface registers.
 const AI_REGS_BASE: usize = 0x0450_0000;
 
-/// A zero-size wrapper around the Nintendo 64 audio interface. This structure
-/// cannot be constructed on its own; see [`HARDWARE`][crate::HARDWARE] for
-/// more details.
+/// A zero-size wrapper around the Nintendo 64's audio interface registers.
+///
+/// This structure must be acquired via the global [`HARDWARE`][crate::HARDWARE]
+/// variable:
+///
+/// ```rust
+/// let ai = HARDWARE.audio_interface.take();
+/// ```
+///
+/// Once a reference has been acquired, registers can be accessed:
+///
+/// ```rust
+/// let status = ai.status();
+/// let length = ai.length_v1();
+///
+/// ai.set_dram_address(0x12345678)
+///     .set_length_v1(123)
+///     .enable_dma()
+///     .set_dac_rate(DacRate::Ntsc);
+/// ```
+///
+/// If needed, the reference can be given back to the global variable:
+///
+/// ```rust
+/// ai.drop();
+/// ```
 #[non_exhaustive]
 pub struct AudioInterface;
 
@@ -24,11 +49,18 @@ impl AudioInterface {
         unsafe { &mut *(AI_REGS_BASE as *mut AiRegisters) }
     }
 
+    /// Returns ownership of the audio interface registers to
+    /// [`HARDWARE`][crate::HARDWARE].
+    pub fn drop(self) {
+        unsafe { HARDWARE.audio_interface.drop(self) }
+    }
+
     /// Sets the DRAM address.
-    pub fn set_dram_address(&self, dram_address: u32) {
+    pub fn set_dram_address(&self, dram_address: u32) -> &Self {
         self.registers()
             .dram_address
             .write(AiDmaAddress::ADDRESS.val(dram_address));
+        self
     }
 
     /// Gets the transfer length (in v1 mode).
@@ -37,10 +69,11 @@ impl AudioInterface {
     }
 
     /// Sets the transfer length (in v1 mode).
-    pub fn set_length_v1(&self, length: u32) {
+    pub fn set_length_v1(&self, length: u32) -> &Self {
         self.registers()
             .length
             .write(AiLength::TRANSFER_LENGTH_V1.val(length));
+        self
     }
 
     /// Gets the transfer length (in v2 mode).
@@ -49,93 +82,65 @@ impl AudioInterface {
     }
 
     /// Sets the transfer length (in v2 mode).
-    pub fn set_length_v2(&self, length: u32) {
+    pub fn set_length_v2(&self, length: u32) -> &Self {
         self.registers()
             .length
             .write(AiLength::TRANSFER_LENGTH_V2.val(length));
+        self
     }
 
     /// Enables DMA.
-    pub fn enable_dma(&self) {
+    pub fn enable_dma(&self) -> &Self {
         self.registers().control.write(AiControl::DMA_ENABLE::SET);
+        self
     }
 
     /// Disables DMA.
-    pub fn disable_dma(&self) {
+    pub fn disable_dma(&self) -> &Self {
         self.registers().control.write(AiControl::DMA_ENABLE::CLEAR);
+        self
     }
 
     /// Gets the status.
-    pub fn status(&self) -> Status {
-        let registers = self.registers();
-        Status {
-            is_full: registers.status.is_set(AiStatus::FULL),
-            dac_counter: registers.status.read(AiStatus::DAC_COUNTER),
-            bitclock_state: registers.status.is_set(AiStatus::BITCLOCK_STATE),
-            abus_word_2: registers.status.is_set(AiStatus::ABUS_WORD_2),
-            word_select: registers.status.is_set(AiStatus::WORD_SELECT),
-            is_data_available: registers.status.is_set(AiStatus::DATA_AVAILABLE),
-            is_dfifo2_loaded: registers.status.is_set(AiStatus::DFIFO2_LOADED),
-            is_dma_enabled: registers.status.is_set(AiStatus::DMA_ENABLE),
-            is_dma_requesting: registers.status.is_set(AiStatus::DMA_REQUEST),
-            is_dma_busy: registers.status.is_set(AiStatus::DMA_BUSY),
-            is_busy: registers.status.is_set(AiStatus::BUSY),
-        }
+    pub fn status(&self) -> u32 {
+        todo!()
     }
 
     /// Sets the status.
-    pub fn set_status(&self, status: Status) {
-        self.registers().status.write(
-            AiStatus::FULL.val(status.is_full.into())
-                + AiStatus::DAC_COUNTER.val(status.dac_counter)
-                + AiStatus::BITCLOCK_STATE.val(status.bitclock_state.into())
-                + AiStatus::ABUS_WORD_2.val(status.abus_word_2.into())
-                + AiStatus::WORD_SELECT.val(status.word_select.into())
-                + AiStatus::DATA_AVAILABLE.val(status.is_data_available.into())
-                + AiStatus::DFIFO2_LOADED.val(status.is_dfifo2_loaded.into())
-                + AiStatus::DMA_ENABLE.val(status.is_dma_enabled.into())
-                + AiStatus::DMA_REQUEST.val(status.is_dma_requesting.into())
-                + AiStatus::DMA_BUSY.val(status.is_dma_busy.into())
-                + AiStatus::BUSY.val(status.is_busy.into()),
-        )
+    pub fn set_status(&self, _status: u32) -> &Self {
+        todo!();
     }
 
     /// Sets the DAC rate.
-    pub fn set_dac_rate(&self, dac_rate: DacRate) {
+    pub fn set_dac_rate(&self, dac_rate: DacRate) -> &Self {
         self.registers()
             .dacrate
             .write(AiDacRate::DAC_RATE.val(match dac_rate {
                 DacRate::Ntsc => AiDacRate::DAC_RATE::Ntsc.into(),
                 DacRate::Mpal => AiDacRate::DAC_RATE::Mpal.into(),
                 DacRate::Pal => AiDacRate::DAC_RATE::Pal.into(),
-            }))
+            }));
+        self
     }
 
     /// Sets the bit rate.
-    pub fn set_bit_rate(&self, bit_rate: u32) {
+    pub fn set_bit_rate(&self, bit_rate: u32) -> &Self {
         self.registers()
             .bitrate
-            .write(AiBitRate::BIT_RATE.val(bit_rate))
+            .write(AiBitRate::BIT_RATE.val(bit_rate));
+        self
     }
 }
 
-pub struct Status {
-    pub is_full: bool,
-    pub dac_counter: u32,
-    pub bitclock_state: bool,
-    pub abus_word_2: bool,
-    pub word_select: bool,
-    pub is_data_available: bool,
-    pub is_dfifo2_loaded: bool,
-    pub is_dma_enabled: bool,
-    pub is_dma_requesting: bool,
-    pub is_dma_busy: bool,
-    pub is_busy: bool,
-}
-
+/// The DAC rate of the audio interface.
 pub enum DacRate {
+    /// Corresponds to a DAC rate of `0x2E6D354`.
     Ntsc,
+
+    /// Corresponds to a DAC rate of `0x2F5B2D2`.
     Pal,
+
+    /// Corresponds to a DAC rate of `0x2E6025C`.
     Mpal,
 }
 

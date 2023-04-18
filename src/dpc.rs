@@ -1,127 +1,144 @@
+//! # DP Command Wrapper
+//!
+//! This module wraps the Nintendo 64's DPC registers and provides type- and
+//! memory safe ways of interacting with it.
+
 use tock_registers::{
     interfaces::{Readable, Writeable},
     register_bitfields, register_structs,
     registers::{ReadOnly, ReadWrite},
 };
 
+use crate::HARDWARE;
+
+/// The static address of the Nintendo 64's DPC registers.
 const DPC_REGS_BASE: usize = 0x0410_0000;
 
+/// A zero-size wrapper around the Nintendo 64's DPC registers.
+///
+/// This structure must be acquired via the global [`HARDWARE`][crate::HARDWARE]
+/// variable:
+///
+/// ```rust
+/// let dpc = unsafe { HARDWARE.dpc.take() }?;
+/// ```
+///
+/// Once a reference has been acquired, registers can be accessed:
+///
+/// ```rust
+/// let status = dpc.status();
+/// let clock = dpc.clock();
+///
+/// dpc.set_dma_start(0x12345678)
+///     .set_dma_end(0x12345678)
+///     .set_dma_current(0x12345678);
+/// ```
+///
+/// If needed, the reference can be given back to the global variable:
+///
+/// ```rust
+/// dpc.drop();
+/// ```
 #[non_exhaustive]
 pub struct Dpc;
 
 impl Dpc {
+    /// Gets a reference to the DPC registers.
     fn registers<'a>(&self) -> &'a DpcRegisters {
         unsafe { &mut *(DPC_REGS_BASE as *mut DpcRegisters) }
     }
 
-    pub fn dma_start(&self) -> u32 {
-        self.registers().dma_start.read(DmaAddress::ADDRESS)
+    /// Returns ownership of the DPC registers to [`HARDWARE`][crate::HARDWARE].
+    pub fn drop(self) {
+        unsafe { HARDWARE.dpc.drop(self) }
     }
 
-    pub fn set_dma_start(&self, dma_start: u32) {
+    /// Gets the starting DMA address.
+    pub fn dma_start(&self) -> u32 {
+        self.registers().dma_start.read(DpcDmaAddress::ADDRESS)
+    }
+
+    /// Sets the starting DMA address.
+    pub fn set_dma_start(&self, dma_start: u32) -> &Self {
         self.registers()
             .dma_start
-            .write(DmaAddress::ADDRESS.val(dma_start));
+            .write(DpcDmaAddress::ADDRESS.val(dma_start));
+        self
     }
 
+    /// Gets the ending DMA address.
     pub fn dma_end(&self) -> u32 {
-        self.registers().dma_end.read(DmaAddress::ADDRESS)
+        self.registers().dma_end.read(DpcDmaAddress::ADDRESS)
     }
 
-    pub fn set_dma_end(&self, dma_end: u32) {
+    /// Sets the ending DMA address.
+    pub fn set_dma_end(&self, dma_end: u32) -> &Self {
         self.registers()
             .dma_end
-            .write(DmaAddress::ADDRESS.val(dma_end));
+            .write(DpcDmaAddress::ADDRESS.val(dma_end));
+        self
     }
 
+    /// Gets the current DMA address.
     pub fn dma_current(&self) -> u32 {
-        self.registers().dma_current.read(DmaAddress::ADDRESS)
+        self.registers().dma_current.read(DpcDmaAddress::ADDRESS)
     }
 
-    pub fn set_dma_current(&self, dma_current: u32) {
+    /// Sets the current DMA address.
+    pub fn set_dma_current(&self, dma_current: u32) -> &Self {
         self.registers()
             .dma_current
-            .write(DmaAddress::ADDRESS.val(dma_current));
+            .write(DpcDmaAddress::ADDRESS.val(dma_current));
+        self
     }
 
-    pub fn status(&self) -> DpcStatus {
-        let registers = self.registers();
-        DpcStatus {
-            xbus_dmem_dma: registers.status.is_set(Status::XBUS_DMEM_DMA),
-            freeze: registers.status.is_set(Status::FREEZE),
-            flush: registers.status.is_set(Status::FLUSH),
-            start_glck: registers.status.is_set(Status::START_GLCK),
-            is_texture_memory_busy: registers.status.is_set(Status::TMEM_BUSY),
-            is_pipe_busy: registers.status.is_set(Status::PIPE_BUSY),
-            is_command_busy: registers.status.is_set(Status::CMD_BUSY),
-            is_cbuf_ready: registers.status.is_set(Status::CBUF_READY),
-            is_dma_busy: registers.status.is_set(Status::DMA_BUSY),
-            is_end_valid: registers.status.is_set(Status::END_VALID),
-            is_start_valid: registers.status.is_set(Status::START_VALID),
-        }
+    /// Gets the status.
+    pub fn status(&self) -> u32 {
+        todo!()
     }
 
-    pub fn set_status(&self, status: DpcStatus) {
-        self.registers().status.write(
-            Status::XBUS_DMEM_DMA.val(status.xbus_dmem_dma.into())
-                + Status::FREEZE.val(status.freeze.into())
-                + Status::FLUSH.val(status.flush.into())
-                + Status::START_GLCK.val(status.start_glck.into())
-                + Status::TMEM_BUSY.val(status.is_texture_memory_busy.into())
-                + Status::PIPE_BUSY.val(status.is_pipe_busy.into())
-                + Status::CMD_BUSY.val(status.is_command_busy.into())
-                + Status::CBUF_READY.val(status.is_cbuf_ready.into())
-                + Status::DMA_BUSY.val(status.is_dma_busy.into())
-                + Status::END_VALID.val(status.is_end_valid.into())
-                + Status::START_VALID.val(status.is_start_valid.into()),
-        )
+    /// Sets the status.
+    pub fn set_status(&self, _status: u32) -> &Self {
+        todo!()
     }
 
+    /// Gets the clock counter.
     pub fn clock(&self) -> u32 {
-        self.registers().clock.read(ClockCounter::CLOCK_COUNTER)
+        self.registers().clock.read(DpcClockCounter::CLOCK_COUNTER)
     }
 
+    /// Gets the BUFBUSY clock counter.
     pub fn buffer_busy(&self) -> u32 {
         self.registers()
             .buffer_busy
-            .read(ClockCounter::CLOCK_COUNTER)
+            .read(DpcClockCounter::CLOCK_COUNTER)
     }
 
+    /// Gets the PIPEBUSY clock counter.
     pub fn pipe_busy(&self) -> u32 {
-        self.registers().pipe_busy.read(ClockCounter::CLOCK_COUNTER)
+        self.registers()
+            .pipe_busy
+            .read(DpcClockCounter::CLOCK_COUNTER)
     }
 
+    /// Gets the TMEM clock counter.
     pub fn texture_memory(&self) -> u32 {
         self.registers()
             .texture_memory
-            .read(ClockCounter::CLOCK_COUNTER)
+            .read(DpcClockCounter::CLOCK_COUNTER)
     }
-}
-
-pub struct DpcStatus {
-    pub xbus_dmem_dma: bool,
-    pub freeze: bool,
-    pub flush: bool,
-    pub start_glck: bool,
-    pub is_texture_memory_busy: bool,
-    pub is_pipe_busy: bool,
-    pub is_command_busy: bool,
-    pub is_cbuf_ready: bool,
-    pub is_dma_busy: bool,
-    pub is_end_valid: bool,
-    pub is_start_valid: bool,
 }
 
 register_structs! {
     DpcRegisters {
-        (0x0000 => pub dma_start: ReadWrite<u32, DmaAddress::Register>),
-        (0x0004 => pub dma_end: ReadWrite<u32, DmaAddress::Register>),
-        (0x0008 => pub dma_current: ReadWrite<u32, DmaAddress::Register>),
-        (0x000C => pub status: ReadWrite<u32, Status::Register>),
-        (0x0010 => pub clock: ReadOnly<u32, ClockCounter::Register>),
-        (0x0014 => pub buffer_busy: ReadOnly<u32, ClockCounter::Register>),
-        (0x0018 => pub pipe_busy: ReadOnly<u32, ClockCounter::Register>),
-        (0x001C => pub texture_memory: ReadOnly<u32, ClockCounter::Register>),
+        (0x0000 => pub dma_start: ReadWrite<u32, DpcDmaAddress::Register>),
+        (0x0004 => pub dma_end: ReadWrite<u32, DpcDmaAddress::Register>),
+        (0x0008 => pub dma_current: ReadWrite<u32, DpcDmaAddress::Register>),
+        (0x000C => pub status: ReadWrite<u32, DpcStatus::Register>),
+        (0x0010 => pub clock: ReadOnly<u32, DpcClockCounter::Register>),
+        (0x0014 => pub buffer_busy: ReadOnly<u32, DpcClockCounter::Register>),
+        (0x0018 => pub pipe_busy: ReadOnly<u32, DpcClockCounter::Register>),
+        (0x001C => pub texture_memory: ReadOnly<u32, DpcClockCounter::Register>),
         (0x0020 => @END),
     }
 }
@@ -129,11 +146,11 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    DmaAddress [
+    DpcDmaAddress [
         ADDRESS       OFFSET(0)  NUMBITS(24) [],
     ],
 
-    Status [
+    DpcStatus [
         XBUS_DMEM_DMA OFFSET(0)  NUMBITS(1)  [],
         FREEZE        OFFSET(1)  NUMBITS(1)  [],
         FLUSH         OFFSET(2)  NUMBITS(1)  [],
@@ -147,7 +164,7 @@ register_bitfields! {
         START_VALID   OFFSET(10) NUMBITS(1)  [],
     ],
 
-    ClockCounter [
+    DpcClockCounter [
         CLOCK_COUNTER OFFSET(0)  NUMBITS(24) [],
     ]
 }
