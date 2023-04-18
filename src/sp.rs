@@ -28,7 +28,10 @@ register_bitfields! {
 
     MemoryAddress [
         ADDRESS                  OFFSET(0)  NUMBITS(12) [],
-        LOCATION                 OFFSET(12) NUMBITS(1)  []
+        LOCATION                 OFFSET(12) NUMBITS(1)  [
+            DataMemory = 0,
+            InstructionMemory = 1,
+        ]
     ],
 
     DmaAddress [
