@@ -3,6 +3,7 @@
 use core::mem::replace;
 
 use ai::AudioInterface;
+use dpc::Dpc;
 
 pub mod ai;
 pub mod dpc;
@@ -15,25 +16,33 @@ pub mod si;
 pub mod sp;
 pub mod vi;
 
+pub static mut HARDWARE: Hardware = Hardware {
+    audio_interface: Peripheral::new(AudioInterface),
+    dpc: Peripheral::new(Dpc),
+};
+
 pub struct Hardware {
-    audio_interface: Option<AudioInterface>,
+    pub audio_interface: Peripheral<AudioInterface>,
+    pub dpc: Peripheral<Dpc>,
 }
 
-impl Hardware {
-    pub fn take_audio_interface(&mut self) -> Result<AudioInterface, HardwareError> {
-        let x = replace(&mut self.audio_interface, None);
+pub struct Peripheral<T>(Option<T>);
+
+impl<T> Peripheral<T> {
+    pub const fn new(peripheral: T) -> Self {
+        Self(Some(peripheral))
+    }
+
+    pub fn take(&mut self) -> Result<T, HardwareError> {
+        let x = replace(&mut self.0, None);
         x.ok_or(HardwareError::TakePeripheralError)
     }
 
-    pub fn drop_audio_interface(&mut self, audio_interface: AudioInterface) {
-        self.audio_interface = Some(audio_interface);
+    pub fn drop(&mut self, peripheral: T) {
+        self.0 = Some(peripheral);
     }
 }
 
 pub enum HardwareError {
     TakePeripheralError,
 }
-
-pub static mut HARDWARE: Hardware = Hardware {
-    audio_interface: Some(AudioInterface),
-};

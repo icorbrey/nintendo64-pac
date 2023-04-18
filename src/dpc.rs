@@ -3,8 +3,18 @@ use tock_registers::{
     registers::{ReadOnly, ReadWrite},
 };
 
+const _DPC_REGS_BASE: usize = 0x0410_0000;
+
+pub struct Dpc;
+
+impl Dpc {
+    fn _registers<'a>(&self) -> &'a DpcRegisters {
+        unsafe { &mut *(_DPC_REGS_BASE as *mut DpcRegisters) }
+    }
+}
+
 register_structs! {
-    pub DpcRegisters {
+    DpcRegisters {
         (0x0000 => pub dma_start: ReadWrite<u32, DmaAddress::Register>),
         (0x0004 => pub dma_end: ReadWrite<u32, DmaAddress::Register>),
         (0x0008 => pub dma_current: ReadWrite<u32, DmaAddress::Register>),
