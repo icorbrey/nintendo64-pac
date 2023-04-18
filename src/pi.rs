@@ -1,7 +1,17 @@
 use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
 
+const _PI_REGS_BASE: usize = 0x0460_0000;
+
+pub struct PeripheralInterface;
+
+impl PeripheralInterface {
+    fn _registers<'a>(&self) -> &'a PeripheralInterfaceRegisters {
+        unsafe { &mut *(_PI_REGS_BASE as *mut PeripheralInterfaceRegisters) }
+    }
+}
+
 register_structs! {
-    pub VideoInterfaceRegisters {
+    PeripheralInterfaceRegisters {
         (0x0000 => pub dram_address: ReadWrite<u32, DmaAddress::Register>),
         (0x0004 => pub cartridge_address: ReadWrite<u32, CartridgeAddress::Register>),
         (0x0008 => pub read_length: ReadWrite<u32, Length::Register>),
