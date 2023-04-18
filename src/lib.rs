@@ -4,6 +4,7 @@ use core::mem::replace;
 
 use ai::AudioInterface;
 use dpc::Dpc;
+use dps::Dps;
 
 pub mod ai;
 pub mod dpc;
@@ -19,11 +20,13 @@ pub mod vi;
 pub static mut HARDWARE: Hardware = Hardware {
     audio_interface: Peripheral::new(AudioInterface),
     dpc: Peripheral::new(Dpc),
+    dps: Peripheral::new(Dps),
 };
 
 pub struct Hardware {
     pub audio_interface: Peripheral<AudioInterface>,
     pub dpc: Peripheral<Dpc>,
+    pub dps: Peripheral<Dps>,
 }
 
 pub struct Peripheral<T>(Option<T>);
@@ -34,8 +37,7 @@ impl<T> Peripheral<T> {
     }
 
     pub fn take(&mut self) -> Result<T, HardwareError> {
-        let x = replace(&mut self.0, None);
-        x.ok_or(HardwareError::TakePeripheralError)
+        replace(&mut self.0, None).ok_or(HardwareError::TakePeripheralError)
     }
 
     pub fn drop(&mut self, peripheral: T) {

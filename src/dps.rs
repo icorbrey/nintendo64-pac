@@ -1,7 +1,17 @@
 use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
 
+const _DPS_REGS_BASE: usize = 0x0420_0000;
+
+pub struct Dps;
+
+impl Dps {
+    fn _registers<'a>(&self) -> &'a DpsRegisters {
+        unsafe { &mut *(_DPS_REGS_BASE as *mut DpsRegisters) }
+    }
+}
+
 register_structs! {
-    pub DpsRegisters {
+    DpsRegisters {
         (0x0000 => pub tmem_bist: ReadWrite<u32, TmemBist::Register>),
         (0x0004 => pub buffer_test_mode: ReadWrite<u32, BufferTestMode::Register>),
         (0x0008 => pub buffer_test_address: ReadWrite<u32, BufferTestAddress::Register>),
