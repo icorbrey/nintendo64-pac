@@ -3,8 +3,18 @@ use tock_registers::{
     registers::{ReadWrite, WriteOnly},
 };
 
+const _SI_REGS_BASE: usize = 0x0460_0000;
+
+pub struct SerialInterface;
+
+impl SerialInterface {
+    fn _registers<'a>(&self) -> &'a SerialInterfaceRegisters {
+        unsafe { &mut *(_SI_REGS_BASE as *mut SerialInterfaceRegisters) }
+    }
+}
+
 register_structs! {
-    pub SerialInterfaceRegisters {
+    SerialInterfaceRegisters {
         (0x0000 => pub dram_address: ReadWrite<u32, DmaAddress::Register>),
         (0x0004 => pub read_64_bits: WriteOnly<u32>),
         (0x0008 => _reserved0),
