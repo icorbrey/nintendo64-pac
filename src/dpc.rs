@@ -4,7 +4,7 @@
 //! memory safe ways of interacting with it.
 
 use tock_registers::{
-    interfaces::{Readable, Writeable},
+    interfaces::Writeable,
     register_bitfields, register_structs,
     registers::{ReadOnly, ReadWrite},
 };
@@ -53,79 +53,10 @@ impl Dpc {
         unsafe { HARDWARE.dpc.drop(self) }
     }
 
-    /// Gets the starting DMA address.
-    pub fn dma_start(&self) -> u32 {
-        self.registers().dma_start.read(DpcDmaAddress::ADDRESS)
-    }
-
-    /// Sets the starting DMA address.
-    pub fn set_dma_start(&self, dma_start: u32) -> &Self {
-        self.registers()
-            .dma_start
-            .write(DpcDmaAddress::ADDRESS.val(dma_start));
+    /// Freeze the RDP.
+    pub fn freeze_rdp(&self) -> &Self {
+        self.registers().status.write(Status::FREEZE::SET);
         self
-    }
-
-    /// Gets the ending DMA address.
-    pub fn dma_end(&self) -> u32 {
-        self.registers().dma_end.read(DpcDmaAddress::ADDRESS)
-    }
-
-    /// Sets the ending DMA address.
-    pub fn set_dma_end(&self, dma_end: u32) -> &Self {
-        self.registers()
-            .dma_end
-            .write(DpcDmaAddress::ADDRESS.val(dma_end));
-        self
-    }
-
-    /// Gets the current DMA address.
-    pub fn dma_current(&self) -> u32 {
-        self.registers().dma_current.read(DpcDmaAddress::ADDRESS)
-    }
-
-    /// Sets the current DMA address.
-    pub fn set_dma_current(&self, dma_current: u32) -> &Self {
-        self.registers()
-            .dma_current
-            .write(DpcDmaAddress::ADDRESS.val(dma_current));
-        self
-    }
-
-    /// Gets the status.
-    pub fn status(&self) -> u32 {
-        todo!()
-    }
-
-    /// Sets the status.
-    pub fn set_status(&self, _status: u32) -> &Self {
-        todo!()
-    }
-
-    /// Gets the clock counter.
-    pub fn clock(&self) -> u32 {
-        self.registers().clock.read(DpcClockCounter::CLOCK_COUNTER)
-    }
-
-    /// Gets the BUFBUSY clock counter.
-    pub fn buffer_busy(&self) -> u32 {
-        self.registers()
-            .buffer_busy
-            .read(DpcClockCounter::CLOCK_COUNTER)
-    }
-
-    /// Gets the PIPEBUSY clock counter.
-    pub fn pipe_busy(&self) -> u32 {
-        self.registers()
-            .pipe_busy
-            .read(DpcClockCounter::CLOCK_COUNTER)
-    }
-
-    /// Gets the TMEM clock counter.
-    pub fn texture_memory(&self) -> u32 {
-        self.registers()
-            .texture_memory
-            .read(DpcClockCounter::CLOCK_COUNTER)
     }
 }
 
@@ -134,7 +65,7 @@ register_structs! {
         (0x0000 => pub dma_start: ReadWrite<u32, DpcDmaAddress::Register>),
         (0x0004 => pub dma_end: ReadWrite<u32, DpcDmaAddress::Register>),
         (0x0008 => pub dma_current: ReadWrite<u32, DpcDmaAddress::Register>),
-        (0x000C => pub status: ReadWrite<u32, DpcStatus::Register>),
+        (0x000C => pub status: ReadWrite<u32, Status::Register>),
         (0x0010 => pub clock: ReadOnly<u32, DpcClockCounter::Register>),
         (0x0014 => pub buffer_busy: ReadOnly<u32, DpcClockCounter::Register>),
         (0x0018 => pub pipe_busy: ReadOnly<u32, DpcClockCounter::Register>),
@@ -150,7 +81,7 @@ register_bitfields! {
         ADDRESS       OFFSET(0)  NUMBITS(24) [],
     ],
 
-    DpcStatus [
+    Status [
         XBUS_DMEM_DMA OFFSET(0)  NUMBITS(1)  [],
         FREEZE        OFFSET(1)  NUMBITS(1)  [],
         FLUSH         OFFSET(2)  NUMBITS(1)  [],

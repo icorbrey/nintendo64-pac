@@ -26,13 +26,13 @@ const AI_REGS_BASE: usize = 0x0450_0000;
 /// Once a reference has been acquired, registers can be accessed:
 ///
 /// ```rust
-/// let status = ai.status();
-/// let length = ai.length_v1();
+/// let is_busy = ai.is_busy();
+/// let is_full = ai.is_full();
 ///
-/// ai.set_dram_address(0x12345678)
-///     .set_length_v1(123)
-///     .enable_dma()
-///     .set_dac_rate(DacRate::Ntsc);
+/// ai.set_sample_buffer_address(0x12345678)
+///     .set_sample_buffer_length(123)
+///     .set_dac_rate(0x12345678)
+///     .start_sample_playback();
 /// ```
 ///
 /// If needed, the reference can be given back to the global variable:
@@ -45,8 +45,8 @@ pub struct AudioInterface;
 
 impl AudioInterface {
     /// Returns a reference to the audio interface registers.
-    fn registers<'a>(&self) -> &'a AiRegisters {
-        unsafe { &mut *(AI_REGS_BASE as *mut AiRegisters) }
+    fn registers<'a>(&self) -> &'a AudioInterfaceRegisters {
+        unsafe { &mut *(AI_REGS_BASE as *mut AudioInterfaceRegisters) }
     }
 
     /// Returns ownership of the audio interface registers to
@@ -55,103 +55,89 @@ impl AudioInterface {
         unsafe { HARDWARE.audio_interface.drop(self) }
     }
 
-    /// Sets the DRAM address.
-    pub fn set_dram_address(&self, dram_address: u32) -> &Self {
+    /// Sets the address of the uncached memory buffer of samples to play.
+    pub fn set_sample_buffer_address(&self, sample_buffer_address: u32) -> &Self {
         self.registers()
-            .dram_address
-            .write(AiDmaAddress::ADDRESS.val(dram_address));
+            .sample_buffer_address
+            .write(SampleBufferAddress::ADDRESS.val(sample_buffer_address));
         self
     }
 
-    /// Gets the transfer length (in v1 mode).
-    pub fn length_v1(&self) -> u32 {
-        self.registers().length.read(AiLength::TRANSFER_LENGTH_V1)
-    }
-
-    /// Sets the transfer length (in v1 mode).
-    pub fn set_length_v1(&self, length: u32) -> &Self {
+    /// Gets the length of the sample buffer.
+    pub fn sample_buffer_length_v1(&self) -> u32 {
         self.registers()
-            .length
-            .write(AiLength::TRANSFER_LENGTH_V1.val(length));
-        self
+            .sample_buffer_length
+            .read(SampleBufferLength::SAMPLE_BUFFER_LENGTH_V1)
     }
 
-    /// Gets the transfer length (in v2 mode).
-    pub fn length_v2(&self) -> u32 {
-        self.registers().length.read(AiLength::TRANSFER_LENGTH_V2)
-    }
-
-    /// Sets the transfer length (in v2 mode).
-    pub fn set_length_v2(&self, length: u32) -> &Self {
+    /// Sets the length of the sample buffer.
+    pub fn set_sample_buffer_length_v1(&self, bytes: u32) -> &Self {
         self.registers()
-            .length
-            .write(AiLength::TRANSFER_LENGTH_V2.val(length));
+            .sample_buffer_length
+            .write(SampleBufferLength::SAMPLE_BUFFER_LENGTH_V1.val(bytes));
         self
     }
 
-    /// Enables DMA.
-    pub fn enable_dma(&self) -> &Self {
-        self.registers().control.write(AiControl::DMA_ENABLE::SET);
-        self
-    }
-
-    /// Disables DMA.
-    pub fn disable_dma(&self) -> &Self {
-        self.registers().control.write(AiControl::DMA_ENABLE::CLEAR);
-        self
-    }
-
-    /// Gets the status.
-    pub fn status(&self) -> u32 {
-        todo!()
-    }
-
-    /// Sets the status.
-    pub fn set_status(&self, _status: u32) -> &Self {
-        todo!();
-    }
-
-    /// Sets the DAC rate.
-    pub fn set_dac_rate(&self, dac_rate: DacRate) -> &Self {
+    /// Gets the length of the sample buffer.
+    pub fn sample_buffer_length_v2(&self) -> u32 {
         self.registers()
-            .dacrate
-            .write(AiDacRate::DAC_RATE.val(match dac_rate {
-                DacRate::Ntsc => AiDacRate::DAC_RATE::Ntsc.into(),
-                DacRate::Mpal => AiDacRate::DAC_RATE::Mpal.into(),
-                DacRate::Pal => AiDacRate::DAC_RATE::Pal.into(),
-            }));
-        self
+            .sample_buffer_length
+            .read(SampleBufferLength::SAMPLE_BUFFER_LENGTH_V2)
     }
 
-    /// Sets the bit rate.
-    pub fn set_bit_rate(&self, bit_rate: u32) -> &Self {
+    /// Sets the length of the sample buffer.
+    pub fn set_sample_buffer_length_v2(&self, bytes: u32) -> &Self {
         self.registers()
-            .bitrate
-            .write(AiBitRate::BIT_RATE.val(bit_rate));
+            .sample_buffer_length
+            .write(SampleBufferLength::SAMPLE_BUFFER_LENGTH_V2.val(bytes));
         self
     }
-}
 
-/// The DAC rate of the audio interface.
-pub enum DacRate {
-    /// Corresponds to a DAC rate of `0x2E6D354`.
-    Ntsc,
+    /// Starts playback of an audio sample.
+    pub fn start_sample_playback(&self) -> &Self {
+        self.registers()
+            .sample_playback
+            .write(SamplePlaybackControl::START::SET);
+        self
+    }
 
-    /// Corresponds to a DAC rate of `0x2F5B2D2`.
-    Pal,
+    /// Gets whether the audio interface is currently full.
+    pub fn is_full(&self) -> bool {
+        self.registers().status.is_set(Status::FULL)
+    }
 
-    /// Corresponds to a DAC rate of `0x2E6025C`.
-    Mpal,
+    /// Gets whether the audio interface is currently busy.
+    pub fn is_busy(&self) -> bool {
+        self.registers().status.is_set(Status::BUSY)
+    }
+
+    /// Clears the audio interface interrupt.
+    pub fn clear_interrupt(&self) -> &Self {
+        self.registers().status.write(Status::CLEAR_INTERRUPT::SET);
+        self
+    }
+
+    /// Sets the rate at which the sample buffer should be played.
+    pub fn set_dac_rate(&self, dac_rate: u32) -> &Self {
+        self.registers().dacrate.set(dac_rate);
+        self
+    }
+
+    /// Sets the length of a single sample in bits.
+    pub fn set_sample_length(&self, bits: u32) -> &Self {
+        self.registers().sample_length.set(bits);
+        self
+    }
 }
 
 register_structs! {
-    AiRegisters {
-        (0x0000 => pub dram_address: WriteOnly<u32, AiDmaAddress::Register>),
-        (0x0004 => pub length: ReadWrite<u32, AiLength::Register>),
-        (0x0008 => pub control: WriteOnly<u32, AiControl::Register>),
-        (0x000C => pub status: ReadWrite<u32, AiStatus::Register>),
-        (0x0010 => pub dacrate: WriteOnly<u32, AiDacRate::Register>),
-        (0x0014 => pub bitrate: WriteOnly<u32, AiBitRate::Register>),
+    AudioInterfaceRegisters {
+        (0x0000 => pub sample_buffer_address: WriteOnly<u32, SampleBufferAddress::Register>),
+        (0x0004 => pub sample_buffer_length: ReadWrite<u32, SampleBufferLength::Register>),
+        (0x0008 => pub sample_playback: WriteOnly<u32, SamplePlaybackControl::Register>),
+        (0x000C => pub status: ReadWrite<u32, Status::Register>),
+        (0x0010 => pub dacrate: WriteOnly<u32>),
+        (0x0014 => pub sample_length: WriteOnly<u32>),
         (0x0018 => @END),
     }
 }
@@ -159,43 +145,23 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    AiDmaAddress [
-        ADDRESS OFFSET(0) NUMBITS(24) [],
+    SampleBufferAddress [
+        ADDRESS                 OFFSET(0)  NUMBITS(24) [],
     ],
 
-    AiLength [
-        TRANSFER_LENGTH_V1 OFFSET(0)  NUMBITS(15) [],
-        TRANSFER_LENGTH_V2 OFFSET(0)  NUMBITS(18) [],
+    SampleBufferLength [
+        SAMPLE_BUFFER_LENGTH_V1 OFFSET(0)  NUMBITS(15) [],
+        SAMPLE_BUFFER_LENGTH_V2 OFFSET(0)  NUMBITS(18) [],
     ],
 
-    AiControl [
-        DMA_ENABLE         OFFSET(0)  NUMBITS(1)  [],
+    SamplePlaybackControl [
+        START                   OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    AiStatus [
-        CLEAR_INTERRUPT    OFFSET(0)  NUMBITS(32) [],
-        FULL               OFFSET(0)  NUMBITS(1)  [],
-        DAC_COUNTER        OFFSET(1)  NUMBITS(14) [],
-        BITCLOCK_STATE     OFFSET(16) NUMBITS(1)  [],
-        ABUS_WORD_2        OFFSET(19) NUMBITS(1)  [],
-        WORD_SELECT        OFFSET(21) NUMBITS(1)  [],
-        DATA_AVAILABLE     OFFSET(22) NUMBITS(1)  [],
-        DFIFO2_LOADED      OFFSET(23) NUMBITS(1)  [],
-        DMA_ENABLE         OFFSET(25) NUMBITS(1)  [],
-        DMA_REQUEST        OFFSET(26) NUMBITS(1)  [],
-        DMA_BUSY           OFFSET(27) NUMBITS(1)  [],
-        BUSY               OFFSET(30) NUMBITS(1)  [],
-    ],
+    Status [
+        BUSY                    OFFSET(30) NUMBITS(1)  [],
+        FULL                    OFFSET(31) NUMBITS(1)  [],
 
-    AiDacRate [
-        DAC_RATE           OFFSET(0)  NUMBITS(14) [
-            Ntsc = 0x2E6D354,
-            Pal  = 0x2F5B2D2,
-            Mpal = 0x2E6025C,
-        ],
-    ],
-
-    AiBitRate [
-        BIT_RATE           OFFSET(0)  NUMBITS(4)  [],
+        CLEAR_INTERRUPT         OFFSET(0)  NUMBITS(1)  [],
     ],
 }

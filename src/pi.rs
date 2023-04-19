@@ -1,12 +1,18 @@
 use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
 
+use crate::HARDWARE;
+
 const PI_REGS_BASE: usize = 0x0460_0000;
 
 pub struct PeripheralInterface;
 
 impl PeripheralInterface {
-    pub fn registers<'a>(&self) -> &'a PeripheralInterfaceRegisters {
+    fn registers<'a>(&self) -> &'a PeripheralInterfaceRegisters {
         unsafe { &mut *(PI_REGS_BASE as *mut PeripheralInterfaceRegisters) }
+    }
+
+    pub fn drop(self) {
+        unsafe { HARDWARE.peripheral_interface.drop(self) };
     }
 }
 
