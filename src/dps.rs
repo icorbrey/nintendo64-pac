@@ -3,86 +3,87 @@
 //! This module wraps the Nintendo 64's DPC registers and provides type- and
 //! memory safe ways of interacting with it.
 
-use tock_registers::{
-    interfaces::{Readable, Writeable},
-    register_bitfields, register_structs,
-    registers::ReadWrite,
-};
+use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
 
 use crate::HARDWARE;
 
 /// The static address of the Nintendo 64's DPS registers.
+#[cfg(target_vendor = "nintendo64")]
 const DPS_REGS_BASE: usize = 0x0420_0000;
 
+#[cfg(not(target_vendor = "nintendo64"))]
+lazy_static::lazy_static! {
+    /// A registry access analogue for development and testing.
+    ///
+    /// We have to modify the registry access mechanism when building for
+    /// architectures other than the Nintendo 64 since the production registry
+    /// access mechanism accesses a static memory location. This is disallowed
+    /// on modern operating systems, so we instead dynamically allocate the
+    /// memory so that testing and development can occur.
+    static ref REGISTERS: DpsRegisters = unsafe { std::mem::zeroed() };
+}
+
+/// A zero-size wrapper around the Nintendo 64's DPC registers.
+///
+/// This structure must be acquired via the global [`HARDWARE`][crate::HARDWARE]
+/// variable:
+///
+/// ```rust
+/// # use nintendo64_pac::{HARDWARE, HardwareError};
+/// # unsafe fn test() -> Result<(), HardwareError> {
+/// let dps = HARDWARE.dps.take()?;
+/// #
+/// # assert!(HARDWARE.dps.take().is_err());
+/// # dps.drop();
+/// # assert!(HARDWARE.dps.take().is_ok());
+/// #
+/// # Ok(())
+/// # }
+/// # assert!(unsafe { test() }.is_ok());
+/// ```
+///
+/// Once a reference has been acquired, registers can be accessed.
+///
+/// If needed, the reference can be given back to the global variable:
+///
+/// ```rust
+/// # use nintendo64_pac::{HARDWARE, HardwareError};
+/// # unsafe fn test() -> Result<(), HardwareError> {
+/// # let dps = HARDWARE.dps.take()?;
+/// #
+/// # assert!(HARDWARE.dps.take().is_err());
+/// dps.drop();
+/// # assert!(HARDWARE.dps.take().is_ok());
+/// #
+/// # Ok(())
+/// # }
+/// # assert!(unsafe { test() }.is_ok());
+/// ```
 #[non_exhaustive]
 pub struct Dps;
 
 impl Dps {
     /// Gets a reference to the DPS registers.
+    #[cfg(target_vendor = "nintendo64")]
     fn registers<'a>(&self) -> &'a DpsRegisters {
         unsafe { &mut *(DPS_REGS_BASE as *mut DpsRegisters) }
+    }
+
+    /// Returns a reference to the DPS registers.
+    #[cfg(not(target_vendor = "nintendo64"))]
+    fn registers<'a>(&self) -> &'a REGISTERS {
+        &REGISTERS
     }
 
     /// Returns ownership of the DPS registers to [`HARDWARE`][crate::HARDWARE].
     pub fn drop(self) {
         unsafe { HARDWARE.dps.drop(self) }
     }
-
-    /// Get texture memory BIST data.
-    pub fn texture_memory_bist(&self) -> u32 {
-        todo!()
-    }
-
-    /// Set texture memory BIST data.
-    pub fn set_texture_memory_bist(&self, _value: u32) -> &Self {
-        todo!()
-    }
-
-    /// Get the buffer test mode.
-    pub fn buffer_test_mode(&self) -> u32 {
-        self.registers()
-            .buffer_test_mode
-            .read(DpsBufferTestMode::TEST_MODE)
-    }
-
-    /// Set the buffer test mode.
-    pub fn set_buffer_test_mode(&self, mode: u32) -> &Self {
-        self.registers()
-            .buffer_test_mode
-            .write(DpsBufferTestMode::TEST_MODE.val(mode));
-        self
-    }
-
-    /// Get the buffer test address.
-    pub fn buffer_test_address(&self) -> u32 {
-        self.registers()
-            .buffer_test_address
-            .read(DpsBufferTestAddress::TEST_ADDR)
-    }
-
-    /// Set the buffer test address.
-    pub fn set_buffer_test_address(&self, address: u32) -> &Self {
-        self.registers()
-            .buffer_test_address
-            .write(DpsBufferTestAddress::TEST_ADDR.val(address));
-        self
-    }
-
-    /// Get the buffer test data.
-    pub fn buffer_test_data(&self) -> u32 {
-        self.registers()
-            .buffer_test_data
-            .read(DpsBufferTestData::TEST_DATA)
-    }
-
-    /// Set the buffer test data.
-    pub fn set_buffer_test_data(&self, data: u32) -> &Self {
-        self.registers()
-            .buffer_test_data
-            .write(DpsBufferTestData::TEST_DATA.val(data));
-        self
-    }
 }
+
+// This is a hack to allow code to run for development.
+#[cfg(not(target_vendor = "nintendo64"))]
+unsafe impl Sync for DpsRegisters {}
 
 register_structs! {
     DpsRegisters {
