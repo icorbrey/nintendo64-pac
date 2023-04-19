@@ -14,30 +14,6 @@ use crate::HARDWARE;
 /// The static address of the Nintendo 64's DPS registers.
 const DPS_REGS_BASE: usize = 0x0420_0000;
 
-/// A zero-size wrapper around the Nintendo 64's audio interface registers.
-///
-/// This structure must be acquired via the global [`HARDWARE`][crate::HARDWARE]
-/// variable:
-///
-/// ```rust
-/// let dps = HARDWARE.audio_interface.take();
-/// ```
-///
-/// Once a reference has been acquired, registers can be accessed:
-///
-/// ```rust
-/// let bist = dps.texture_memory_bist();
-///
-/// dps.set_buffer_test_address(0x12345678)
-///     .set_buffer_test_mode(123)
-///     .set_buffer_test_data(12345678);
-/// ```
-///
-/// If needed, the reference can be given back to the global variable:
-///
-/// ```rust
-/// dps.drop();
-/// ```
 #[non_exhaustive]
 pub struct Dps;
 

@@ -12,7 +12,20 @@ use tock_registers::{
 use crate::HARDWARE;
 
 /// The static address of the Nintendo 64's audio interface registers.
+#[cfg(target_arch = "nintendo64")]
 const AI_REGS_BASE: usize = 0x0450_0000;
+
+#[cfg(not(target_arch = "nintendo64"))]
+lazy_static::lazy_static! {
+    /// A registry access analogue for development and testing.
+    ///
+    /// We have to modify the registry access mechanism when building for
+    /// architectures other than the Nintendo 64 since the production registry
+    /// access mechanism accesses a static memory location. This is disallowed
+    /// on modern operating systems, so we instead dynamically allocate the
+    /// memory so that testing and development can occur.
+    static ref REGISTERS: AudioInterfaceRegisters = unsafe { std::mem::zeroed() };
+}
 
 /// A zero-size wrapper around the Nintendo 64's audio interface registers.
 ///
@@ -20,33 +33,88 @@ const AI_REGS_BASE: usize = 0x0450_0000;
 /// variable:
 ///
 /// ```rust
-/// let ai = HARDWARE.audio_interface.take();
+/// # use nintendo64_pac::{HARDWARE, HardwareError};
+/// # unsafe fn test() -> Result<(), HardwareError> {
+/// let ai = HARDWARE.audio_interface.take()?;
+/// #
+/// # let is_busy = ai.is_busy();
+/// # let is_full = ai.is_full();
+/// #
+/// # ai.set_sample_buffer_address(0x12345678)
+/// #     .set_sample_buffer_length_v1(123)
+/// #     .set_dac_rate(0x12345678)
+/// #     .start_sample_playback();
+/// #
+/// # assert!(HARDWARE.audio_interface.take().is_err());
+/// # ai.drop();
+/// # assert!(HARDWARE.audio_interface.take().is_ok());
+/// #
+/// # Ok(())
+/// # }
+/// # assert!(unsafe { test() }.is_ok());
 /// ```
 ///
 /// Once a reference has been acquired, registers can be accessed:
 ///
 /// ```rust
+/// # use nintendo64_pac::{HARDWARE, HardwareError};
+/// # unsafe fn test() -> Result<(), HardwareError> {
+/// # let ai = HARDWARE.audio_interface.take()?;
+/// #
 /// let is_busy = ai.is_busy();
 /// let is_full = ai.is_full();
 ///
 /// ai.set_sample_buffer_address(0x12345678)
-///     .set_sample_buffer_length(123)
+///     .set_sample_buffer_length_v1(123)
 ///     .set_dac_rate(0x12345678)
 ///     .start_sample_playback();
+/// #
+/// # assert!(HARDWARE.audio_interface.take().is_err());
+/// # ai.drop();
+/// # assert!(HARDWARE.audio_interface.take().is_ok());
+/// #
+/// # Ok(())
+/// # }
+/// # assert!(unsafe { test() }.is_ok());
 /// ```
 ///
 /// If needed, the reference can be given back to the global variable:
 ///
 /// ```rust
+/// # use nintendo64_pac::{HARDWARE, HardwareError};
+/// # unsafe fn test() -> Result<(), HardwareError> {
+/// # let ai = HARDWARE.audio_interface.take()?;
+/// #
+/// # let is_busy = ai.is_busy();
+/// # let is_full = ai.is_full();
+/// #
+/// # ai.set_sample_buffer_address(0x12345678)
+/// #     .set_sample_buffer_length_v1(123)
+/// #     .set_dac_rate(0x12345678)
+/// #     .start_sample_playback();
+/// #
+/// # assert!(HARDWARE.audio_interface.take().is_err());
 /// ai.drop();
+/// # assert!(HARDWARE.audio_interface.take().is_ok());
+/// #
+/// # Ok(())
+/// # }
+/// # assert!(unsafe { test() }.is_ok());
 /// ```
 #[non_exhaustive]
 pub struct AudioInterface;
 
 impl AudioInterface {
     /// Returns a reference to the audio interface registers.
+    #[cfg(target_arch = "nintendo64")]
     fn registers<'a>(&self) -> &'a AudioInterfaceRegisters {
-        unsafe { &mut *(AI_REGS_BASE as *mut AudioInterfaceRegisters) }
+        unsafe { &*(AI_REGS_BASE as *const AudioInterfaceRegisters) }
+    }
+
+    /// Returns a reference to the audio interface registers.
+    #[cfg(not(target_arch = "nintendo64"))]
+    fn registers<'a>(&self) -> &'a REGISTERS {
+        &REGISTERS
     }
 
     /// Returns ownership of the audio interface registers to
@@ -129,6 +197,10 @@ impl AudioInterface {
         self
     }
 }
+
+// This is a hack to allow code to run for development.
+#[cfg(not(target_arch = "nintendo64"))]
+unsafe impl Sync for AudioInterfaceRegisters {}
 
 register_structs! {
     AudioInterfaceRegisters {

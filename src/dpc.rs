@@ -14,31 +14,6 @@ use crate::HARDWARE;
 /// The static address of the Nintendo 64's DPC registers.
 const DPC_REGS_BASE: usize = 0x0410_0000;
 
-/// A zero-size wrapper around the Nintendo 64's DPC registers.
-///
-/// This structure must be acquired via the global [`HARDWARE`][crate::HARDWARE]
-/// variable:
-///
-/// ```rust
-/// let dpc = unsafe { HARDWARE.dpc.take() }?;
-/// ```
-///
-/// Once a reference has been acquired, registers can be accessed:
-///
-/// ```rust
-/// let status = dpc.status();
-/// let clock = dpc.clock();
-///
-/// dpc.set_dma_start(0x12345678)
-///     .set_dma_end(0x12345678)
-///     .set_dma_current(0x12345678);
-/// ```
-///
-/// If needed, the reference can be given back to the global variable:
-///
-/// ```rust
-/// dpc.drop();
-/// ```
 #[non_exhaustive]
 pub struct Dpc;
 

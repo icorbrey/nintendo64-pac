@@ -3,7 +3,8 @@
 //! Provides access to low-level Nintendo 64 memory in a type- and memory-safe
 //! way.
 
-#![no_std]
+// Don't include the standard library on the Nintendo 64.
+#![cfg_attr(target_arch = "nintendo64", no_std)]
 
 use core::mem::replace;
 
