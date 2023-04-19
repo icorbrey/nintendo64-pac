@@ -12,15 +12,91 @@ use tock_registers::{
 use crate::HARDWARE;
 
 /// The static address of the Nintendo 64's DPC registers.
+#[cfg(target_arch = "nintendo64")]
 const DPC_REGS_BASE: usize = 0x0410_0000;
 
+#[cfg(not(target_arch = "nintendo64"))]
+lazy_static::lazy_static! {
+    /// A registry access analogue for development and testing.
+    ///
+    /// We have to modify the registry access mechanism when building for
+    /// architectures other than the Nintendo 64 since the production registry
+    /// access mechanism accesses a static memory location. This is disallowed
+    /// on modern operating systems, so we instead dynamically allocate the
+    /// memory so that testing and development can occur.
+    static ref REGISTERS: DpcRegisters = unsafe { std::mem::zeroed() };
+}
+
+/// A zero-size wrapper around the Nintendo 64's audio interface registers.
+///
+/// This structure must be acquired via the global [`HARDWARE`][crate::HARDWARE]
+/// variable:
+///
+/// ```rust
+/// # use nintendo64_pac::{HARDWARE, HardwareError};
+/// # unsafe fn test() -> Result<(), HardwareError> {
+/// let dpc = HARDWARE.dpc.take()?;
+/// #
+/// # dpc.freeze_rdp();
+/// #
+/// # assert!(HARDWARE.dpc.take().is_err());
+/// # dpc.drop();
+/// # assert!(HARDWARE.dpc.take().is_ok());
+/// #
+/// # Ok(())
+/// # }
+/// # assert!(unsafe { test() }.is_ok());
+/// ```
+///
+/// Once a reference has been acquired, registers can be accessed:
+///
+/// ```rust
+/// # use nintendo64_pac::{HARDWARE, HardwareError};
+/// # unsafe fn test() -> Result<(), HardwareError> {
+/// # let dpc = HARDWARE.dpc.take()?;
+/// #
+/// dpc.freeze_rdp();
+/// #
+/// # assert!(HARDWARE.dpc.take().is_err());
+/// # dpc.drop();
+/// # assert!(HARDWARE.dpc.take().is_ok());
+/// #
+/// # Ok(())
+/// # }
+/// # assert!(unsafe { test() }.is_ok());
+/// ```
+///
+/// If needed, the reference can be given back to the global variable:
+///
+/// ```rust
+/// # use nintendo64_pac::{HARDWARE, HardwareError};
+/// # unsafe fn test() -> Result<(), HardwareError> {
+/// # let dpc = HARDWARE.dpc.take()?;
+/// #
+/// # dpc.freeze_rdp();
+/// #
+/// # assert!(HARDWARE.dpc.take().is_err());
+/// dpc.drop();
+/// # assert!(HARDWARE.dpc.take().is_ok());
+/// #
+/// # Ok(())
+/// # }
+/// # assert!(unsafe { test() }.is_ok());
+/// ```
 #[non_exhaustive]
 pub struct Dpc;
 
 impl Dpc {
     /// Gets a reference to the DPC registers.
+    #[cfg(target_arch = "nintendo64")]
     fn registers<'a>(&self) -> &'a DpcRegisters {
         unsafe { &mut *(DPC_REGS_BASE as *mut DpcRegisters) }
+    }
+
+    /// Returns a reference to the audio interface registers.
+    #[cfg(not(target_arch = "nintendo64"))]
+    fn registers<'a>(&self) -> &'a REGISTERS {
+        &REGISTERS
     }
 
     /// Returns ownership of the DPC registers to [`HARDWARE`][crate::HARDWARE].
@@ -34,6 +110,10 @@ impl Dpc {
         self
     }
 }
+
+// This is a hack to allow code to run for development.
+#[cfg(not(target_arch = "nintendo64"))]
+unsafe impl Sync for DpcRegisters {}
 
 register_structs! {
     DpcRegisters {
