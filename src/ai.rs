@@ -12,10 +12,10 @@ use tock_registers::{
 use crate::HARDWARE;
 
 /// The static address of the Nintendo 64's audio interface registers.
-#[cfg(target_arch = "nintendo64")]
+#[cfg(target_vendor = "nintendo64")]
 const AI_REGS_BASE: usize = 0x0450_0000;
 
-#[cfg(not(target_arch = "nintendo64"))]
+#[cfg(not(target_vendor = "nintendo64"))]
 lazy_static::lazy_static! {
     /// A registry access analogue for development and testing.
     ///
@@ -106,13 +106,13 @@ pub struct AudioInterface;
 
 impl AudioInterface {
     /// Returns a reference to the audio interface registers.
-    #[cfg(target_arch = "nintendo64")]
+    #[cfg(target_vendor = "nintendo64")]
     fn registers<'a>(&self) -> &'a AudioInterfaceRegisters {
         unsafe { &*(AI_REGS_BASE as *const AudioInterfaceRegisters) }
     }
 
     /// Returns a reference to the audio interface registers.
-    #[cfg(not(target_arch = "nintendo64"))]
+    #[cfg(not(target_vendor = "nintendo64"))]
     fn registers<'a>(&self) -> &'a REGISTERS {
         &REGISTERS
     }
@@ -199,7 +199,7 @@ impl AudioInterface {
 }
 
 // This is a hack to allow code to run for development.
-#[cfg(not(target_arch = "nintendo64"))]
+#[cfg(not(target_vendor = "nintendo64"))]
 unsafe impl Sync for AudioInterfaceRegisters {}
 
 register_structs! {

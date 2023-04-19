@@ -4,7 +4,7 @@
 //! way.
 
 // Don't include the standard library on the Nintendo 64.
-#![cfg_attr(target_arch = "nintendo64", no_std)]
+#![cfg_attr(target_vendor = "nintendo64", no_std)]
 
 use core::mem::replace;
 
