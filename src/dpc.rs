@@ -27,7 +27,7 @@ lazy_static::lazy_static! {
     static ref REGISTERS: DpcRegisters = unsafe { std::mem::zeroed() };
 }
 
-/// A zero-size wrapper around the Nintendo 64's audio interface registers.
+/// A zero-size wrapper around the Nintendo 64's DPC registers.
 ///
 /// This structure must be acquired via the global [`HARDWARE`][crate::HARDWARE]
 /// variable:
@@ -93,7 +93,7 @@ impl Dpc {
         unsafe { &mut *(DPC_REGS_BASE as *mut DpcRegisters) }
     }
 
-    /// Returns a reference to the audio interface registers.
+    /// Returns a reference to the DPC registers.
     #[cfg(not(target_vendor = "nintendo64"))]
     fn registers<'a>(&self) -> &'a REGISTERS {
         &REGISTERS
