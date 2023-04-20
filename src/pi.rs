@@ -2,13 +2,35 @@ use tock_registers::{register_bitfields, register_structs, registers::ReadWrite}
 
 use crate::HARDWARE;
 
+/// The static address of the Nintendo 64's peripheral interface registers.
+#[cfg(target_vendor = "nintendo64")]
 const PI_REGS_BASE: usize = 0x0460_0000;
+
+#[cfg(not(target_vendor = "nintendo64"))]
+lazy_static::lazy_static! {
+    /// A registry access analogue for development and testing.
+    ///
+    /// We have to modify the registry access mechanism when building for
+    /// architectures other than the Nintendo 64 since the production registry
+    /// access mechanism accesses a static memory location. This is disallowed
+    /// on modern operating systems, so we instead dynamically allocate the
+    /// memory so that testing and development can occur.
+    static ref REGISTERS: PeripheralInterfaceRegisters = unsafe { std::mem::zeroed() };
+}
 
 pub struct PeripheralInterface;
 
 impl PeripheralInterface {
+    /// Gets a reference to the peripheral interface registers.
+    #[cfg(target_vendor = "nintendo64")]
     fn registers<'a>(&self) -> &'a PeripheralInterfaceRegisters {
         unsafe { &mut *(PI_REGS_BASE as *mut PeripheralInterfaceRegisters) }
+    }
+
+    /// Returns a reference to the peripheral interface registers.
+    #[cfg(not(target_vendor = "nintendo64"))]
+    fn registers<'a>(&self) -> &'a REGISTERS {
+        &REGISTERS
     }
 
     pub fn drop(self) {
@@ -16,8 +38,12 @@ impl PeripheralInterface {
     }
 }
 
+// This is a hack to allow code to run for development.
+#[cfg(not(target_vendor = "nintendo64"))]
+unsafe impl Sync for PeripheralInterfaceRegisters {}
+
 register_structs! {
-    pub PeripheralInterfaceRegisters {
+    PeripheralInterfaceRegisters {
         (0x0000 => pub dram_address: ReadWrite<u32, DmaAddress::Register>),
         (0x0004 => pub cartridge_address: ReadWrite<u32, CartridgeAddress::Register>),
         (0x0008 => pub read_length: ReadWrite<u32, Length::Register>),
@@ -38,19 +64,19 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    pub DmaAddress [
+    DmaAddress [
         ADDRESS          OFFSET(0) NUMBITS(24) [],
     ],
 
-    pub CartridgeAddress [
+    CartridgeAddress [
         ADDRESS          OFFSET(0) NUMBITS(32) [],
     ],
 
-    pub Length [
+    Length [
         DATA_LENGTH      OFFSET(0) NUMBITS(24) [],
     ],
 
-    pub Status [
+    Status [
         DMA_BUSY         OFFSET(0) NUMBITS(1)  [],
         IO_BUSY          OFFSET(1) NUMBITS(1)  [],
         ERROR            OFFSET(2) NUMBITS(1)  [],
@@ -59,19 +85,19 @@ register_bitfields! {
         CLEAR_INTERRUPT  OFFSET(1) NUMBITS(1)  [],
     ],
 
-    pub DeviceLatency [
+    DeviceLatency [
         LATENCY          OFFSET(0) NUMBITS(8)  [],
     ],
 
-    pub DevicePulseWidth [
+    DevicePulseWidth [
         PULSE_WIDTH      OFFSET(0) NUMBITS(8)  [],
     ],
 
-    pub DevicePageSize [
+    DevicePageSize [
         PAGE_SIZE        OFFSET(0) NUMBITS(4)  [],
     ],
 
-    pub DeviceRelease [
+    DeviceRelease [
         RELEASE          OFFSET(0) NUMBITS(2)  [],
     ],
 }
