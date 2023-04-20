@@ -164,7 +164,7 @@ impl AudioInterface {
     /// Starts playback of an audio sample.
     pub fn start_sample_playback(&self) -> &Self {
         self.registers()
-            .sample_playback
+            .sample_playback_control
             .write(SamplePlaybackControl::START::SET);
         self
     }
@@ -206,7 +206,7 @@ register_structs! {
     AudioInterfaceRegisters {
         (0x0000 => pub sample_buffer_address: WriteOnly<u32, SampleBufferAddress::Register>),
         (0x0004 => pub sample_buffer_length: ReadWrite<u32, SampleBufferLength::Register>),
-        (0x0008 => pub sample_playback: WriteOnly<u32, SamplePlaybackControl::Register>),
+        (0x0008 => pub sample_playback_control: WriteOnly<u32, SamplePlaybackControl::Register>),
         (0x000C => pub status: ReadWrite<u32, Status::Register>),
         (0x0010 => pub dacrate: WriteOnly<u32>),
         (0x0014 => pub sample_length: WriteOnly<u32>),

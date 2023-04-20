@@ -47,9 +47,9 @@ impl VideoInterface {
     /// Clears an existing interrupt.
     pub fn clear_interrupt(&self) -> &Self {
         let registers = self.registers();
-        let current_line = registers.vertical_current.read(HalfLine::HALF_LINE);
+        let current_line = registers.current_halfline.read(HalfLine::HALF_LINE);
         self.registers()
-            .vertical_current
+            .current_halfline
             .write(HalfLine::HALF_LINE.val(current_line));
         self
     }
@@ -61,20 +61,20 @@ unsafe impl Sync for VideoInterfaceRegisters {}
 
 register_structs! {
     VideoInterfaceRegisters {
-        (0x0000 => pub status: ReadWrite<u32, Status::Register>),
-        (0x0004 => pub origin: ReadWrite<u32, DmaAddress::Register>),
-        (0x0008 => pub width: ReadWrite<u32, LineWidth::Register>),
-        (0x000C => pub vertical_interrupt: ReadWrite<u32, HalfLine::Register>),
-        (0x0010 => pub vertical_current: ReadWrite<u32, HalfLine::Register>),
+        (0x0000 => pub control: ReadWrite<u32, Control::Register>),
+        (0x0004 => pub framebuffer_address: ReadWrite<u32, DramAddress::Register>),
+        (0x0008 => pub screen_width: ReadWrite<u32, LineWidth::Register>),
+        (0x000C => pub interrupt_halfline: ReadWrite<u32, HalfLine::Register>),
+        (0x0010 => pub current_halfline: ReadWrite<u32, HalfLine::Register>),
         (0x0014 => pub timing: ReadWrite<u32, Timing::Register>),
         (0x0018 => pub vertical_sync: ReadWrite<u32, HalfLine::Register>),
         (0x001C => pub horizontal_sync: ReadWrite<u32, LineWidth::Register>),
-        (0x0020 => pub leap: ReadWrite<u32, Leap::Register>),
-        (0x0024 => pub horizontal_video: ReadWrite<u32, ScreenRange::Register>),
-        (0x0028 => pub vertical_video: ReadWrite<u32, ScreenRange::Register>),
-        (0x002C => pub vertical_burst: ReadWrite<u32, ScreenRange::Register>),
-        (0x0030 => pub x_scale: ReadWrite<u32, ScreenScale::Register>),
-        (0x0034 => pub y_scale: ReadWrite<u32, ScreenScale::Register>),
+        (0x0020 => pub horizontal_sync_2: ReadWrite<u32, Leap::Register>),
+        (0x0024 => pub horizontal_range: ReadWrite<u32, ScreenRange::Register>),
+        (0x0028 => pub vertical_range: ReadWrite<u32, ScreenRange::Register>),
+        (0x002C => pub color_burst: ReadWrite<u32, ScreenRange::Register>),
+        (0x0030 => pub horizontal_scale: ReadWrite<u32, ScreenScale::Register>),
+        (0x0034 => pub vertical_scale: ReadWrite<u32, ScreenScale::Register>),
         (0x0038 => @END),
     }
 }
@@ -82,7 +82,7 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    Status [
+    Control [
         COLOR_DEPTH            OFFSET(0) NUMBITS(2)  [
             None = 0,
             FullColor = 2,
@@ -100,7 +100,7 @@ register_bitfields! {
         ],
     ],
 
-    DmaAddress [
+    DramAddress [
         ADDRESS                OFFSET(0)  NUMBITS(24) [],
     ],
 

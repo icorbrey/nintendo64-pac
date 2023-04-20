@@ -67,10 +67,10 @@ unsafe impl Sync for SerialInterfaceRegisters {}
 
 register_structs! {
     SerialInterfaceRegisters {
-        (0x0000 => pub dram_address: ReadWrite<u32, DmaAddress::Register>),
-        (0x0004 => pub read_64_bits: WriteOnly<u32>),
+        (0x0000 => pub dram_address: ReadWrite<u32, DramAddress::Register>),
+        (0x0004 => pub pif_read_address: WriteOnly<u32, PeripheralAddress::Register>),
         (0x0008 => _reserved0),
-        (0x0010 => pub write_64_bits: WriteOnly<u32>),
+        (0x0010 => pub pif_write_address: WriteOnly<u32, PeripheralAddress::Register>),
         (0x0014 => _reserved1),
         (0x0018 => pub status: ReadWrite<u32, Status::Register>),
         (0x001C => @END),
@@ -80,7 +80,11 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    DmaAddress [
+    DramAddress [
+        ADDRESS         OFFSET(0)  NUMBITS(24) [],
+    ],
+
+    PeripheralAddress [
         ADDRESS         OFFSET(0)  NUMBITS(24) [],
     ],
 

@@ -4,7 +4,7 @@
 //! memory safe ways of interacting with it.
 
 use tock_registers::{
-    interfaces::Writeable,
+    interfaces::{Readable, Writeable},
     register_bitfields, register_structs,
     registers::{ReadOnly, ReadWrite},
 };
@@ -107,6 +107,46 @@ impl Dpc {
     /// Freeze the RDP.
     pub fn freeze_rdp(&self) -> &Self {
         self.registers().status.write(Status::FREEZE::SET);
+        let _kek = 0b0001_0101;
+        self
+    }
+
+    pub fn is_start_address_valid(&self) -> bool {
+        self.registers().status.is_set(Status::START_VALID)
+    }
+
+    pub fn is_end_address_valid(&self) -> bool {
+        self.registers().status.is_set(Status::END_VALID)
+    }
+
+    pub fn clear_xbus(&self) -> &Self {
+        self.registers()
+            .status
+            .write(Status::CLEAR_XBUS_DMEM_DMA::SET);
+        self
+    }
+
+    pub fn clear_flush(&self) -> &Self {
+        self.registers().status.write(Status::CLEAR_FLUSH::SET);
+        self
+    }
+
+    pub fn clear_freeze(&self) -> &Self {
+        self.registers().status.write(Status::CLEAR_FREEZE::SET);
+        self
+    }
+
+    pub fn set_start_address(&self, address: u32) -> &Self {
+        self.registers()
+            .dma_start
+            .write(DmaAddress::ADDRESS.val(address));
+        self
+    }
+
+    pub fn set_end_address(&self, address: u32) -> &Self {
+        self.registers()
+            .dma_end
+            .write(DmaAddress::ADDRESS.val(address));
         self
     }
 }
@@ -117,14 +157,14 @@ unsafe impl Sync for DpcRegisters {}
 
 register_structs! {
     DpcRegisters {
-        (0x0000 => pub dma_start: ReadWrite<u32, DpcDmaAddress::Register>),
-        (0x0004 => pub dma_end: ReadWrite<u32, DpcDmaAddress::Register>),
-        (0x0008 => pub dma_current: ReadWrite<u32, DpcDmaAddress::Register>),
+        (0x0000 => pub dma_start: ReadWrite<u32, DmaAddress::Register>),
+        (0x0004 => pub dma_end: ReadWrite<u32, DmaAddress::Register>),
+        (0x0008 => pub dma_current: ReadWrite<u32, DmaAddress::Register>),
         (0x000C => pub status: ReadWrite<u32, Status::Register>),
-        (0x0010 => pub clock: ReadOnly<u32, DpcClockCounter::Register>),
-        (0x0014 => pub buffer_busy: ReadOnly<u32, DpcClockCounter::Register>),
-        (0x0018 => pub pipe_busy: ReadOnly<u32, DpcClockCounter::Register>),
-        (0x001C => pub texture_memory: ReadOnly<u32, DpcClockCounter::Register>),
+        (0x0010 => pub clock: ReadOnly<u32, ClockCounter::Register>),
+        (0x0014 => pub buffer_busy: ReadOnly<u32, ClockCounter::Register>),
+        (0x0018 => pub pipe_busy: ReadOnly<u32, ClockCounter::Register>),
+        (0x001C => pub texture_memory: ReadOnly<u32, ClockCounter::Register>),
         (0x0020 => @END),
     }
 }
@@ -132,25 +172,36 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    DpcDmaAddress [
-        ADDRESS       OFFSET(0)  NUMBITS(24) [],
+    DmaAddress [
+        ADDRESS             OFFSET(0)  NUMBITS(24) [],
     ],
 
     Status [
-        XBUS_DMEM_DMA OFFSET(0)  NUMBITS(1)  [],
-        FREEZE        OFFSET(1)  NUMBITS(1)  [],
-        FLUSH         OFFSET(2)  NUMBITS(1)  [],
-        START_GLCK    OFFSET(3)  NUMBITS(1)  [],
-        TMEM_BUSY     OFFSET(4)  NUMBITS(1)  [],
-        PIPE_BUSY     OFFSET(5)  NUMBITS(1)  [],
-        CMD_BUSY      OFFSET(6)  NUMBITS(1)  [],
-        CBUF_READY    OFFSET(7)  NUMBITS(1)  [],
-        DMA_BUSY      OFFSET(8)  NUMBITS(1)  [],
-        END_VALID     OFFSET(9)  NUMBITS(1)  [],
-        START_VALID   OFFSET(10) NUMBITS(1)  [],
+        XBUS_DMEM_DMA       OFFSET(0)  NUMBITS(1)  [],
+        FREEZE              OFFSET(1)  NUMBITS(1)  [],
+        FLUSH               OFFSET(2)  NUMBITS(1)  [],
+        START_GLCK          OFFSET(3)  NUMBITS(1)  [],
+        TMEM_BUSY           OFFSET(4)  NUMBITS(1)  [],
+        PIPE_BUSY           OFFSET(5)  NUMBITS(1)  [],
+        CMD_BUSY            OFFSET(6)  NUMBITS(1)  [],
+        CBUF_READY          OFFSET(7)  NUMBITS(1)  [],
+        DMA_BUSY            OFFSET(8)  NUMBITS(1)  [],
+        END_VALID           OFFSET(9)  NUMBITS(1)  [],
+        START_VALID         OFFSET(10) NUMBITS(1)  [],
+
+        CLEAR_XBUS_DMEM_DMA OFFSET(0)  NUMBITS(1)  [],
+        SET_XBUS_DMEM_DMA   OFFSET(1)  NUMBITS(1)  [],
+        CLEAR_FREEZE        OFFSET(2)  NUMBITS(1)  [],
+        SET_FREEZE          OFFSET(3)  NUMBITS(1)  [],
+        CLEAR_FLUSH         OFFSET(4)  NUMBITS(1)  [],
+        SET_FLUSH           OFFSET(5)  NUMBITS(1)  [],
+        CLEAR_TMEM_CTR      OFFSET(6)  NUMBITS(1)  [],
+        CLEAR_PIPE_CTR      OFFSET(7)  NUMBITS(1)  [],
+        CLEAR_CMD_CTR       OFFSET(8)  NUMBITS(1)  [],
+        CLEAR_CLOCK_CTR     OFFSET(9)  NUMBITS(1)  [],
     ],
 
-    DpcClockCounter [
-        CLOCK_COUNTER OFFSET(0)  NUMBITS(24) [],
+    ClockCounter [
+        CLOCK_COUNTER       OFFSET(0)  NUMBITS(24) [],
     ]
 }

@@ -1,4 +1,6 @@
-use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
+use tock_registers::{
+    interfaces::Writeable, register_bitfields, register_structs, registers::ReadWrite,
+};
 
 use crate::HARDWARE;
 
@@ -39,6 +41,13 @@ impl ProgramCounter {
     pub fn drop(self) {
         unsafe { HARDWARE.program_counter.drop(self) }
     }
+
+    pub fn halt_rsp(&self) -> &Self {
+        self.registers()
+            .program_counter
+            .write(Control::HALT_RSP::SET);
+        self
+    }
 }
 
 // This is a hack to allow code to run for development.
@@ -58,6 +67,7 @@ register_bitfields! {
 
     Control [
         PROGRAM_COUNTER          OFFSET(0)  NUMBITS(12) [],
+        HALT_RSP                 OFFSET(12) NUMBITS(1)  [],
     ],
 
     ImemBist [

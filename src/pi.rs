@@ -62,7 +62,7 @@ impl PeripheralInterface {
     /// Sets an address to read from.
     pub fn set_read_address(&self, address: u32) -> &Self {
         self.registers()
-            .read_address
+            .dram_address
             .write(ReadAddress::ADDRESS.val(address));
         self
     }
@@ -70,7 +70,7 @@ impl PeripheralInterface {
     /// Sets an address to write to.
     pub fn set_write_address(&self, address: u32) -> &Self {
         self.registers()
-            .write_address
+            .peripheral_address
             .write(WriteAddress::ADDRESS.val(address));
         self
     }
@@ -97,8 +97,8 @@ unsafe impl Sync for PeripheralInterfaceRegisters {}
 
 register_structs! {
     PeripheralInterfaceRegisters {
-        (0x0000 => pub read_address: ReadWrite<u32, ReadAddress::Register>),
-        (0x0004 => pub write_address: ReadWrite<u32, WriteAddress::Register>),
+        (0x0000 => pub dram_address: ReadWrite<u32, ReadAddress::Register>),
+        (0x0004 => pub peripheral_address: ReadWrite<u32, WriteAddress::Register>),
         (0x0008 => pub read_length: ReadWrite<u32, Length::Register>),
         (0x000C => pub write_length: ReadWrite<u32, Length::Register>),
         (0x0010 => pub status: ReadWrite<u32, Status::Register>),
