@@ -1,18 +1,52 @@
 use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
 
+use crate::HARDWARE;
+
+/// The static address of the Nintendo 64's video interface registers.
+#[cfg(target_vendor = "nintendo64")]
 const VI_REGS_BASE: usize = 0x0440_0000;
+
+#[cfg(not(target_vendor = "nintendo64"))]
+lazy_static::lazy_static! {
+    /// A registry access analogue for development and testing.
+    ///
+    /// We have to modify the registry access mechanism when building for
+    /// architectures other than the Nintendo 64 since the production registry
+    /// access mechanism accesses a static memory location. This is disallowed
+    /// on modern operating systems, so we instead dynamically allocate the
+    /// memory so that testing and development can occur.
+    static ref REGISTERS: VideoInterfaceRegisters = unsafe { std::mem::zeroed() };
+}
 
 #[non_exhaustive]
 pub struct VideoInterface;
 
 impl VideoInterface {
-    pub fn registers<'a>(&self) -> &'a VideoInterfaceRegisters {
+    /// Gets a reference to the video interface registers.
+    #[cfg(target_vendor = "nintendo64")]
+    fn registers<'a>(&self) -> &'a VideoInterfaceRegisters {
         unsafe { &mut *(VI_REGS_BASE as *mut VideoInterfaceRegisters) }
+    }
+
+    /// Gets a reference to the video interface registers.
+    #[cfg(not(target_vendor = "nintendo64"))]
+    fn registers<'a>(&self) -> &'a REGISTERS {
+        &REGISTERS
+    }
+
+    /// Returns ownership of the video interface registers to
+    /// [`HARDWARE`][crate::HARDWARE].
+    pub fn drop(self) {
+        unsafe { HARDWARE.video_interface.drop(self) }
     }
 }
 
+// This is a hack to allow code to run for development.
+#[cfg(not(target_vendor = "nintendo64"))]
+unsafe impl Sync for VideoInterfaceRegisters {}
+
 register_structs! {
-    pub VideoInterfaceRegisters {
+    VideoInterfaceRegisters {
         (0x0000 => pub status: ReadWrite<u32, Status::Register>),
         (0x0004 => pub origin: ReadWrite<u32, DmaAddress::Register>),
         (0x0008 => pub width: ReadWrite<u32, LineWidth::Register>),
@@ -34,7 +68,7 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    pub Status [
+    Status [
         COLOR_DEPTH            OFFSET(0) NUMBITS(2)  [
             None = 0,
             FullColor = 2,
@@ -52,36 +86,36 @@ register_bitfields! {
         ],
     ],
 
-    pub DmaAddress [
+    DmaAddress [
         ADDRESS                OFFSET(0)  NUMBITS(24) [],
     ],
 
-    pub LineWidth [
+    LineWidth [
         WIDTH                  OFFSET(0)  NUMBITS(12) [],
         LEAP_PATTERN           OFFSET(16) NUMBITS(5)  [],
     ],
 
-    pub HalfLine [
+    HalfLine [
         HALF_LINE              OFFSET(0)  NUMBITS(10) [],
     ],
 
-    pub Timing [
+    Timing [
         HORIZONTAL_SYNC_WIDTH  OFFSET(0)  NUMBITS(8)  [],
         COLOR_BURST_WIDTH      OFFSET(8)  NUMBITS(8)  [],
         VERTICAL_SYNC_WIDTH    OFFSET(16) NUMBITS(8)  [],
         COLOR_BURST_START      OFFSET(24) NUMBITS(8)  [],
     ],
 
-    pub Leap [
+    Leap [
         HORIZONTAL_SYNC_PERIOD OFFSET(0)  NUMBITS(12) [],
     ],
 
-    pub ScreenRange [
+    ScreenRange [
         END_ACTIVE_VIDEO       OFFSET(0)  NUMBITS(10) [],
         START_ACTIVE_VIDEO     OFFSET(16) NUMBITS(10) [],
     ],
 
-    pub ScreenScale [
+    ScreenScale [
         INVERSE_SCALE_FACTOR   OFFSET(0)  NUMBITS(12) [],
         SUBPIXEL_OFFSET        OFFSET(16) NUMBITS(12) [],
     ]
