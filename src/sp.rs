@@ -3,16 +3,50 @@ use tock_registers::{
     registers::{ReadOnly, ReadWrite},
 };
 
+use crate::HARDWARE;
+
+/// The static address of the Nintendo 64's stack pointer registers.
+#[cfg(target_vendor = "nintendo64")]
 const SP_REGS_BASE: usize = 0x0404_0000;
+
+#[cfg(not(target_vendor = "nintendo64"))]
+lazy_static::lazy_static! {
+    /// A registry access analogue for development and testing.
+    ///
+    /// We have to modify the registry access mechanism when building for
+    /// architectures other than the Nintendo 64 since the production registry
+    /// access mechanism accesses a static memory location. This is disallowed
+    /// on modern operating systems, so we instead dynamically allocate the
+    /// memory so that testing and development can occur.
+    static ref REGISTERS: StackPointerRegisters = unsafe { std::mem::zeroed() };
+}
 
 #[non_exhaustive]
 pub struct StackPointer;
 
 impl StackPointer {
+    /// Gets a reference to the stack pointer registers.
+    #[cfg(target_vendor = "nintendo64")]
     fn registers<'a>(&self) -> &'a StackPointerRegisters {
         unsafe { &mut *(SP_REGS_BASE as *mut StackPointerRegisters) }
     }
+
+    /// Gets a reference to the stack pointer registers.
+    #[cfg(not(target_vendor = "nintendo64"))]
+    fn registers<'a>(&self) -> &'a REGISTERS {
+        &REGISTERS
+    }
+
+    /// Returns ownership of the stack pointer registers to
+    /// [`HARDWARE`][crate::HARDWARE].
+    pub fn drop(self) {
+        unsafe { HARDWARE.stack_pointer.drop(self) }
+    }
 }
+
+// This is a hack to allow code to run for development.
+#[cfg(not(target_vendor = "nintendo64"))]
+unsafe impl Sync for StackPointerRegisters {}
 
 register_structs! {
     StackPointerRegisters {
