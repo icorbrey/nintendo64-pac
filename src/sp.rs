@@ -4,28 +4,18 @@ use tock_registers::{
 };
 
 const SP_REGS_BASE: usize = 0x0404_0000;
-const PC_REGS_BASE: usize = 0x0408_0000;
 
 #[non_exhaustive]
 pub struct StackPointer;
 
 impl StackPointer {
-    pub fn registers<'a>(&self) -> &'a StackPointerRegisters {
+    fn registers<'a>(&self) -> &'a StackPointerRegisters {
         unsafe { &mut *(SP_REGS_BASE as *mut StackPointerRegisters) }
     }
 }
 
-#[non_exhaustive]
-pub struct ProgramCounter;
-
-impl ProgramCounter {
-    pub fn registers<'a>(&self) -> &'a ProgramCounterRegisters {
-        unsafe { &mut *(PC_REGS_BASE as *mut ProgramCounterRegisters) }
-    }
-}
-
 register_structs! {
-    pub StackPointerRegisters {
+    StackPointerRegisters {
         (0x0000 => pub memory_address: ReadWrite<u32, MemoryAddress::Register>),
         (0x0004 => pub dma_address: ReadWrite<u32, DmaAddress::Register>),
         (0x0008 => pub read_dma_length: ReadWrite<u32, DmaLength::Register>),
@@ -35,19 +25,13 @@ register_structs! {
         (0x0018 => pub dma_busy: ReadOnly<u32, DmaBusy::Register>),
         (0x001C => pub semaphore: ReadOnly<u32, Semaphore::Register>),
         (0x0020 => @END),
-    },
-
-    pub ProgramCounterRegisters {
-        (0x0000 => pub program_counter: ReadWrite<u32, ProgramCounterControl::Register>),
-        (0x0004 => pub imem_bist: ReadWrite<u32, ImemBist::Register>),
-        (0x0008 => @END),
     }
 }
 
 register_bitfields! {
     u32,
 
-    pub MemoryAddress [
+    MemoryAddress [
         ADDRESS                  OFFSET(0)  NUMBITS(12) [],
         LOCATION                 OFFSET(12) NUMBITS(1)  [
             DataMemory = 0,
@@ -55,17 +39,17 @@ register_bitfields! {
         ],
     ],
 
-    pub DmaAddress [
+    DmaAddress [
         ADDRESS                  OFFSET(0)  NUMBITS(24) [],
     ],
 
-    pub DmaLength [
+    DmaLength [
         LENGTH                   OFFSET(0)  NUMBITS(12) [],
         COUNT                    OFFSET(12) NUMBITS(8)  [],
         SKIP                     OFFSET(20) NUMBITS(12) [],
     ],
 
-    pub Status [
+    Status [
         HALT                     OFFSET(0)  NUMBITS(1)  [],
         BROKE                    OFFSET(1)  NUMBITS(1)  [],
         DMA_BUSY                 OFFSET(2)  NUMBITS(1)  [],
@@ -109,27 +93,15 @@ register_bitfields! {
         SET_SIGNAL_7             OFFSET(24) NUMBITS(1)  [],
     ],
 
-    pub DmaFull [
+    DmaFull [
         DMA_FULL                 OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    pub DmaBusy [
+    DmaBusy [
         DMA_BUSY                 OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    pub Semaphore [
+    Semaphore [
         SEMAPHORE                OFFSET(0)  NUMBITS(1)  [],
     ],
-
-    pub ProgramCounterControl [
-        PROGRAM_COUNTER          OFFSET(0)  NUMBITS(12) [],
-    ],
-
-    pub ImemBist [
-        BIST_CHECK               OFFSET(0)  NUMBITS(1)  [],
-        BIST_GO                  OFFSET(1)  NUMBITS(1)  [],
-        BIST_CLEAR               OFFSET(2)  NUMBITS(1)  [],
-        BIST_DONE                OFFSET(2)  NUMBITS(1)  [],
-        BIST_FAIL                OFFSET(3)  NUMBITS(4)  [],
-    ]
 }
