@@ -3,6 +3,8 @@ use tock_registers::{
     registers::{ReadOnly, ReadWrite},
 };
 
+use crate::HARDWARE;
+
 /// The static address of the Nintendo 64's MIPS interface registers.
 #[cfg(target_vendor = "nintendo64")]
 const MI_REGS_BASE: usize = 0x0430_0000;
@@ -32,6 +34,11 @@ impl MipsInterface {
     #[cfg(not(target_vendor = "nintendo64"))]
     fn registers<'a>(&self) -> &'a REGISTERS {
         &REGISTERS
+    }
+
+    /// Returns ownership of the DPC registers to [`HARDWARE`][crate::HARDWARE].
+    pub fn drop(self) {
+        unsafe { HARDWARE.mips_interface.drop(self) }
     }
 }
 
