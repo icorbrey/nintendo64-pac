@@ -2,7 +2,7 @@ use tock_registers::{register_bitfields, register_structs, registers::ReadWrite}
 
 use crate::HARDWARE;
 
-/// The static address of the Nintendo 64's RDRAM interface registers.
+/// The static address of the Nintendo 64's program counter registers.
 #[cfg(target_vendor = "nintendo64")]
 const PC_REGS_BASE: usize = 0x0408_0000;
 
@@ -47,7 +47,7 @@ unsafe impl Sync for ProgramCounterRegisters {}
 
 register_structs! {
     ProgramCounterRegisters {
-        (0x0000 => pub program_counter: ReadWrite<u32, ProgramCounterControl::Register>),
+        (0x0000 => pub program_counter: ReadWrite<u32, Control::Register>),
         (0x0004 => pub imem_bist: ReadWrite<u32, ImemBist::Register>),
         (0x0008 => @END),
     }
@@ -56,7 +56,7 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    ProgramCounterControl [
+    Control [
         PROGRAM_COUNTER          OFFSET(0)  NUMBITS(12) [],
     ],
 

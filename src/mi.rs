@@ -37,7 +37,8 @@ impl MipsInterface {
         &REGISTERS
     }
 
-    /// Returns ownership of the DPC registers to [`HARDWARE`][crate::HARDWARE].
+    /// Returns ownership of the MIPS interface registers to
+    /// [`HARDWARE`][crate::HARDWARE].
     pub fn drop(self) {
         unsafe { HARDWARE.mips_interface.drop(self) }
     }

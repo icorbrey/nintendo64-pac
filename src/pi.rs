@@ -34,6 +34,8 @@ impl PeripheralInterface {
         &REGISTERS
     }
 
+    /// Returns ownership of the peripheral interface registers to
+    /// [`HARDWARE`][crate::HARDWARE].
     pub fn drop(self) {
         unsafe { HARDWARE.peripheral_interface.drop(self) };
     }

@@ -88,9 +88,9 @@ unsafe impl Sync for DpsRegisters {}
 register_structs! {
     DpsRegisters {
         (0x0000 => pub texture_memory_bist: ReadWrite<u32, DpsTmemBist::Register>),
-        (0x0004 => pub buffer_test_mode: ReadWrite<u32, DpsBufferTestMode::Register>),
-        (0x0008 => pub buffer_test_address: ReadWrite<u32, DpsBufferTestAddress::Register>),
-        (0x000C => pub buffer_test_data: ReadWrite<u32, DpsBufferTestData::Register>),
+        (0x0004 => pub buffer_test_mode: ReadWrite<u32, BufferTestMode::Register>),
+        (0x0008 => pub buffer_test_address: ReadWrite<u32, BufferTestAddress::Register>),
+        (0x000C => pub buffer_test_data: ReadWrite<u32, BufferTestData::Register>),
         (0x0010 => @END),
     }
 }
@@ -106,15 +106,15 @@ register_bitfields! {
         BIST_FAIL  OFFSET(3) NUMBITS(8)  [],
     ],
 
-    DpsBufferTestMode [
+    BufferTestMode [
         TEST_MODE  OFFSET(0) NUMBITS(1)  [],
     ],
 
-    DpsBufferTestAddress [
+    BufferTestAddress [
         TEST_ADDR  OFFSET(0) NUMBITS(7)  [],
     ],
 
-    DpsBufferTestData [
+    BufferTestData [
         TEST_DATA  OFFSET(0) NUMBITS(32) [],
     ]
 }
