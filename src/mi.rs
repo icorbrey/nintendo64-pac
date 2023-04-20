@@ -21,6 +21,7 @@ lazy_static::lazy_static! {
     static ref REGISTERS: MipsInterfaceRegisters = unsafe { std::mem::zeroed() };
 }
 
+#[non_exhaustive]
 pub struct MipsInterface;
 
 impl MipsInterface {

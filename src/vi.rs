@@ -2,6 +2,7 @@ use tock_registers::{register_bitfields, register_structs, registers::ReadWrite}
 
 const VI_REGS_BASE: usize = 0x0440_0000;
 
+#[non_exhaustive]
 pub struct VideoInterface;
 
 impl VideoInterface {

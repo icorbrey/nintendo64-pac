@@ -6,6 +6,7 @@ use tock_registers::{
 const SP_REGS_BASE: usize = 0x0404_0000;
 const PC_REGS_BASE: usize = 0x0408_0000;
 
+#[non_exhaustive]
 pub struct StackPointer;
 
 impl StackPointer {
@@ -14,6 +15,7 @@ impl StackPointer {
     }
 }
 
+#[non_exhaustive]
 pub struct ProgramCounter;
 
 impl ProgramCounter {

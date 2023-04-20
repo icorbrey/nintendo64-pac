@@ -18,6 +18,7 @@ lazy_static::lazy_static! {
     static ref REGISTERS: RdramRegisters = unsafe { std::mem::zeroed() };
 }
 
+#[non_exhaustive]
 pub struct Rdram;
 
 impl Rdram {
