@@ -1,4 +1,8 @@
-use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
+use tock_registers::{
+    interfaces::{Readable, Writeable},
+    register_bitfields, register_structs,
+    registers::ReadWrite,
+};
 
 use crate::HARDWARE;
 
@@ -39,6 +43,52 @@ impl PeripheralInterface {
     pub fn drop(self) {
         unsafe { HARDWARE.peripheral_interface.drop(self) };
     }
+
+    /// Gets whether DMA is busy.
+    pub fn is_dma_busy(&self) -> bool {
+        self.registers().status.is_set(Status::DMA_BUSY)
+    }
+
+    /// Gets whether IO is busy.
+    pub fn is_io_busy(&self) -> bool {
+        self.registers().status.is_set(Status::IO_BUSY)
+    }
+
+    /// Gets whether an error has occurred.
+    pub fn has_error_occurred(&self) -> bool {
+        self.registers().status.is_set(Status::ERROR)
+    }
+
+    /// Sets an address to read from.
+    pub fn set_read_address(&self, address: u32) -> &Self {
+        self.registers()
+            .read_address
+            .write(ReadAddress::ADDRESS.val(address));
+        self
+    }
+
+    /// Sets an address to write to.
+    pub fn set_write_address(&self, address: u32) -> &Self {
+        self.registers()
+            .write_address
+            .write(WriteAddress::ADDRESS.val(address));
+        self
+    }
+
+    /// Sets the length in bytes to transfer from `read_address` to
+    /// `write_address`.
+    pub fn set_read_length(&self, address: u32) -> &Self {
+        self.registers()
+            .read_length
+            .write(Length::LENGTH.val(address));
+        self
+    }
+
+    /// Clears an existing DP interrupt.
+    pub fn clear_interrupt(&self) -> &Self {
+        self.registers().status.write(Status::CLEAR_INTERRUPT::SET);
+        self
+    }
 }
 
 // This is a hack to allow code to run for development.
@@ -47,8 +97,8 @@ unsafe impl Sync for PeripheralInterfaceRegisters {}
 
 register_structs! {
     PeripheralInterfaceRegisters {
-        (0x0000 => pub dram_address: ReadWrite<u32, DmaAddress::Register>),
-        (0x0004 => pub cartridge_address: ReadWrite<u32, CartridgeAddress::Register>),
+        (0x0000 => pub read_address: ReadWrite<u32, ReadAddress::Register>),
+        (0x0004 => pub write_address: ReadWrite<u32, WriteAddress::Register>),
         (0x0008 => pub read_length: ReadWrite<u32, Length::Register>),
         (0x000C => pub write_length: ReadWrite<u32, Length::Register>),
         (0x0010 => pub status: ReadWrite<u32, Status::Register>),
@@ -67,16 +117,16 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    DmaAddress [
+    ReadAddress [
         ADDRESS          OFFSET(0) NUMBITS(24) [],
     ],
 
-    CartridgeAddress [
+    WriteAddress [
         ADDRESS          OFFSET(0) NUMBITS(32) [],
     ],
 
     Length [
-        DATA_LENGTH      OFFSET(0) NUMBITS(24) [],
+        LENGTH           OFFSET(0) NUMBITS(24) [],
     ],
 
     Status [

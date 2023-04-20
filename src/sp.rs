@@ -1,4 +1,5 @@
 use tock_registers::{
+    interfaces::Writeable,
     register_bitfields, register_structs,
     registers::{ReadOnly, ReadWrite},
 };
@@ -41,6 +42,12 @@ impl StackPointer {
     /// [`HARDWARE`][crate::HARDWARE].
     pub fn drop(self) {
         unsafe { HARDWARE.stack_pointer.drop(self) }
+    }
+
+    /// Clears an existing interrupt.
+    pub fn clear_interrupt(&self) -> &Self {
+        self.registers().status.write(Status::CLEAR_INTERRUPT::SET);
+        self
     }
 }
 

@@ -1,4 +1,8 @@
-use tock_registers::{register_bitfields, register_structs, registers::ReadWrite};
+use tock_registers::{
+    interfaces::{Readable, Writeable},
+    register_bitfields, register_structs,
+    registers::ReadWrite,
+};
 
 use crate::HARDWARE;
 
@@ -38,6 +42,16 @@ impl VideoInterface {
     /// [`HARDWARE`][crate::HARDWARE].
     pub fn drop(self) {
         unsafe { HARDWARE.video_interface.drop(self) }
+    }
+
+    /// Clears an existing interrupt.
+    pub fn clear_interrupt(&self) -> &Self {
+        let registers = self.registers();
+        let current_line = registers.vertical_current.read(HalfLine::HALF_LINE);
+        self.registers()
+            .vertical_current
+            .write(HalfLine::HALF_LINE.val(current_line));
+        self
     }
 }
 

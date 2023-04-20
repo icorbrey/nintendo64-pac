@@ -1,4 +1,5 @@
 use tock_registers::{
+    interfaces::{Readable, Writeable},
     register_bitfields, register_structs,
     registers::{ReadOnly, ReadWrite},
 };
@@ -42,6 +43,138 @@ impl MipsInterface {
     pub fn drop(self) {
         unsafe { HARDWARE.mips_interface.drop(self) }
     }
+
+    /// Returns whether the stack pointer system is currently interrupted.
+    pub fn is_stack_pointer_interrupted(&self) -> bool {
+        self.registers().interrupts.is_set(Interrupts::SP_INTERRUPT)
+    }
+
+    /// Returns whether the serial interface is currently interrupted.
+    pub fn is_serial_interface_interrupted(&self) -> bool {
+        self.registers().interrupts.is_set(Interrupts::SI_INTERRUPT)
+    }
+
+    /// Returns whether the audio interface is currently interrupted.
+    pub fn is_audio_interface_interrupted(&self) -> bool {
+        self.registers().interrupts.is_set(Interrupts::AI_INTERRUPT)
+    }
+
+    /// Returns whether the video interface is currently interrupted.
+    pub fn is_video_interface_interrupted(&self) -> bool {
+        self.registers().interrupts.is_set(Interrupts::VI_INTERRUPT)
+    }
+
+    /// Returns whether the peripheral interface is currently interrupted.
+    pub fn is_peripheral_interface_interrupted(&self) -> bool {
+        self.registers().interrupts.is_set(Interrupts::PI_INTERRUPT)
+    }
+
+    /// Returns whether the DP system is currently interrupted.
+    pub fn is_dp_interrupted(&self) -> bool {
+        self.registers().interrupts.is_set(Interrupts::DP_INTERRUPT)
+    }
+
+    /// Clears an existing DP interrupt.
+    pub fn clear_dp_interrupt(&self) -> &Self {
+        self.registers().mode.write(Mode::CLEAR_DP_INTERRUPT::SET);
+        self
+    }
+
+    /// Allow audio interface interrupts to occur.
+    pub fn enable_audio_interface_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::AI_INTERRUPT_MASK::SET);
+        self
+    }
+
+    /// Stop audio interface interrupts from occurring.
+    pub fn disable_audio_interface_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::AI_INTERRUPT_MASK::CLEAR);
+        self
+    }
+
+    /// Allow video interface interrupts to occur.
+    pub fn enable_video_interface_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::VI_INTERRUPT_MASK::SET);
+        self
+    }
+
+    /// Stop video interface interrupts from occurring.
+    pub fn disable_video_interface_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::VI_INTERRUPT_MASK::CLEAR);
+        self
+    }
+
+    /// Allow peripheral interface interrupts to occur.
+    pub fn enable_peripheral_interface_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::PI_INTERRUPT_MASK::SET);
+        self
+    }
+
+    /// Stop peripheral interface interrupts from occurring.
+    pub fn disable_peripheral_interface_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::PI_INTERRUPT_MASK::CLEAR);
+        self
+    }
+
+    /// Allow DP interrupts to occur.
+    pub fn enable_dp_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::DP_INTERRUPT_MASK::SET);
+        self
+    }
+
+    /// Stop DP interrupts from occurring.
+    pub fn disable_dp_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::DP_INTERRUPT_MASK::CLEAR);
+        self
+    }
+
+    /// Allow serial interface interrupts to occur.
+    pub fn enable_serial_interface_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::SI_INTERRUPT_MASK::SET);
+        self
+    }
+
+    /// Stop serial interface interrupts from occurring.
+    pub fn disable_serial_interface_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::SI_INTERRUPT_MASK::CLEAR);
+        self
+    }
+
+    /// Allow stack pointer interrupts to occur.
+    pub fn enable_stack_pointer_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::SP_INTERRUPT_MASK::SET);
+        self
+    }
+
+    /// Stop stack pointer interrupts from occurring.
+    pub fn disable_stack_pointer_interrupts(&self) -> &Self {
+        self.registers()
+            .interrupt_mask
+            .write(InterruptMasks::SP_INTERRUPT_MASK::CLEAR);
+        self
+    }
 }
 
 // This is a hack to allow code to run for development.
@@ -50,7 +183,7 @@ unsafe impl Sync for MipsInterfaceRegisters {}
 
 register_structs! {
     MipsInterfaceRegisters {
-        (0x0000 => pub init_mode: ReadWrite<u32, InitMode::Register>),
+        (0x0000 => pub mode: ReadWrite<u32, Mode::Register>),
         (0x0004 => pub version: ReadOnly<u32, Version::Register>),
         (0x0008 => pub interrupts: ReadOnly<u32, Interrupts::Register>),
         (0x000C => pub interrupt_mask: ReadWrite<u32, InterruptMasks::Register>),
@@ -61,7 +194,7 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    InitMode [
+    Mode [
         INIT_LENGTH             OFFSET(0)  NUMBITS(7) [],
         INIT_MODE               OFFSET(7)  NUMBITS(1) [],
         EBUS_TEST_MODE          OFFSET(8)  NUMBITS(1) [],

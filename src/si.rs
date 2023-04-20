@@ -1,4 +1,5 @@
 use tock_registers::{
+    interfaces::{Readable, Writeable},
     register_bitfields, register_structs,
     registers::{ReadWrite, WriteOnly},
 };
@@ -42,6 +43,22 @@ impl SerialInterface {
     pub fn drop(self) {
         unsafe { HARDWARE.serial_interface.drop(self) }
     }
+
+    /// Clears an existing interrupt.
+    pub fn clear_interrupt(&self) -> &Self {
+        self.registers().status.write(Status::CLEAR_INTERRUPT::SET);
+        self
+    }
+
+    /// Returns whether DMA is currently busy.
+    pub fn is_dma_busy(&self) -> bool {
+        self.registers().status.is_set(Status::DMA_BUSY)
+    }
+
+    /// Returns whether IO is currently busy.
+    pub fn is_io_busy(&self) -> bool {
+        self.registers().status.is_set(Status::IO_BUSY)
+    }
 }
 
 // This is a hack to allow code to run for development.
@@ -64,13 +81,15 @@ register_bitfields! {
     u32,
 
     DmaAddress [
-        ADDRESS      OFFSET(0)  NUMBITS(24) [],
+        ADDRESS         OFFSET(0)  NUMBITS(24) [],
     ],
 
     Status [
-        DMA_BUSY     OFFSET(0)  NUMBITS(1)  [],
-        IO_READ_BUSY OFFSET(1)  NUMBITS(1)  [],
-        DMA_ERROR    OFFSET(3)  NUMBITS(1)  [],
-        INTERRUPT    OFFSET(12) NUMBITS(1)  [],
+        DMA_BUSY        OFFSET(0)  NUMBITS(1)  [],
+        IO_BUSY         OFFSET(1)  NUMBITS(1)  [],
+        DMA_ERROR       OFFSET(3)  NUMBITS(1)  [],
+        INTERRUPT       OFFSET(12) NUMBITS(1)  [],
+
+        CLEAR_INTERRUPT OFFSET(0)  NUMBITS(1) [],
     ],
 }
