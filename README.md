@@ -1,8 +1,8 @@
-[![Crates.io](https://img.shields.io/crates/v/nintendo64-pac?style=flat-square)](package)
+[![Crates.io](https://img.shields.io/crates/v/nintendo64-pac?style=flat-square)][package]
 [![License](https://img.shields.io/crates/l/nintendo64-pac?style=flat-square)][license]
-[![Documentation](https://img.shields.io/docsrs/nintendo64-pac?style=flat-square)](docs)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/icorbrey/nintendo64-pac/rust.yml?branch=master&style=flat-square)](status)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/icorbrey?style=flat-square)](sponsors)
+[![Documentation](https://img.shields.io/docsrs/nintendo64-pac?style=flat-square)][docs]
+[![Build Status](https://img.shields.io/github/actions/workflow/status/icorbrey/nintendo64-pac/rust.yml?branch=master&style=flat-square)][status]
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/icorbrey?style=flat-square)][sponsors]
 
 # `nintendo64-pac`
 
