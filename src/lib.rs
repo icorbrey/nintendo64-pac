@@ -36,7 +36,14 @@ pub mod vi;
 pub static mut HARDWARE: Hardware = Hardware {
     peripheral_interface: Peripheral::new(PeripheralInterface),
     serial_interface: Peripheral::new(SerialInterface),
-    audio_interface: Peripheral::new(AudioInterface::new()),
+    audio_interface: Peripheral::new(AudioInterface {
+        dram_addr: ai::DramAddr,
+        bit_rate: ai::BitRate,
+        dac_rate: ai::DacRate,
+        control: ai::Control,
+        status: ai::Status,
+        len: ai::Len,
+    }),
     program_counter: Peripheral::new(ProgramCounter),
     rdram_interface: Peripheral::new(RdramInterface),
     video_interface: Peripheral::new(VideoInterface),

@@ -98,17 +98,6 @@ pub struct AudioInterface {
 }
 
 impl AudioInterface {
-    pub const fn new() -> Self {
-        Self {
-            dram_addr: DramAddr,
-            dac_rate: DacRate,
-            bit_rate: BitRate,
-            control: Control,
-            status: Status,
-            len: Len,
-        }
-    }
-
     /// Returns ownership of the audio interface registers to
     /// [`HARDWARE`][crate::HARDWARE].
     pub fn drop(self) {
