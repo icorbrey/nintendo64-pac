@@ -1,3 +1,8 @@
+//! # RDRAM Interface Wrapper
+//!
+//! This module wraps the Nintendo 64's RDRAM interface registers and provides
+//! type- and memory safe ways of interacting with it.
+
 use tock_registers::{
     register_bitfields, register_structs,
     registers::{ReadOnly, ReadWrite, WriteOnly},

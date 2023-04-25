@@ -1,3 +1,8 @@
+//! # Program Counter Wrapper
+//!
+//! This module wraps the Nintendo 64's program counter registers and provides
+//! type- and memory safe ways of interacting with it.
+
 use tock_registers::{
     interfaces::Writeable, register_bitfields, register_structs, registers::ReadWrite,
 };
