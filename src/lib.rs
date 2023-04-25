@@ -139,7 +139,7 @@ macro_rules! register_access {
         }
 
         #[cfg(not(target_vendor = "nintendo64"))]
-        unsafe impl Sync for AudioInterfaceRegisters {}
+        unsafe impl Sync for $reg_type {}
 
         #[cfg(not(target_vendor = "nintendo64"))]
         lazy_static::lazy_static! {

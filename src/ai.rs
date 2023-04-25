@@ -11,7 +11,7 @@ use tock_registers::{
 
 use crate::{register_access, HARDWARE};
 
-register_access!(0x0450_0000, AudioInterfaceRegisters);
+register_access!(0x0450_0000, Registers);
 
 /// A zero-size wrapper around the Nintendo 64's audio interface registers.
 ///
@@ -105,6 +105,7 @@ impl AudioInterface {
     }
 }
 
+/// A zero-size wrapper around `AI_DRAM_ADDR_REG`.
 #[non_exhaustive]
 pub struct DramAddr;
 
@@ -112,57 +113,61 @@ impl DramAddr {
     pub fn set(&self, dram_addr: u32) {
         registers()
             .dram_addr
-            .write(DramAddrReg::DRAM_ADDR.val(dram_addr))
+            .write(AiDramAddrReg::DRAM_ADDR.val(dram_addr))
     }
 }
 
+/// A zero-size wrapper around `AI_LEN_REG`.
 #[non_exhaustive]
 pub struct Len;
 
 impl Len {
     pub fn get_v1(&self) -> u32 {
-        registers().len.read(LenReg::LENGTH_V1)
+        registers().len.read(AiLenReg::LENGTH_V1)
     }
 
     pub fn set_v1(&self, len: u32) {
-        registers().len.write(LenReg::LENGTH_V1.val(len))
+        registers().len.write(AiLenReg::LENGTH_V1.val(len))
     }
 
     pub fn get_v2(&self) -> u32 {
-        registers().len.read(LenReg::LENGTH_V2)
+        registers().len.read(AiLenReg::LENGTH_V2)
     }
 
     pub fn set_v2(&self, len: u32) {
-        registers().len.write(LenReg::LENGTH_V2.val(len))
+        registers().len.write(AiLenReg::LENGTH_V2.val(len))
     }
 }
 
+/// A zero-size wrapper around `AI_CONTROL_REG`.
 #[non_exhaustive]
 pub struct Control;
 
 impl Control {
     pub fn start(&self) {
-        registers().control.write(ControlReg::START::SET)
+        registers().control.write(AiControlReg::START::SET)
     }
 }
 
+/// A zero-size wrapper around `AI_STATUS_REG`.
 #[non_exhaustive]
 pub struct Status;
 
 impl Status {
     pub fn is_busy(&self) -> bool {
-        registers().status.is_set(StatusReg::BUSY)
+        registers().status.is_set(AiStatusReg::BUSY)
     }
 
     pub fn is_full(&self) -> bool {
-        registers().status.is_set(StatusReg::FULL)
+        registers().status.is_set(AiStatusReg::FULL)
     }
 
     pub fn clear_interrupt(&self) {
-        registers().status.write(StatusReg::CLEAR_INTERRUPT::SET)
+        registers().status.write(AiStatusReg::CLEAR_INTERRUPT::SET)
     }
 }
 
+/// A zero-size wrapper around `AI_DACRATE_REG`.
 #[non_exhaustive]
 pub struct DacRate;
 
@@ -170,10 +175,11 @@ impl DacRate {
     pub fn set(&self, dac_rate: u32) {
         registers()
             .dac_rate
-            .write(DacRateReg::DAC_RATE.val(dac_rate))
+            .write(AiDacrateReg::DAC_RATE.val(dac_rate))
     }
 }
 
+/// A zero-size wrapper around `AI_BITRATE_REG`.
 #[non_exhaustive]
 pub struct BitRate;
 
@@ -181,18 +187,18 @@ impl BitRate {
     pub fn set(&self, bit_rate: u32) {
         registers()
             .bit_rate
-            .write(BitRateReg::BIT_RATE.val(bit_rate))
+            .write(AiBitrateReg::BIT_RATE.val(bit_rate))
     }
 }
 
 register_structs! {
-    AudioInterfaceRegisters {
-        (0x0000 => pub dram_addr: WriteOnly<u32, DramAddrReg::Register>),
-        (0x0004 => pub len: ReadWrite<u32, LenReg::Register>),
-        (0x0008 => pub control: WriteOnly<u32, ControlReg::Register>),
-        (0x000C => pub status: ReadWrite<u32, StatusReg::Register>),
-        (0x0010 => pub dac_rate: WriteOnly<u32, DacRateReg::Register>),
-        (0x0014 => pub bit_rate: WriteOnly<u32, BitRateReg::Register>),
+    Registers {
+        (0x0000 => pub dram_addr: WriteOnly<u32, AiDramAddrReg::Register>),
+        (0x0004 => pub len: ReadWrite<u32, AiLenReg::Register>),
+        (0x0008 => pub control: WriteOnly<u32, AiControlReg::Register>),
+        (0x000C => pub status: ReadWrite<u32, AiStatusReg::Register>),
+        (0x0010 => pub dac_rate: WriteOnly<u32, AiDacrateReg::Register>),
+        (0x0014 => pub bit_rate: WriteOnly<u32, AiBitrateReg::Register>),
         (0x0018 => @END),
     }
 }
@@ -200,31 +206,31 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    DramAddrReg [
+    AiDramAddrReg [
         DRAM_ADDR       OFFSET(0)  NUMBITS(24) [],
     ],
 
-    LenReg [
+    AiLenReg [
         LENGTH_V1       OFFSET(0)  NUMBITS(15) [],
         LENGTH_V2       OFFSET(0)  NUMBITS(18) [],
     ],
 
-    ControlReg [
+    AiControlReg [
         START           OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    StatusReg [
+    AiStatusReg [
         BUSY            OFFSET(30) NUMBITS(1)  [],
         FULL            OFFSET(31) NUMBITS(1)  [],
 
         CLEAR_INTERRUPT OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    DacRateReg [
+    AiDacrateReg [
         DAC_RATE        OFFSET(0)  NUMBITS(14) [],
     ],
 
-    BitRateReg [
+    AiBitrateReg [
         BIT_RATE        OFFSET(0)  NUMBITS(4)  [],
     ],
 }
