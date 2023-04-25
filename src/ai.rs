@@ -23,13 +23,13 @@ register_access!(0x0450_0000, AudioInterfaceRegisters);
 /// # unsafe fn test() -> Result<(), HardwareError> {
 /// let ai = HARDWARE.audio_interface.take()?;
 /// #
-/// # let is_busy = ai.is_busy();
-/// # let is_full = ai.is_full();
+/// # let is_busy = ai.status.is_busy();
+/// # let is_full = ai.status.is_full();
 /// #
-/// # ai.set_sample_buffer_address(0x12345678)
-/// #     .set_sample_buffer_length_v1(123)
-/// #     .set_dac_rate(0x12345678)
-/// #     .start_sample_playback();
+/// # ai.dram_addr.set(0x12345678);
+/// # ai.len.set_v1(123);
+/// # ai.dac_rate.set(0x12345678);
+/// # ai.control.start();
 /// #
 /// # assert!(HARDWARE.audio_interface.take().is_err());
 /// # ai.drop();
@@ -47,13 +47,13 @@ register_access!(0x0450_0000, AudioInterfaceRegisters);
 /// # unsafe fn test() -> Result<(), HardwareError> {
 /// # let ai = HARDWARE.audio_interface.take()?;
 /// #
-/// let is_busy = ai.is_busy();
-/// let is_full = ai.is_full();
+/// let is_busy = ai.status.is_busy();
+/// let is_full = ai.status.is_full();
 ///
-/// ai.set_sample_buffer_address(0x12345678)
-///     .set_sample_buffer_length_v1(123)
-///     .set_dac_rate(0x12345678)
-///     .start_sample_playback();
+/// ai.dram_addr.set(0x12345678);
+/// ai.len.set_v1(123);
+/// ai.dac_rate.set(0x12345678);
+/// ai.control.start();
 /// #
 /// # assert!(HARDWARE.audio_interface.take().is_err());
 /// # ai.drop();
@@ -71,13 +71,13 @@ register_access!(0x0450_0000, AudioInterfaceRegisters);
 /// # unsafe fn test() -> Result<(), HardwareError> {
 /// # let ai = HARDWARE.audio_interface.take()?;
 /// #
-/// # let is_busy = ai.is_busy();
-/// # let is_full = ai.is_full();
+/// # let is_busy = ai.status.is_busy();
+/// # let is_full = ai.status.is_full();
 /// #
-/// # ai.set_sample_buffer_address(0x12345678)
-/// #     .set_sample_buffer_length_v1(123)
-/// #     .set_dac_rate(0x12345678)
-/// #     .start_sample_playback();
+/// # ai.dram_addr.set(0x12345678);
+/// # ai.len.set_v1(123);
+/// # ai.dac_rate.set(0x12345678);
+/// # ai.control.start();
 /// #
 /// # assert!(HARDWARE.audio_interface.take().is_err());
 /// ai.drop();
