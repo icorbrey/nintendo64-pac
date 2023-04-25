@@ -1,4 +1,4 @@
-//! # DP Span Wrapper
+//! # DPS Wrapper
 //!
 //! This module wraps the Nintendo 64's DPC registers and provides type- and
 //! memory safe ways of interacting with it.

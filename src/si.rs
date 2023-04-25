@@ -1,3 +1,8 @@
+//! # Serial Interface Wrapper
+//!
+//! This module wraps the Nintendo 64's Serial interface registers and provides
+//! type- and memory safe ways of interacting with it.
+
 use tock_registers::{
     interfaces::{Readable, Writeable},
     register_bitfields, register_structs,
