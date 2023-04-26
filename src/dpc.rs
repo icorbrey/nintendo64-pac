@@ -71,13 +71,28 @@ register_access!(0x0410_0000, Registers);
 /// ```
 #[non_exhaustive]
 pub struct Dpc {
+    /// Contains getters and setters for `DPC_BUFBUSY_REG`.
     pub buffer_busy: BufferBusy,
+
+    /// Contains getters and setters for `DPC_CURRENT_REG`.
     pub dma_current: DmaCurrent,
+
+    /// Contains getters and setters for `DPC_START_REG`.
     pub dma_start: DmaStart,
+
+    /// Contains getters and setters for `DPC_PIPEBUSY_REG`.
     pub pipe_busy: PipeBusy,
+
+    /// Contains getters and setters for `DPC_TMEM_REG`.
     pub tmem_load: TmemLoad,
+
+    /// Contains getters and setters for `DPC_END_REG`.
     pub dma_end: DmaEnd,
+
+    /// Contains getters and setters for `DPC_STATUS_REG`.
     pub status: Status,
+
+    /// Contains getters and setters for `DPC_CLOCK_REG`.
     pub clock: Clock,
 }
 
@@ -88,6 +103,7 @@ impl Dpc {
     }
 }
 
+/// A zero-size wrapper around `DPC_START_REG`.
 #[non_exhaustive]
 pub struct DmaStart;
 
@@ -103,6 +119,7 @@ impl DmaStart {
     }
 }
 
+/// A zero-size wrapper around `DPC_END_REG`.
 #[non_exhaustive]
 pub struct DmaEnd;
 
@@ -118,6 +135,7 @@ impl DmaEnd {
     }
 }
 
+/// A zero-size wrapper around `DPC_CURRENT_REG`.
 #[non_exhaustive]
 pub struct DmaCurrent;
 
@@ -135,6 +153,7 @@ impl DmaCurrent {
     }
 }
 
+/// A zero-size wrapper around `DPC_STATUS_REG`.
 #[non_exhaustive]
 pub struct Status;
 
@@ -228,6 +247,7 @@ impl Status {
     }
 }
 
+/// A zero-size wrapper around `DPC_CLOCK_REG`.
 #[non_exhaustive]
 pub struct Clock;
 
@@ -237,6 +257,7 @@ impl Clock {
     }
 }
 
+/// A zero-size wrapper around `DPC_BUFBUSY_REG`.
 #[non_exhaustive]
 pub struct BufferBusy;
 
@@ -246,6 +267,7 @@ impl BufferBusy {
     }
 }
 
+/// A zero-size wrapper around `DPC_PIPEBUSY_REG`.
 #[non_exhaustive]
 pub struct PipeBusy;
 
@@ -255,6 +277,7 @@ impl PipeBusy {
     }
 }
 
+/// A zero-size wrapper around `DPC_TMEM_REG`.
 #[non_exhaustive]
 pub struct TmemLoad;
 
@@ -282,102 +305,55 @@ register_bitfields! {
     u32,
 
     DpcStartReg [
-        /// [23:0], read/write
-        DMEM_START_ADDRESS  OFFSET(0)  NUMBITS(24) [],
+        DMEM_START_ADDRESS    OFFSET(0)  NUMBITS(24) [],
     ],
 
     DpcEndReg [
-        /// [23:0], read/write
-        DMEM_END_ADDRESS  OFFSET(0)  NUMBITS(24) [],
+        DMEM_END_ADDRESS      OFFSET(0)  NUMBITS(24) [],
     ],
 
     DpcCurrentReg [
-        /// [23:0], read/write
         DMEM_CURRENT_ADDRESS  OFFSET(0)  NUMBITS(24) [],
     ],
 
     DpcStatusReg [
-        /// [0], read only
-        XBUS_DMEM_DMA       OFFSET(0)  NUMBITS(1)  [],
+        XBUS_DMEM_DMA         OFFSET(0)  NUMBITS(1)  [],
+        FREEZE                OFFSET(1)  NUMBITS(1)  [],
+        FLUSH                 OFFSET(2)  NUMBITS(1)  [],
+        START_GLCK            OFFSET(3)  NUMBITS(1)  [],
+        TMEM_BUSY             OFFSET(4)  NUMBITS(1)  [],
+        PIPE_BUSY             OFFSET(5)  NUMBITS(1)  [],
+        CMD_BUSY              OFFSET(6)  NUMBITS(1)  [],
+        CBUF_READY            OFFSET(7)  NUMBITS(1)  [],
+        DMA_BUSY              OFFSET(8)  NUMBITS(1)  [],
+        END_VALID             OFFSET(9)  NUMBITS(1)  [],
+        START_VALID           OFFSET(10) NUMBITS(1)  [],
 
-        /// [1], read only
-        FREEZE              OFFSET(1)  NUMBITS(1)  [],
-
-        /// [2], read only
-        FLUSH               OFFSET(2)  NUMBITS(1)  [],
-
-        /// [3], read only
-        START_GLCK          OFFSET(3)  NUMBITS(1)  [],
-
-        /// [4], read only
-        TMEM_BUSY           OFFSET(4)  NUMBITS(1)  [],
-
-        /// [5], read only
-        PIPE_BUSY           OFFSET(5)  NUMBITS(1)  [],
-
-        /// [6], read only
-        CMD_BUSY            OFFSET(6)  NUMBITS(1)  [],
-
-        /// [7], read only
-        CBUF_READY          OFFSET(7)  NUMBITS(1)  [],
-
-        /// [8], read only
-        DMA_BUSY            OFFSET(8)  NUMBITS(1)  [],
-
-        /// [9], read only
-        END_VALID           OFFSET(9)  NUMBITS(1)  [],
-
-        /// [10], read only
-        START_VALID         OFFSET(10) NUMBITS(1)  [],
-
-        /// [0], write only
-        CLEAR_XBUS_DMEM_DMA OFFSET(0)  NUMBITS(1)  [],
-
-        /// [1], write only
-        SET_XBUS_DMEM_DMA   OFFSET(1)  NUMBITS(1)  [],
-
-        /// [2], write only
-        CLEAR_FREEZE        OFFSET(2)  NUMBITS(1)  [],
-
-        /// [3], write only
-        SET_FREEZE          OFFSET(3)  NUMBITS(1)  [],
-
-        /// [4], write only
-        CLEAR_FLUSH         OFFSET(4)  NUMBITS(1)  [],
-
-        /// [5], write only
-        SET_FLUSH           OFFSET(5)  NUMBITS(1)  [],
-
-        /// [6], write only
-        CLEAR_TMEM_CTR      OFFSET(6)  NUMBITS(1)  [],
-
-        /// [7], write only
-        CLEAR_PIPE_CTR      OFFSET(7)  NUMBITS(1)  [],
-
-        /// [8], write only
-        CLEAR_CMD_CTR       OFFSET(8)  NUMBITS(1)  [],
-
-        /// [9], write only
-        CLEAR_CLOCK_CTR     OFFSET(9)  NUMBITS(1)  [],
+        CLEAR_XBUS_DMEM_DMA   OFFSET(0)  NUMBITS(1)  [],
+        SET_XBUS_DMEM_DMA     OFFSET(1)  NUMBITS(1)  [],
+        CLEAR_FREEZE          OFFSET(2)  NUMBITS(1)  [],
+        SET_FREEZE            OFFSET(3)  NUMBITS(1)  [],
+        CLEAR_FLUSH           OFFSET(4)  NUMBITS(1)  [],
+        SET_FLUSH             OFFSET(5)  NUMBITS(1)  [],
+        CLEAR_TMEM_CTR        OFFSET(6)  NUMBITS(1)  [],
+        CLEAR_PIPE_CTR        OFFSET(7)  NUMBITS(1)  [],
+        CLEAR_CMD_CTR         OFFSET(8)  NUMBITS(1)  [],
+        CLEAR_CLOCK_CTR       OFFSET(9)  NUMBITS(1)  [],
     ],
 
     DpcClockReg [
-        /// [23:0], read only
-        CLOCK_COUNTER       OFFSET(0)  NUMBITS(24) [],
+        CLOCK_COUNTER         OFFSET(0)  NUMBITS(24) [],
     ],
 
     DpcBufBusyReg [
-        /// [23:0], read only
-        CLOCK_COUNTER       OFFSET(0)  NUMBITS(24) [],
+        CLOCK_COUNTER         OFFSET(0)  NUMBITS(24) [],
     ],
 
     DpcPipeBusyReg [
-        /// [23:0], read only
-        CLOCK_COUNTER       OFFSET(0)  NUMBITS(24) [],
+        CLOCK_COUNTER         OFFSET(0)  NUMBITS(24) [],
     ],
 
     DpcTmemReg [
-        /// [23:0], read only
-        CLOCK_COUNTER       OFFSET(0)  NUMBITS(24) [],
+        CLOCK_COUNTER         OFFSET(0)  NUMBITS(24) [],
     ],
 }
