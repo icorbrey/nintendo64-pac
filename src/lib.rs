@@ -50,7 +50,16 @@ pub static mut HARDWARE: Hardware = Hardware {
     mips_interface: Peripheral::new(MipsInterface),
     stack_pointer: Peripheral::new(StackPointer),
     rdram: Peripheral::new(Rdram),
-    dpc: Peripheral::new(Dpc),
+    dpc: Peripheral::new(Dpc {
+        buffer_busy: dpc::BufferBusy,
+        dma_current: dpc::DmaCurrent,
+        dma_start: dpc::DmaStart,
+        pipe_busy: dpc::PipeBusy,
+        tmem_load: dpc::TmemLoad,
+        dma_end: dpc::DmaEnd,
+        status: dpc::Status,
+        clock: dpc::Clock,
+    }),
     dps: Peripheral::new(Dps),
 };
 
