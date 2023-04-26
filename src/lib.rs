@@ -8,18 +8,6 @@
 
 use core::mem::replace;
 
-use ai::AudioInterface;
-use dpc::Dpc;
-use dps::Dps;
-use mi::MipsInterface;
-use pc::ProgramCounter;
-use pi::PeripheralInterface;
-use rdram::Rdram;
-use ri::RdramInterface;
-use si::SerialInterface;
-use sp::StackPointer;
-use vi::VideoInterface;
-
 pub mod ai;
 pub mod dpc;
 pub mod dps;
@@ -34,9 +22,9 @@ pub mod vi;
 
 /// A global, static reference to the hardware peripherals of the Nintendo 64.
 pub static mut HARDWARE: Hardware = Hardware {
-    peripheral_interface: Peripheral::new(PeripheralInterface),
-    serial_interface: Peripheral::new(SerialInterface),
-    audio_interface: Peripheral::new(AudioInterface {
+    peripheral_interface: Peripheral::new(pi::PeripheralInterface),
+    serial_interface: Peripheral::new(si::SerialInterface),
+    audio_interface: Peripheral::new(ai::AudioInterface {
         dram_addr: ai::DramAddr,
         bit_rate: ai::BitRate,
         dac_rate: ai::DacRate,
@@ -44,13 +32,13 @@ pub static mut HARDWARE: Hardware = Hardware {
         status: ai::Status,
         len: ai::Len,
     }),
-    program_counter: Peripheral::new(ProgramCounter),
-    rdram_interface: Peripheral::new(RdramInterface),
-    video_interface: Peripheral::new(VideoInterface),
-    mips_interface: Peripheral::new(MipsInterface),
-    stack_pointer: Peripheral::new(StackPointer),
-    rdram: Peripheral::new(Rdram),
-    dpc: Peripheral::new(Dpc {
+    program_counter: Peripheral::new(pc::ProgramCounter),
+    rdram_interface: Peripheral::new(ri::RdramInterface),
+    video_interface: Peripheral::new(vi::VideoInterface),
+    mips_interface: Peripheral::new(mi::MipsInterface),
+    stack_pointer: Peripheral::new(sp::StackPointer),
+    rdram: Peripheral::new(rdram::Rdram),
+    dpc: Peripheral::new(dpc::Dpc {
         buffer_busy: dpc::BufferBusy,
         dma_current: dpc::DmaCurrent,
         dma_start: dpc::DmaStart,
@@ -60,43 +48,48 @@ pub static mut HARDWARE: Hardware = Hardware {
         status: dpc::Status,
         clock: dpc::Clock,
     }),
-    dps: Peripheral::new(Dps),
+    dps: Peripheral::new(dps::Dps {
+        buffer_test_address: dps::BufferTestAddress,
+        buffer_test_data: dps::BufferTestData,
+        buffer_test_mode: dps::BufferTestMode,
+        tmem_bist: dps::TmemBist,
+    }),
 };
 
 /// Contains references to each hardware peripheral on the system.
 pub struct Hardware {
     /// Controlled reference to the peripheral interface.
-    pub peripheral_interface: Peripheral<PeripheralInterface>,
+    pub peripheral_interface: Peripheral<pi::PeripheralInterface>,
 
     /// Controlled reference to the serial interface.
-    pub serial_interface: Peripheral<SerialInterface>,
+    pub serial_interface: Peripheral<si::SerialInterface>,
 
     /// Controlled reference to the audio interface.
-    pub audio_interface: Peripheral<AudioInterface>,
+    pub audio_interface: Peripheral<ai::AudioInterface>,
 
     /// Controlled reference to the program counter.
-    pub program_counter: Peripheral<ProgramCounter>,
+    pub program_counter: Peripheral<pc::ProgramCounter>,
 
     /// Controlled reference to the RDRAM interface.
-    pub rdram_interface: Peripheral<RdramInterface>,
+    pub rdram_interface: Peripheral<ri::RdramInterface>,
 
     /// Controlled reference to the video interface.
-    pub video_interface: Peripheral<VideoInterface>,
+    pub video_interface: Peripheral<vi::VideoInterface>,
 
     /// Controlled reference to the MIPS interface.
-    pub mips_interface: Peripheral<MipsInterface>,
+    pub mips_interface: Peripheral<mi::MipsInterface>,
 
     /// Controlled reference to the stack pointer.
-    pub stack_pointer: Peripheral<StackPointer>,
+    pub stack_pointer: Peripheral<sp::StackPointer>,
 
     /// Controlled reference to the RDRAM system.
-    pub rdram: Peripheral<Rdram>,
+    pub rdram: Peripheral<rdram::Rdram>,
 
     /// Controlled reference to the DPC system.
-    pub dpc: Peripheral<Dpc>,
+    pub dpc: Peripheral<dpc::Dpc>,
 
     /// Controlled reference to the DPS system.
-    pub dps: Peripheral<Dps>,
+    pub dps: Peripheral<dps::Dps>,
 }
 
 /// An ownership wrapper for peripherals.
