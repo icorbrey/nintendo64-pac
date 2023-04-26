@@ -35,7 +35,12 @@ pub static mut HARDWARE: Hardware = Hardware {
     program_counter: Peripheral::new(pc::ProgramCounter),
     rdram_interface: Peripheral::new(ri::RdramInterface),
     video_interface: Peripheral::new(vi::VideoInterface),
-    mips_interface: Peripheral::new(mi::MipsInterface),
+    mips_interface: Peripheral::new(mi::MipsInterface {
+        interrupt_masks: mi::InterruptMasks,
+        interrupts: mi::Interrupts,
+        version: mi::Version,
+        mode: mi::Mode,
+    }),
     stack_pointer: Peripheral::new(sp::StackPointer),
     rdram: Peripheral::new(rdram::Rdram),
     dpc: Peripheral::new(dpc::Dpc {
