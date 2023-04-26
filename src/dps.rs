@@ -50,7 +50,12 @@ register_access!(0x0420_0000, Registers);
 /// # assert!(unsafe { test() }.is_ok());
 /// ```
 #[non_exhaustive]
-pub struct Dps;
+pub struct Dps {
+    pub buffer_test_address: BufferTestAddress,
+    pub buffer_test_data: BufferTestData,
+    pub buffer_test_mode: BufferTestMode,
+    pub tmem_bist: TmemBist,
+}
 
 impl Dps {
     /// Returns ownership of the DPS registers to [`HARDWARE`][crate::HARDWARE].
