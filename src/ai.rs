@@ -9,23 +9,9 @@ use tock_registers::{
     registers::{ReadWrite, WriteOnly},
 };
 
-use crate::HARDWARE;
+use crate::{register_access, HARDWARE};
 
-/// The static address of the Nintendo 64's audio interface registers.
-#[cfg(target_vendor = "nintendo64")]
-const AI_REGS_BASE: usize = 0x0450_0000;
-
-#[cfg(not(target_vendor = "nintendo64"))]
-lazy_static::lazy_static! {
-    /// A registry access analogue for development and testing.
-    ///
-    /// We have to modify the registry access mechanism when building for
-    /// architectures other than the Nintendo 64 since the production registry
-    /// access mechanism accesses a static memory location. This is disallowed
-    /// on modern operating systems, so we instead dynamically allocate the
-    /// memory so that testing and development can occur.
-    static ref REGISTERS: AudioInterfaceRegisters = unsafe { std::mem::zeroed() };
-}
+register_access!(0x0450_0000, Registers);
 
 /// A zero-size wrapper around the Nintendo 64's audio interface registers.
 ///
@@ -37,13 +23,13 @@ lazy_static::lazy_static! {
 /// # unsafe fn test() -> Result<(), HardwareError> {
 /// let ai = HARDWARE.audio_interface.take()?;
 /// #
-/// # let is_busy = ai.is_busy();
-/// # let is_full = ai.is_full();
+/// # let is_busy = ai.status.is_busy();
+/// # let is_full = ai.status.is_full();
 /// #
-/// # ai.set_sample_buffer_address(0x12345678)
-/// #     .set_sample_buffer_length_v1(123)
-/// #     .set_dac_rate(0x12345678)
-/// #     .start_sample_playback();
+/// # ai.dram_addr.set(0x12345678);
+/// # ai.len.set_v1(123);
+/// # ai.dac_rate.set(0x12345678);
+/// # ai.control.enable_dma();
 /// #
 /// # assert!(HARDWARE.audio_interface.take().is_err());
 /// # ai.drop();
@@ -61,13 +47,13 @@ lazy_static::lazy_static! {
 /// # unsafe fn test() -> Result<(), HardwareError> {
 /// # let ai = HARDWARE.audio_interface.take()?;
 /// #
-/// let is_busy = ai.is_busy();
-/// let is_full = ai.is_full();
+/// let is_busy = ai.status.is_busy();
+/// let is_full = ai.status.is_full();
 ///
-/// ai.set_sample_buffer_address(0x12345678)
-///     .set_sample_buffer_length_v1(123)
-///     .set_dac_rate(0x12345678)
-///     .start_sample_playback();
+/// ai.dram_addr.set(0x12345678);
+/// ai.len.set_v1(123);
+/// ai.dac_rate.set(0x12345678);
+/// ai.control.enable_dma();
 /// #
 /// # assert!(HARDWARE.audio_interface.take().is_err());
 /// # ai.drop();
@@ -85,13 +71,13 @@ lazy_static::lazy_static! {
 /// # unsafe fn test() -> Result<(), HardwareError> {
 /// # let ai = HARDWARE.audio_interface.take()?;
 /// #
-/// # let is_busy = ai.is_busy();
-/// # let is_full = ai.is_full();
+/// # let is_busy = ai.status.is_busy();
+/// # let is_full = ai.status.is_full();
 /// #
-/// # ai.set_sample_buffer_address(0x12345678)
-/// #     .set_sample_buffer_length_v1(123)
-/// #     .set_dac_rate(0x12345678)
-/// #     .start_sample_playback();
+/// # ai.dram_addr.set(0x12345678);
+/// # ai.len.set_v1(123);
+/// # ai.dac_rate.set(0x12345678);
+/// # ai.control.enable_dma();
 /// #
 /// # assert!(HARDWARE.audio_interface.take().is_err());
 /// ai.drop();
@@ -102,114 +88,121 @@ lazy_static::lazy_static! {
 /// # assert!(unsafe { test() }.is_ok());
 /// ```
 #[non_exhaustive]
-pub struct AudioInterface;
+pub struct AudioInterface {
+    pub dram_addr: DramAddr,
+    pub len: Len,
+    pub control: Control,
+    pub status: Status,
+    pub dac_rate: DacRate,
+    pub bit_rate: BitRate,
+}
 
 impl AudioInterface {
-    /// Returns a reference to the audio interface registers.
-    #[cfg(target_vendor = "nintendo64")]
-    fn registers<'a>(&self) -> &'a AudioInterfaceRegisters {
-        unsafe { &*(AI_REGS_BASE as *const AudioInterfaceRegisters) }
-    }
-
-    /// Returns a reference to the audio interface registers.
-    #[cfg(not(target_vendor = "nintendo64"))]
-    fn registers<'a>(&self) -> &'a REGISTERS {
-        &REGISTERS
-    }
-
     /// Returns ownership of the audio interface registers to
     /// [`HARDWARE`][crate::HARDWARE].
     pub fn drop(self) {
         unsafe { HARDWARE.audio_interface.drop(self) }
     }
+}
 
-    /// Sets the address of the uncached memory buffer of samples to play.
-    pub fn set_sample_buffer_address(&self, sample_buffer_address: u32) -> &Self {
-        self.registers()
-            .sample_buffer_address
-            .write(SampleBufferAddress::ADDRESS.val(sample_buffer_address));
-        self
-    }
+/// A zero-size wrapper around `AI_DRAM_ADDR_REG`.
+#[non_exhaustive]
+pub struct DramAddr;
 
-    /// Gets the length of the sample buffer.
-    pub fn sample_buffer_length_v1(&self) -> u32 {
-        self.registers()
-            .sample_buffer_length
-            .read(SampleBufferLength::SAMPLE_BUFFER_LENGTH_V1)
-    }
-
-    /// Sets the length of the sample buffer.
-    pub fn set_sample_buffer_length_v1(&self, bytes: u32) -> &Self {
-        self.registers()
-            .sample_buffer_length
-            .write(SampleBufferLength::SAMPLE_BUFFER_LENGTH_V1.val(bytes));
-        self
-    }
-
-    /// Gets the length of the sample buffer.
-    pub fn sample_buffer_length_v2(&self) -> u32 {
-        self.registers()
-            .sample_buffer_length
-            .read(SampleBufferLength::SAMPLE_BUFFER_LENGTH_V2)
-    }
-
-    /// Sets the length of the sample buffer.
-    pub fn set_sample_buffer_length_v2(&self, bytes: u32) -> &Self {
-        self.registers()
-            .sample_buffer_length
-            .write(SampleBufferLength::SAMPLE_BUFFER_LENGTH_V2.val(bytes));
-        self
-    }
-
-    /// Starts playback of an audio sample.
-    pub fn start_sample_playback(&self) -> &Self {
-        self.registers()
-            .sample_playback_control
-            .write(SamplePlaybackControl::START::SET);
-        self
-    }
-
-    /// Gets whether the audio interface is currently full.
-    pub fn is_full(&self) -> bool {
-        self.registers().status.is_set(Status::FULL)
-    }
-
-    /// Gets whether the audio interface is currently busy.
-    pub fn is_busy(&self) -> bool {
-        self.registers().status.is_set(Status::BUSY)
-    }
-
-    /// Clears the audio interface interrupt.
-    pub fn clear_interrupt(&self) -> &Self {
-        self.registers().status.write(Status::CLEAR_INTERRUPT::SET);
-        self
-    }
-
-    /// Sets the rate at which the sample buffer should be played.
-    pub fn set_dac_rate(&self, dac_rate: u32) -> &Self {
-        self.registers().dacrate.set(dac_rate);
-        self
-    }
-
-    /// Sets the length of a single sample in bits.
-    pub fn set_sample_length(&self, bits: u32) -> &Self {
-        self.registers().sample_length.set(bits);
-        self
+impl DramAddr {
+    pub fn set(&self, dram_addr: u32) {
+        registers()
+            .dram_addr
+            .write(AiDramAddrReg::STARTING_RDRAM_ADDRESS.val(dram_addr))
     }
 }
 
-// This is a hack to allow code to run for development.
-#[cfg(not(target_vendor = "nintendo64"))]
-unsafe impl Sync for AudioInterfaceRegisters {}
+/// A zero-size wrapper around `AI_LEN_REG`.
+#[non_exhaustive]
+pub struct Len;
+
+impl Len {
+    pub fn get_v1(&self) -> u32 {
+        registers().len.read(AiLenReg::TRANSFER_LENGTH_V1)
+    }
+
+    pub fn set_v1(&self, len: u32) {
+        registers().len.write(AiLenReg::TRANSFER_LENGTH_V1.val(len))
+    }
+
+    pub fn get_v2(&self) -> u32 {
+        registers().len.read(AiLenReg::TRANSFER_LENGTH_V2)
+    }
+
+    pub fn set_v2(&self, len: u32) {
+        registers().len.write(AiLenReg::TRANSFER_LENGTH_V2.val(len))
+    }
+}
+
+/// A zero-size wrapper around `AI_CONTROL_REG`.
+#[non_exhaustive]
+pub struct Control;
+
+impl Control {
+    pub fn enable_dma(&self) {
+        registers().control.write(AiControlReg::DMA_ENABLE::SET)
+    }
+
+    pub fn disable_dma(&self) {
+        registers().control.write(AiControlReg::DMA_ENABLE::CLEAR)
+    }
+}
+
+/// A zero-size wrapper around `AI_STATUS_REG`.
+#[non_exhaustive]
+pub struct Status;
+
+impl Status {
+    pub fn is_busy(&self) -> bool {
+        registers().status.is_set(AiStatusReg::BUSY)
+    }
+
+    pub fn is_full(&self) -> bool {
+        registers().status.is_set(AiStatusReg::FULL)
+    }
+
+    pub fn clear_interrupt(&self) {
+        registers().status.write(AiStatusReg::CLEAR_INTERRUPT::SET)
+    }
+}
+
+/// A zero-size wrapper around `AI_DACRATE_REG`.
+#[non_exhaustive]
+pub struct DacRate;
+
+impl DacRate {
+    pub fn set(&self, dac_rate: u32) {
+        registers()
+            .dac_rate
+            .write(AiDacrateReg::DAC_RATE.val(dac_rate))
+    }
+}
+
+/// A zero-size wrapper around `AI_BITRATE_REG`.
+#[non_exhaustive]
+pub struct BitRate;
+
+impl BitRate {
+    pub fn set(&self, bit_rate: u32) {
+        registers()
+            .bit_rate
+            .write(AiBitrateReg::BIT_RATE.val(bit_rate))
+    }
+}
 
 register_structs! {
-    AudioInterfaceRegisters {
-        (0x0000 => pub sample_buffer_address: WriteOnly<u32, SampleBufferAddress::Register>),
-        (0x0004 => pub sample_buffer_length: ReadWrite<u32, SampleBufferLength::Register>),
-        (0x0008 => pub sample_playback_control: WriteOnly<u32, SamplePlaybackControl::Register>),
-        (0x000C => pub status: ReadWrite<u32, Status::Register>),
-        (0x0010 => pub dacrate: WriteOnly<u32>),
-        (0x0014 => pub sample_length: WriteOnly<u32>),
+    Registers {
+        (0x0000 => pub dram_addr: WriteOnly<u32, AiDramAddrReg::Register>),
+        (0x0004 => pub len: ReadWrite<u32, AiLenReg::Register>),
+        (0x0008 => pub control: WriteOnly<u32, AiControlReg::Register>),
+        (0x000C => pub status: ReadWrite<u32, AiStatusReg::Register>),
+        (0x0010 => pub dac_rate: WriteOnly<u32, AiDacrateReg::Register>),
+        (0x0014 => pub bit_rate: WriteOnly<u32, AiBitrateReg::Register>),
         (0x0018 => @END),
     }
 }
@@ -217,23 +210,42 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    SampleBufferAddress [
-        ADDRESS                 OFFSET(0)  NUMBITS(24) [],
+    AiDramAddrReg [
+        /// [23:0], write only
+        STARTING_RDRAM_ADDRESS OFFSET(0)  NUMBITS(24) [],
     ],
 
-    SampleBufferLength [
-        SAMPLE_BUFFER_LENGTH_V1 OFFSET(0)  NUMBITS(15) [],
-        SAMPLE_BUFFER_LENGTH_V2 OFFSET(0)  NUMBITS(18) [],
+    AiLenReg [
+        /// [14:0], read/write
+        TRANSFER_LENGTH_V1     OFFSET(0)  NUMBITS(15) [],
+
+        /// [17:0], read/write
+        TRANSFER_LENGTH_V2     OFFSET(0)  NUMBITS(18) [],
     ],
 
-    SamplePlaybackControl [
-        START                   OFFSET(0)  NUMBITS(1)  [],
+    AiControlReg [
+        /// [0], write only
+        DMA_ENABLE             OFFSET(0)  NUMBITS(1)  [],
     ],
 
-    Status [
-        BUSY                    OFFSET(30) NUMBITS(1)  [],
-        FULL                    OFFSET(31) NUMBITS(1)  [],
+    AiStatusReg [
+        /// [0], write only
+        CLEAR_INTERRUPT        OFFSET(0)  NUMBITS(1)  [],
 
-        CLEAR_INTERRUPT         OFFSET(0)  NUMBITS(1)  [],
+        /// [30], read only
+        BUSY                   OFFSET(30) NUMBITS(1)  [],
+
+        /// [31], read only
+        FULL                   OFFSET(31) NUMBITS(1)  [],
+    ],
+
+    AiDacrateReg [
+        /// [13:0], write only
+        DAC_RATE               OFFSET(0)  NUMBITS(14) [],
+    ],
+
+    AiBitrateReg [
+        /// [3:0], write only
+        BIT_RATE               OFFSET(0)  NUMBITS(4)  [],
     ],
 }

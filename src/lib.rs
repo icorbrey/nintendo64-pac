@@ -36,7 +36,14 @@ pub mod vi;
 pub static mut HARDWARE: Hardware = Hardware {
     peripheral_interface: Peripheral::new(PeripheralInterface),
     serial_interface: Peripheral::new(SerialInterface),
-    audio_interface: Peripheral::new(AudioInterface),
+    audio_interface: Peripheral::new(AudioInterface {
+        dram_addr: ai::DramAddr,
+        bit_rate: ai::BitRate,
+        dac_rate: ai::DacRate,
+        control: ai::Control,
+        status: ai::Status,
+        len: ai::Len,
+    }),
     program_counter: Peripheral::new(ProgramCounter),
     rdram_interface: Peripheral::new(RdramInterface),
     video_interface: Peripheral::new(VideoInterface),
@@ -118,4 +125,30 @@ pub enum HardwareError {
     /// Occurs when an attempt is made to take a peripheral which has already
     /// been taken.
     TakePeripheralError,
+}
+
+#[macro_export]
+macro_rules! register_access {
+    ($base:expr, $reg_type:tt) => {
+        #[cfg(target_vendor = "nintendo64")]
+        const REGS_BASE: usize = $base;
+
+        #[cfg(target_vendor = "nintendo64")]
+        fn registers<'a>() -> &'a $reg_type {
+            unsafe { &*(REGS_BASE as *const $reg_type) }
+        }
+
+        #[cfg(not(target_vendor = "nintendo64"))]
+        unsafe impl Sync for $reg_type {}
+
+        #[cfg(not(target_vendor = "nintendo64"))]
+        lazy_static::lazy_static! {
+            static ref REGS: $reg_type = unsafe { std::mem::zeroed() };
+        }
+
+        #[cfg(not(target_vendor = "nintendo64"))]
+        fn registers<'a>() -> &'a REGS {
+            &REGS
+        }
+    };
 }
