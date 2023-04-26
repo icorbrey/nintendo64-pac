@@ -32,7 +32,10 @@ pub static mut HARDWARE: Hardware = Hardware {
         status: ai::Status,
         len: ai::Len,
     }),
-    program_counter: Peripheral::new(pc::ProgramCounter),
+    program_counter: Peripheral::new(pc::ProgramCounter {
+        imem_bist: pc::ImemBist,
+        control: pc::Control,
+    }),
     rdram_interface: Peripheral::new(ri::RdramInterface),
     video_interface: Peripheral::new(vi::VideoInterface),
     mips_interface: Peripheral::new(mi::MipsInterface {
