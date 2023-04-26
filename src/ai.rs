@@ -89,12 +89,23 @@ register_access!(0x0450_0000, Registers);
 /// ```
 #[non_exhaustive]
 pub struct AudioInterface {
+    /// Contains getters and setters for `AI_DRAM_ADDR_REG`.
     pub dram_addr: DramAddr,
-    pub len: Len,
-    pub control: Control,
-    pub status: Status,
-    pub dac_rate: DacRate,
+
+    /// Contains getters and setters for `AI_BITRATE_REG`.
     pub bit_rate: BitRate,
+
+    /// Contains getters and setters for `AI_DACRATE_REG`.
+    pub dac_rate: DacRate,
+
+    /// Contains getters and setters for `AI_CONTROL_REG`.
+    pub control: Control,
+
+    /// Contains getters and setters for `AI_STATUS_REG`.
+    pub status: Status,
+
+    /// Contains getters and setters for `AI_LEN_REG`.
+    pub len: Len,
 }
 
 impl AudioInterface {
@@ -211,41 +222,29 @@ register_bitfields! {
     u32,
 
     AiDramAddrReg [
-        /// [23:0], write only
         STARTING_RDRAM_ADDRESS OFFSET(0)  NUMBITS(24) [],
     ],
 
     AiLenReg [
-        /// [14:0], read/write
         TRANSFER_LENGTH_V1     OFFSET(0)  NUMBITS(15) [],
-
-        /// [17:0], read/write
         TRANSFER_LENGTH_V2     OFFSET(0)  NUMBITS(18) [],
     ],
 
     AiControlReg [
-        /// [0], write only
         DMA_ENABLE             OFFSET(0)  NUMBITS(1)  [],
     ],
 
     AiStatusReg [
-        /// [0], write only
         CLEAR_INTERRUPT        OFFSET(0)  NUMBITS(1)  [],
-
-        /// [30], read only
         BUSY                   OFFSET(30) NUMBITS(1)  [],
-
-        /// [31], read only
         FULL                   OFFSET(31) NUMBITS(1)  [],
     ],
 
     AiDacrateReg [
-        /// [13:0], write only
         DAC_RATE               OFFSET(0)  NUMBITS(14) [],
     ],
 
     AiBitrateReg [
-        /// [3:0], write only
         BIT_RATE               OFFSET(0)  NUMBITS(4)  [],
     ],
 }

@@ -15,9 +15,16 @@ register_access!(0x0430_0000, Registers);
 
 #[non_exhaustive]
 pub struct MipsInterface {
+    /// Contains getters and setters for `MI_INTR_MASK_REG`.
     pub interrupt_masks: InterruptMasks,
+
+    /// Contains getters and setters for `MI_INTR_REG`.
     pub interrupts: Interrupts,
+
+    /// Contains getters and setters for `MI_VERSION_REG`.
     pub version: Version,
+
+    /// Contains getters and setters for `MI_MODE_REG`.
     pub mode: Mode,
 }
 
@@ -29,6 +36,7 @@ impl MipsInterface {
     }
 }
 
+/// A zero-size wrapper around `MI_MODE_REG`.
 #[non_exhaustive]
 pub struct Mode;
 
@@ -84,6 +92,7 @@ impl Mode {
     }
 }
 
+/// A zero-size wrapper around `MI_VERSION_REG`.
 #[non_exhaustive]
 pub struct Version;
 
@@ -105,6 +114,7 @@ impl Version {
     }
 }
 
+/// A zero-size wrapper around `MI_INTR_REG`.
 #[non_exhaustive]
 pub struct Interrupts;
 
@@ -134,6 +144,7 @@ impl Interrupts {
     }
 }
 
+/// A zero-size wrapper around `MI_INTR_MASK_REG`.
 #[non_exhaustive]
 pub struct InterruptMasks;
 
@@ -237,54 +248,54 @@ register_bitfields! {
     u32,
 
     MiModeReg [
-        INIT_LENGTH             OFFSET(0)  NUMBITS(7) [],
-        INIT_MODE               OFFSET(7)  NUMBITS(1) [],
-        EBUS_TEST_MODE          OFFSET(8)  NUMBITS(1) [],
-        RDRAM_REG_MODE          OFFSET(9)  NUMBITS(1) [],
-        CLEAR_INIT_MODE         OFFSET(7)  NUMBITS(1) [],
-        SET_INIT_MODE           OFFSET(8)  NUMBITS(1) [],
-        CLEAR_EBUS_TEST_MODE    OFFSET(9)  NUMBITS(1) [],
-        SET_EBUS_TEST_MODE      OFFSET(10) NUMBITS(1) [],
-        CLEAR_DP_INTERRUPT      OFFSET(11) NUMBITS(1) [],
-        CLEAR_RDRAM_REG_MODE         OFFSET(12) NUMBITS(1) [],
-        SET_RDRAM_REG_MODE           OFFSET(13) NUMBITS(1) [],
+        INIT_LENGTH          OFFSET(0)  NUMBITS(7) [],
+        INIT_MODE            OFFSET(7)  NUMBITS(1) [],
+        EBUS_TEST_MODE       OFFSET(8)  NUMBITS(1) [],
+        RDRAM_REG_MODE       OFFSET(9)  NUMBITS(1) [],
+        CLEAR_INIT_MODE      OFFSET(7)  NUMBITS(1) [],
+        SET_INIT_MODE        OFFSET(8)  NUMBITS(1) [],
+        CLEAR_EBUS_TEST_MODE OFFSET(9)  NUMBITS(1) [],
+        SET_EBUS_TEST_MODE   OFFSET(10) NUMBITS(1) [],
+        CLEAR_DP_INTERRUPT   OFFSET(11) NUMBITS(1) [],
+        CLEAR_RDRAM_REG_MODE OFFSET(12) NUMBITS(1) [],
+        SET_RDRAM_REG_MODE   OFFSET(13) NUMBITS(1) [],
     ],
 
     MiVersionReg [
-        IO                      OFFSET(0)  NUMBITS(8) [],
-        RAC                     OFFSET(8)  NUMBITS(8) [],
-        RDP                     OFFSET(16) NUMBITS(8) [],
-        RSP                     OFFSET(24) NUMBITS(8) [],
+        IO                   OFFSET(0)  NUMBITS(8) [],
+        RAC                  OFFSET(8)  NUMBITS(8) [],
+        RDP                  OFFSET(16) NUMBITS(8) [],
+        RSP                  OFFSET(24) NUMBITS(8) [],
     ],
 
     MiIntrReg [
-        SP_INTR            OFFSET(0)  NUMBITS(1) [],
-        SI_INTR            OFFSET(1)  NUMBITS(1) [],
-        AI_INTR            OFFSET(2)  NUMBITS(1) [],
-        VI_INTR            OFFSET(3)  NUMBITS(1) [],
-        PI_INTR            OFFSET(4)  NUMBITS(1) [],
-        DP_INTR            OFFSET(5)  NUMBITS(1) [],
+        SP_INTR              OFFSET(0)  NUMBITS(1) [],
+        SI_INTR              OFFSET(1)  NUMBITS(1) [],
+        AI_INTR              OFFSET(2)  NUMBITS(1) [],
+        VI_INTR              OFFSET(3)  NUMBITS(1) [],
+        PI_INTR              OFFSET(4)  NUMBITS(1) [],
+        DP_INTR              OFFSET(5)  NUMBITS(1) [],
     ],
 
     MiIntrMaskReg [
-        SP_INTR_MASK       OFFSET(0)  NUMBITS(1) [],
-        SI_INTR_MASK       OFFSET(1)  NUMBITS(1) [],
-        AI_INTR_MASK       OFFSET(2)  NUMBITS(1) [],
-        VI_INTR_MASK       OFFSET(3)  NUMBITS(1) [],
-        PI_INTR_MASK       OFFSET(4)  NUMBITS(1) [],
-        DP_INTR_MASK       OFFSET(5)  NUMBITS(1) [],
+        SP_INTR_MASK         OFFSET(0)  NUMBITS(1) [],
+        SI_INTR_MASK         OFFSET(1)  NUMBITS(1) [],
+        AI_INTR_MASK         OFFSET(2)  NUMBITS(1) [],
+        VI_INTR_MASK         OFFSET(3)  NUMBITS(1) [],
+        PI_INTR_MASK         OFFSET(4)  NUMBITS(1) [],
+        DP_INTR_MASK         OFFSET(5)  NUMBITS(1) [],
 
-        CLEAR_SP_MASK OFFSET(0)  NUMBITS(1) [],
-        SET_SP_MASK   OFFSET(1)  NUMBITS(1) [],
-        CLEAR_SI_MASK OFFSET(2)  NUMBITS(1) [],
-        SET_SI_MASK   OFFSET(3)  NUMBITS(1) [],
-        CLEAR_AI_MASK OFFSET(4)  NUMBITS(1) [],
-        SET_AI_MASK   OFFSET(5)  NUMBITS(1) [],
-        CLEAR_VI_MASK OFFSET(6)  NUMBITS(1) [],
-        SET_VI_MASK   OFFSET(7)  NUMBITS(1) [],
-        CLEAR_PI_MASK OFFSET(8)  NUMBITS(1) [],
-        SET_PI_MASK   OFFSET(9)  NUMBITS(1) [],
-        CLEAR_DP_MASK OFFSET(10) NUMBITS(1) [],
-        SET_DP_MASK   OFFSET(11) NUMBITS(1) [],
+        CLEAR_SP_MASK        OFFSET(0)  NUMBITS(1) [],
+        SET_SP_MASK          OFFSET(1)  NUMBITS(1) [],
+        CLEAR_SI_MASK        OFFSET(2)  NUMBITS(1) [],
+        SET_SI_MASK          OFFSET(3)  NUMBITS(1) [],
+        CLEAR_AI_MASK        OFFSET(4)  NUMBITS(1) [],
+        SET_AI_MASK          OFFSET(5)  NUMBITS(1) [],
+        CLEAR_VI_MASK        OFFSET(6)  NUMBITS(1) [],
+        SET_VI_MASK          OFFSET(7)  NUMBITS(1) [],
+        CLEAR_PI_MASK        OFFSET(8)  NUMBITS(1) [],
+        SET_PI_MASK          OFFSET(9)  NUMBITS(1) [],
+        CLEAR_DP_MASK        OFFSET(10) NUMBITS(1) [],
+        SET_DP_MASK          OFFSET(11) NUMBITS(1) [],
     ]
 }

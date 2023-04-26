@@ -51,9 +51,16 @@ register_access!(0x0420_0000, Registers);
 /// ```
 #[non_exhaustive]
 pub struct Dps {
+    /// Contains getters and setters for `DPS_BUFTEST_ADDR_REG`.
     pub buffer_test_address: BufferTestAddress,
+
+    /// Contains getters and setters for `DPS_BUFTEST_DATA_REG`.
     pub buffer_test_data: BufferTestData,
+
+    /// Contains getters and setters for `DPS_TEST_MODE_REG`.
     pub buffer_test_mode: BufferTestMode,
+
+    /// Contains getters and setters for `DPS_TBIST_REG`.
     pub tmem_bist: TmemBist,
 }
 
@@ -64,6 +71,7 @@ impl Dps {
     }
 }
 
+/// A zero-size wrapper around `DPS_TBIST_REG`.
 #[non_exhaustive]
 pub struct TmemBist;
 
@@ -97,6 +105,7 @@ impl TmemBist {
     }
 }
 
+/// A zero-size wrapper around `DPS_TEST_MODE_REG`.
 #[non_exhaustive]
 pub struct BufferTestMode;
 
@@ -110,6 +119,7 @@ impl BufferTestMode {
     }
 }
 
+/// A zero-size wrapper around `DPS_BUFTEST_ADDR_REG`.
 #[non_exhaustive]
 pub struct BufferTestAddress;
 
@@ -125,6 +135,7 @@ impl BufferTestAddress {
     }
 }
 
+/// A zero-size wrapper around `DPS_BUFTEST_DATA_REG`.
 #[non_exhaustive]
 pub struct BufferTestData;
 
@@ -154,31 +165,22 @@ register_bitfields! {
     u32,
 
     DpsTbistReg [
-        /// [0], read/write
         BIST_CHECK OFFSET(0) NUMBITS(1)  [],
-
-        /// [1], read/write
         BIST_GO    OFFSET(1) NUMBITS(1)  [],
-
-        /// [2], read only
         BIST_DONE  OFFSET(2) NUMBITS(1)  [],
-
-        /// [10:3], read only
         BIST_FAIL  OFFSET(3) NUMBITS(8)  [],
-
-        /// [2], write only
         BIST_CLEAR OFFSET(2) NUMBITS(1)  [],
     ],
 
     DpsTestModeReg [
-        MODE  OFFSET(0) NUMBITS(1)  [],
+        MODE       OFFSET(0) NUMBITS(1)  [],
     ],
 
     DpsBufTestAddrReg [
-        ADDR  OFFSET(0) NUMBITS(7)  [],
+        ADDR       OFFSET(0) NUMBITS(7)  [],
     ],
 
     DpsBufTestDataReg [
-        DATA  OFFSET(0) NUMBITS(32) [],
+        DATA       OFFSET(0) NUMBITS(32) [],
     ]
 }
