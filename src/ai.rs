@@ -29,7 +29,7 @@ register_access!(0x0450_0000, Registers);
 /// # ai.dram_addr.set(0x12345678);
 /// # ai.len.set_v1(123);
 /// # ai.dac_rate.set(0x12345678);
-/// # ai.control.start();
+/// # ai.control.enable_dma();
 /// #
 /// # assert!(HARDWARE.audio_interface.take().is_err());
 /// # ai.drop();
@@ -53,7 +53,7 @@ register_access!(0x0450_0000, Registers);
 /// ai.dram_addr.set(0x12345678);
 /// ai.len.set_v1(123);
 /// ai.dac_rate.set(0x12345678);
-/// ai.control.start();
+/// ai.control.enable_dma();
 /// #
 /// # assert!(HARDWARE.audio_interface.take().is_err());
 /// # ai.drop();
@@ -77,7 +77,7 @@ register_access!(0x0450_0000, Registers);
 /// # ai.dram_addr.set(0x12345678);
 /// # ai.len.set_v1(123);
 /// # ai.dac_rate.set(0x12345678);
-/// # ai.control.start();
+/// # ai.control.enable_dma();
 /// #
 /// # assert!(HARDWARE.audio_interface.take().is_err());
 /// ai.drop();
@@ -113,7 +113,7 @@ impl DramAddr {
     pub fn set(&self, dram_addr: u32) {
         registers()
             .dram_addr
-            .write(AiDramAddrReg::DRAM_ADDR.val(dram_addr))
+            .write(AiDramAddrReg::STARTING_RDRAM_ADDRESS.val(dram_addr))
     }
 }
 
@@ -123,19 +123,19 @@ pub struct Len;
 
 impl Len {
     pub fn get_v1(&self) -> u32 {
-        registers().len.read(AiLenReg::LENGTH_V1)
+        registers().len.read(AiLenReg::TRANSFER_LENGTH_V1)
     }
 
     pub fn set_v1(&self, len: u32) {
-        registers().len.write(AiLenReg::LENGTH_V1.val(len))
+        registers().len.write(AiLenReg::TRANSFER_LENGTH_V1.val(len))
     }
 
     pub fn get_v2(&self) -> u32 {
-        registers().len.read(AiLenReg::LENGTH_V2)
+        registers().len.read(AiLenReg::TRANSFER_LENGTH_V2)
     }
 
     pub fn set_v2(&self, len: u32) {
-        registers().len.write(AiLenReg::LENGTH_V2.val(len))
+        registers().len.write(AiLenReg::TRANSFER_LENGTH_V2.val(len))
     }
 }
 
@@ -144,8 +144,12 @@ impl Len {
 pub struct Control;
 
 impl Control {
-    pub fn start(&self) {
-        registers().control.write(AiControlReg::START::SET)
+    pub fn enable_dma(&self) {
+        registers().control.write(AiControlReg::DMA_ENABLE::SET)
+    }
+
+    pub fn disable_dma(&self) {
+        registers().control.write(AiControlReg::DMA_ENABLE::CLEAR)
     }
 }
 
@@ -207,30 +211,41 @@ register_bitfields! {
     u32,
 
     AiDramAddrReg [
-        DRAM_ADDR       OFFSET(0)  NUMBITS(24) [],
+        /// [23:0], write only
+        STARTING_RDRAM_ADDRESS OFFSET(0)  NUMBITS(24) [],
     ],
 
     AiLenReg [
-        LENGTH_V1       OFFSET(0)  NUMBITS(15) [],
-        LENGTH_V2       OFFSET(0)  NUMBITS(18) [],
+        /// [14:0], read/write
+        TRANSFER_LENGTH_V1     OFFSET(0)  NUMBITS(15) [],
+
+        /// [17:0], read/write
+        TRANSFER_LENGTH_V2     OFFSET(0)  NUMBITS(18) [],
     ],
 
     AiControlReg [
-        START           OFFSET(0)  NUMBITS(1)  [],
+        /// [0], write only
+        DMA_ENABLE             OFFSET(0)  NUMBITS(1)  [],
     ],
 
     AiStatusReg [
-        BUSY            OFFSET(30) NUMBITS(1)  [],
-        FULL            OFFSET(31) NUMBITS(1)  [],
+        /// [0], write only
+        CLEAR_INTERRUPT        OFFSET(0)  NUMBITS(1)  [],
 
-        CLEAR_INTERRUPT OFFSET(0)  NUMBITS(1)  [],
+        /// [30], read only
+        BUSY                   OFFSET(30) NUMBITS(1)  [],
+
+        /// [31], read only
+        FULL                   OFFSET(31) NUMBITS(1)  [],
     ],
 
     AiDacrateReg [
-        DAC_RATE        OFFSET(0)  NUMBITS(14) [],
+        /// [13:0], write only
+        DAC_RATE               OFFSET(0)  NUMBITS(14) [],
     ],
 
     AiBitrateReg [
-        BIT_RATE        OFFSET(0)  NUMBITS(4)  [],
+        /// [3:0], write only
+        BIT_RATE               OFFSET(0)  NUMBITS(4)  [],
     ],
 }
