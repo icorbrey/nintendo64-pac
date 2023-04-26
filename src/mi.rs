@@ -9,189 +9,226 @@ use tock_registers::{
     registers::{ReadOnly, ReadWrite},
 };
 
-use crate::HARDWARE;
+use crate::{register_access, HARDWARE};
 
-/// The static address of the Nintendo 64's MIPS interface registers.
-#[cfg(target_vendor = "nintendo64")]
-const MI_REGS_BASE: usize = 0x0430_0000;
-
-#[cfg(not(target_vendor = "nintendo64"))]
-lazy_static::lazy_static! {
-    /// A registry access analogue for development and testing.
-    ///
-    /// We have to modify the registry access mechanism when building for
-    /// architectures other than the Nintendo 64 since the production registry
-    /// access mechanism accesses a static memory location. This is disallowed
-    /// on modern operating systems, so we instead dynamically allocate the
-    /// memory so that testing and development can occur.
-    static ref REGISTERS: MipsInterfaceRegisters = unsafe { std::mem::zeroed() };
-}
+register_access!(0x0430_0000, Registers);
 
 #[non_exhaustive]
-pub struct MipsInterface;
+pub struct MipsInterface {
+    pub interrupt_masks: InterruptMasks,
+    pub interrupts: Interrupts,
+    pub version: Version,
+    pub mode: Mode,
+}
 
 impl MipsInterface {
-    /// Gets a reference to the MIPS interface registers.
-    #[cfg(target_vendor = "nintendo64")]
-    fn registers<'a>(&self) -> &'a MipsInterfaceRegisters {
-        unsafe { &mut *(MI_REGS_BASE as *mut MipsInterfaceRegisters) }
-    }
-
-    /// Returns a reference to the MIPS interface registers.
-    #[cfg(not(target_vendor = "nintendo64"))]
-    fn registers<'a>(&self) -> &'a REGISTERS {
-        &REGISTERS
-    }
-
     /// Returns ownership of the MIPS interface registers to
     /// [`HARDWARE`][crate::HARDWARE].
     pub fn drop(self) {
         unsafe { HARDWARE.mips_interface.drop(self) }
     }
+}
 
-    /// Returns whether the stack pointer system is currently interrupted.
-    pub fn is_stack_pointer_interrupted(&self) -> bool {
-        self.registers().interrupts.is_set(Interrupts::SP_INTERRUPT)
+#[non_exhaustive]
+pub struct Mode;
+
+impl Mode {
+    pub fn init_length(&self) -> u32 {
+        registers().mode.read(MiModeReg::INIT_LENGTH)
     }
 
-    /// Returns whether the serial interface is currently interrupted.
-    pub fn is_serial_interface_interrupted(&self) -> bool {
-        self.registers().interrupts.is_set(Interrupts::SI_INTERRUPT)
+    pub fn init_mode(&self) -> bool {
+        registers().mode.is_set(MiModeReg::INIT_MODE)
     }
 
-    /// Returns whether the audio interface is currently interrupted.
-    pub fn is_audio_interface_interrupted(&self) -> bool {
-        self.registers().interrupts.is_set(Interrupts::AI_INTERRUPT)
+    pub fn ebus_test_mode(&self) -> bool {
+        registers().mode.is_set(MiModeReg::EBUS_TEST_MODE)
     }
 
-    /// Returns whether the video interface is currently interrupted.
-    pub fn is_video_interface_interrupted(&self) -> bool {
-        self.registers().interrupts.is_set(Interrupts::VI_INTERRUPT)
+    pub fn rdram_reg_mode(&self) -> bool {
+        registers().mode.is_set(MiModeReg::RDRAM_REG_MODE)
     }
 
-    /// Returns whether the peripheral interface is currently interrupted.
-    pub fn is_peripheral_interface_interrupted(&self) -> bool {
-        self.registers().interrupts.is_set(Interrupts::PI_INTERRUPT)
+    pub fn set_init_length(&self, init_length: u32) {
+        registers()
+            .mode
+            .write(MiModeReg::INIT_LENGTH.val(init_length))
     }
 
-    /// Returns whether the DP system is currently interrupted.
-    pub fn is_dp_interrupted(&self) -> bool {
-        self.registers().interrupts.is_set(Interrupts::DP_INTERRUPT)
+    pub fn clear_init_mode(&self) {
+        registers().mode.write(MiModeReg::CLEAR_INIT_MODE::SET)
     }
 
-    /// Clears an existing DP interrupt.
-    pub fn clear_dp_interrupt(&self) -> &Self {
-        self.registers().mode.write(Mode::CLEAR_DP_INTERRUPT::SET);
-        self
+    pub fn set_init_mode(&self) {
+        registers().mode.write(MiModeReg::SET_INIT_MODE::SET)
     }
 
-    /// Allow audio interface interrupts to occur.
-    pub fn enable_audio_interface_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::AI_INTERRUPT_MASK::SET);
-        self
+    pub fn clear_ebus_test_mode(&self) {
+        registers().mode.write(MiModeReg::CLEAR_EBUS_TEST_MODE::SET)
     }
 
-    /// Stop audio interface interrupts from occurring.
-    pub fn disable_audio_interface_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::AI_INTERRUPT_MASK::CLEAR);
-        self
+    pub fn set_ebus_test_mode(&self) {
+        registers().mode.write(MiModeReg::SET_EBUS_TEST_MODE::SET)
     }
 
-    /// Allow video interface interrupts to occur.
-    pub fn enable_video_interface_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::VI_INTERRUPT_MASK::SET);
-        self
+    pub fn clear_dp_interrupt(&self) {
+        registers().mode.write(MiModeReg::CLEAR_DP_INTERRUPT::SET)
     }
 
-    /// Stop video interface interrupts from occurring.
-    pub fn disable_video_interface_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::VI_INTERRUPT_MASK::CLEAR);
-        self
+    pub fn clear_rdram_reg_mode(&self) {
+        registers().mode.write(MiModeReg::CLEAR_RDRAM_REG_MODE::SET)
     }
 
-    /// Allow peripheral interface interrupts to occur.
-    pub fn enable_peripheral_interface_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::PI_INTERRUPT_MASK::SET);
-        self
-    }
-
-    /// Stop peripheral interface interrupts from occurring.
-    pub fn disable_peripheral_interface_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::PI_INTERRUPT_MASK::CLEAR);
-        self
-    }
-
-    /// Allow DP interrupts to occur.
-    pub fn enable_dp_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::DP_INTERRUPT_MASK::SET);
-        self
-    }
-
-    /// Stop DP interrupts from occurring.
-    pub fn disable_dp_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::DP_INTERRUPT_MASK::CLEAR);
-        self
-    }
-
-    /// Allow serial interface interrupts to occur.
-    pub fn enable_serial_interface_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::SI_INTERRUPT_MASK::SET);
-        self
-    }
-
-    /// Stop serial interface interrupts from occurring.
-    pub fn disable_serial_interface_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::SI_INTERRUPT_MASK::CLEAR);
-        self
-    }
-
-    /// Allow stack pointer interrupts to occur.
-    pub fn enable_stack_pointer_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::SP_INTERRUPT_MASK::SET);
-        self
-    }
-
-    /// Stop stack pointer interrupts from occurring.
-    pub fn disable_stack_pointer_interrupts(&self) -> &Self {
-        self.registers()
-            .interrupt_mask
-            .write(InterruptMasks::SP_INTERRUPT_MASK::CLEAR);
-        self
+    pub fn set_rdram_reg_mode(&self) {
+        registers().mode.write(MiModeReg::SET_RDRAM_REG_MODE::SET)
     }
 }
 
-// This is a hack to allow code to run for development.
-#[cfg(not(target_vendor = "nintendo64"))]
-unsafe impl Sync for MipsInterfaceRegisters {}
+#[non_exhaustive]
+pub struct Version;
+
+impl Version {
+    pub fn io(&self) -> u32 {
+        registers().version.read(MiVersionReg::IO)
+    }
+
+    pub fn rac(&self) -> u32 {
+        registers().version.read(MiVersionReg::RAC)
+    }
+
+    pub fn rdp(&self) -> u32 {
+        registers().version.read(MiVersionReg::RDP)
+    }
+
+    pub fn rsp(&self) -> u32 {
+        registers().version.read(MiVersionReg::RSP)
+    }
+}
+
+#[non_exhaustive]
+pub struct Interrupts;
+
+impl Interrupts {
+    pub fn sp_interrupt(&self) -> bool {
+        registers().intr.is_set(MiIntrReg::SP_INTR)
+    }
+
+    pub fn si_interrupt(&self) -> bool {
+        registers().intr.is_set(MiIntrReg::SI_INTR)
+    }
+
+    pub fn ai_interrupt(&self) -> bool {
+        registers().intr.is_set(MiIntrReg::AI_INTR)
+    }
+
+    pub fn vi_interrupt(&self) -> bool {
+        registers().intr.is_set(MiIntrReg::VI_INTR)
+    }
+
+    pub fn pi_interrupt(&self) -> bool {
+        registers().intr.is_set(MiIntrReg::PI_INTR)
+    }
+
+    pub fn dp_interrupt(&self) -> bool {
+        registers().intr.is_set(MiIntrReg::DP_INTR)
+    }
+}
+
+#[non_exhaustive]
+pub struct InterruptMasks;
+
+impl InterruptMasks {
+    pub fn sp_interrupt_mask(&self) -> bool {
+        registers().intr_mask.is_set(MiIntrMaskReg::SP_INTR_MASK)
+    }
+
+    pub fn si_interrupt_mask(&self) -> bool {
+        registers().intr_mask.is_set(MiIntrMaskReg::SI_INTR_MASK)
+    }
+
+    pub fn ai_interrupt_mask(&self) -> bool {
+        registers().intr_mask.is_set(MiIntrMaskReg::AI_INTR_MASK)
+    }
+
+    pub fn vi_interrupt_mask(&self) -> bool {
+        registers().intr_mask.is_set(MiIntrMaskReg::VI_INTR_MASK)
+    }
+
+    pub fn pi_interrupt_mask(&self) -> bool {
+        registers().intr_mask.is_set(MiIntrMaskReg::PI_INTR_MASK)
+    }
+
+    pub fn dp_interrupt_mask(&self) -> bool {
+        registers().intr_mask.is_set(MiIntrMaskReg::DP_INTR_MASK)
+    }
+
+    pub fn clear_sp_interrupt_mask(&self) {
+        registers()
+            .intr_mask
+            .write(MiIntrMaskReg::CLEAR_SP_MASK::SET)
+    }
+
+    pub fn set_sp_interrupt_mask(&self) {
+        registers().intr_mask.write(MiIntrMaskReg::SET_SP_MASK::SET)
+    }
+
+    pub fn clear_si_interrupt_mask(&self) {
+        registers()
+            .intr_mask
+            .write(MiIntrMaskReg::CLEAR_SI_MASK::SET)
+    }
+
+    pub fn set_si_interrupt_mask(&self) {
+        registers().intr_mask.write(MiIntrMaskReg::SET_SI_MASK::SET)
+    }
+
+    pub fn clear_ai_interrupt_mask(&self) {
+        registers()
+            .intr_mask
+            .write(MiIntrMaskReg::CLEAR_AI_MASK::SET)
+    }
+
+    pub fn set_ai_interrupt_mask(&self) {
+        registers().intr_mask.write(MiIntrMaskReg::SET_AI_MASK::SET)
+    }
+
+    pub fn clear_vi_interrupt_mask(&self) {
+        registers()
+            .intr_mask
+            .write(MiIntrMaskReg::CLEAR_VI_MASK::SET)
+    }
+
+    pub fn set_vi_interrupt_mask(&self) {
+        registers().intr_mask.write(MiIntrMaskReg::SET_VI_MASK::SET)
+    }
+
+    pub fn clear_pi_interrupt_mask(&self) {
+        registers()
+            .intr_mask
+            .write(MiIntrMaskReg::CLEAR_PI_MASK::SET)
+    }
+
+    pub fn set_pi_interrupt_mask(&self) {
+        registers().intr_mask.write(MiIntrMaskReg::SET_PI_MASK::SET)
+    }
+
+    pub fn clear_dp_interrupt_mask(&self) {
+        registers()
+            .intr_mask
+            .write(MiIntrMaskReg::CLEAR_DP_MASK::SET)
+    }
+
+    pub fn set_dp_interrupt_mask(&self) {
+        registers().intr_mask.write(MiIntrMaskReg::SET_DP_MASK::SET)
+    }
+}
 
 register_structs! {
-    MipsInterfaceRegisters {
-        (0x0000 => pub mode: ReadWrite<u32, Mode::Register>),
-        (0x0004 => pub version: ReadOnly<u32, Version::Register>),
-        (0x0008 => pub interrupts: ReadOnly<u32, Interrupts::Register>),
-        (0x000C => pub interrupt_mask: ReadWrite<u32, InterruptMasks::Register>),
+    Registers {
+        (0x0000 => pub mode: ReadWrite<u32, MiModeReg::Register>),
+        (0x0004 => pub version: ReadOnly<u32, MiVersionReg::Register>),
+        (0x0008 => pub intr: ReadOnly<u32, MiIntrReg::Register>),
+        (0x000C => pub intr_mask: ReadWrite<u32, MiIntrMaskReg::Register>),
         (0x0010 => @END),
     }
 }
@@ -199,56 +236,55 @@ register_structs! {
 register_bitfields! {
     u32,
 
-    Mode [
+    MiModeReg [
         INIT_LENGTH             OFFSET(0)  NUMBITS(7) [],
         INIT_MODE               OFFSET(7)  NUMBITS(1) [],
         EBUS_TEST_MODE          OFFSET(8)  NUMBITS(1) [],
         RDRAM_REG_MODE          OFFSET(9)  NUMBITS(1) [],
-
         CLEAR_INIT_MODE         OFFSET(7)  NUMBITS(1) [],
         SET_INIT_MODE           OFFSET(8)  NUMBITS(1) [],
         CLEAR_EBUS_TEST_MODE    OFFSET(9)  NUMBITS(1) [],
         SET_EBUS_TEST_MODE      OFFSET(10) NUMBITS(1) [],
         CLEAR_DP_INTERRUPT      OFFSET(11) NUMBITS(1) [],
-        CLEAR_RDRAM_REG         OFFSET(12) NUMBITS(1) [],
-        SET_RDRAM_REG           OFFSET(13) NUMBITS(1) [],
+        CLEAR_RDRAM_REG_MODE         OFFSET(12) NUMBITS(1) [],
+        SET_RDRAM_REG_MODE           OFFSET(13) NUMBITS(1) [],
     ],
 
-    Version [
+    MiVersionReg [
         IO                      OFFSET(0)  NUMBITS(8) [],
         RAC                     OFFSET(8)  NUMBITS(8) [],
         RDP                     OFFSET(16) NUMBITS(8) [],
         RSP                     OFFSET(24) NUMBITS(8) [],
     ],
 
-    Interrupts [
-        SP_INTERRUPT            OFFSET(0)  NUMBITS(1) [],
-        SI_INTERRUPT            OFFSET(1)  NUMBITS(1) [],
-        AI_INTERRUPT            OFFSET(2)  NUMBITS(1) [],
-        VI_INTERRUPT            OFFSET(3)  NUMBITS(1) [],
-        PI_INTERRUPT            OFFSET(4)  NUMBITS(1) [],
-        DP_INTERRUPT            OFFSET(5)  NUMBITS(1) [],
+    MiIntrReg [
+        SP_INTR            OFFSET(0)  NUMBITS(1) [],
+        SI_INTR            OFFSET(1)  NUMBITS(1) [],
+        AI_INTR            OFFSET(2)  NUMBITS(1) [],
+        VI_INTR            OFFSET(3)  NUMBITS(1) [],
+        PI_INTR            OFFSET(4)  NUMBITS(1) [],
+        DP_INTR            OFFSET(5)  NUMBITS(1) [],
     ],
 
-    InterruptMasks [
-        SP_INTERRUPT_MASK       OFFSET(0)  NUMBITS(1) [],
-        SI_INTERRUPT_MASK       OFFSET(1)  NUMBITS(1) [],
-        AI_INTERRUPT_MASK       OFFSET(2)  NUMBITS(1) [],
-        VI_INTERRUPT_MASK       OFFSET(3)  NUMBITS(1) [],
-        PI_INTERRUPT_MASK       OFFSET(4)  NUMBITS(1) [],
-        DP_INTERRUPT_MASK       OFFSET(5)  NUMBITS(1) [],
+    MiIntrMaskReg [
+        SP_INTR_MASK       OFFSET(0)  NUMBITS(1) [],
+        SI_INTR_MASK       OFFSET(1)  NUMBITS(1) [],
+        AI_INTR_MASK       OFFSET(2)  NUMBITS(1) [],
+        VI_INTR_MASK       OFFSET(3)  NUMBITS(1) [],
+        PI_INTR_MASK       OFFSET(4)  NUMBITS(1) [],
+        DP_INTR_MASK       OFFSET(5)  NUMBITS(1) [],
 
-        CLEAR_SP_INTERRUPT_MASK OFFSET(0)  NUMBITS(1) [],
-        SET_SP_INTERRUPT_MASK   OFFSET(1)  NUMBITS(1) [],
-        CLEAR_SI_INTERRUPT_MASK OFFSET(2)  NUMBITS(1) [],
-        SET_SI_INTERRUPT_MASK   OFFSET(3)  NUMBITS(1) [],
-        CLEAR_AI_INTERRUPT_MASK OFFSET(4)  NUMBITS(1) [],
-        SET_AI_INTERRUPT_MASK   OFFSET(5)  NUMBITS(1) [],
-        CLEAR_VI_INTERRUPT_MASK OFFSET(6)  NUMBITS(1) [],
-        SET_VI_INTERRUPT_MASK   OFFSET(7)  NUMBITS(1) [],
-        CLEAR_PI_INTERRUPT_MASK OFFSET(8)  NUMBITS(1) [],
-        SET_PI_INTERRUPT_MASK   OFFSET(9)  NUMBITS(1) [],
-        CLEAR_DP_INTERRUPT_MASK OFFSET(10) NUMBITS(1) [],
-        SET_DP_INTERRUPT_MASK   OFFSET(11) NUMBITS(1) [],
+        CLEAR_SP_MASK OFFSET(0)  NUMBITS(1) [],
+        SET_SP_MASK   OFFSET(1)  NUMBITS(1) [],
+        CLEAR_SI_MASK OFFSET(2)  NUMBITS(1) [],
+        SET_SI_MASK   OFFSET(3)  NUMBITS(1) [],
+        CLEAR_AI_MASK OFFSET(4)  NUMBITS(1) [],
+        SET_AI_MASK   OFFSET(5)  NUMBITS(1) [],
+        CLEAR_VI_MASK OFFSET(6)  NUMBITS(1) [],
+        SET_VI_MASK   OFFSET(7)  NUMBITS(1) [],
+        CLEAR_PI_MASK OFFSET(8)  NUMBITS(1) [],
+        SET_PI_MASK   OFFSET(9)  NUMBITS(1) [],
+        CLEAR_DP_MASK OFFSET(10) NUMBITS(1) [],
+        SET_DP_MASK   OFFSET(11) NUMBITS(1) [],
     ]
 }
