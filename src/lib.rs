@@ -22,7 +22,25 @@ pub mod vi;
 
 /// A global, static reference to the hardware peripherals of the Nintendo 64.
 pub static mut HARDWARE: Hardware = Hardware {
-    peripheral_interface: Peripheral::new(pi::PeripheralInterface),
+    peripheral_interface: Peripheral::new(pi::PeripheralInterface {
+        cart_address: pi::CartAddress,
+        dram_address: pi::DramAddress,
+        write_length: pi::WriteLength,
+        read_length: pi::ReadLength,
+        domain_1: pi::Domain1 {
+            release_duration: pi::Domain1ReleaseDuration,
+            pulse_width: pi::Domain1PulseWidth,
+            page_size: pi::Domain1PageSize,
+            latency: pi::Domain1Latency,
+        },
+        domain_2: pi::Domain2 {
+            release_duration: pi::Domain2ReleaseDuration,
+            pulse_width: pi::Domain2PulseWidth,
+            page_size: pi::Domain2PageSize,
+            latency: pi::Domain2Latency,
+        },
+        status: pi::Status,
+    }),
     serial_interface: Peripheral::new(si::SerialInterface),
     audio_interface: Peripheral::new(ai::AudioInterface {
         dram_addr: ai::DramAddr,
