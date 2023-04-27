@@ -54,7 +54,16 @@ pub static mut HARDWARE: Hardware = Hardware {
         imem_bist: pc::ImemBist,
         control: pc::Control,
     }),
-    rdram_interface: Peripheral::new(ri::RdramInterface),
+    rdram_interface: Peripheral::new(ri::RdramInterface {
+        current_load: ri::CurrentLoad,
+        write_error: ri::WriteError,
+        read_error: ri::ReadError,
+        latency: ri::Latency,
+        refresh: ri::Refresh,
+        config: ri::Config,
+        select: ri::Select,
+        mode: ri::Mode,
+    }),
     video_interface: Peripheral::new(vi::VideoInterface),
     mips_interface: Peripheral::new(mi::MipsInterface {
         interrupt_masks: mi::InterruptMasks,
