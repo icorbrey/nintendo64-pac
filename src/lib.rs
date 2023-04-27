@@ -41,7 +41,12 @@ pub static mut HARDWARE: Hardware = Hardware {
         },
         status: pi::Status,
     }),
-    serial_interface: Peripheral::new(si::SerialInterface),
+    serial_interface: Peripheral::new(si::SerialInterface {
+        pif_address_write_64_bits: si::PifAddressWrite64Bits,
+        pif_address_read_64_bits: si::PifAddressRead64Bits,
+        dram_address: si::DramAddress,
+        status: si::Status,
+    }),
     audio_interface: Peripheral::new(ai::AudioInterface {
         dram_addr: ai::DramAddr,
         bit_rate: ai::BitRate,
