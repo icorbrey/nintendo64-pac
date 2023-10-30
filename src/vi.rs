@@ -12,35 +12,15 @@ use tock_registers::{
 use crate::HARDWARE;
 
 /// The static address of the Nintendo 64's video interface registers.
-#[cfg(target_vendor = "nintendo64")]
 const VI_REGS_BASE: usize = 0x0440_0000;
-
-#[cfg(not(target_vendor = "nintendo64"))]
-lazy_static::lazy_static! {
-    /// A registry access analogue for development and testing.
-    ///
-    /// We have to modify the registry access mechanism when building for
-    /// architectures other than the Nintendo 64 since the production registry
-    /// access mechanism accesses a static memory location. This is disallowed
-    /// on modern operating systems, so we instead dynamically allocate the
-    /// memory so that testing and development can occur.
-    static ref REGISTERS: VideoInterfaceRegisters = unsafe { std::mem::zeroed() };
-}
 
 #[non_exhaustive]
 pub struct VideoInterface;
 
 impl VideoInterface {
     /// Gets a reference to the video interface registers.
-    #[cfg(target_vendor = "nintendo64")]
     fn registers<'a>(&self) -> &'a VideoInterfaceRegisters {
         unsafe { &mut *(VI_REGS_BASE as *mut VideoInterfaceRegisters) }
-    }
-
-    /// Gets a reference to the video interface registers.
-    #[cfg(not(target_vendor = "nintendo64"))]
-    fn registers<'a>(&self) -> &'a REGISTERS {
-        &REGISTERS
     }
 
     /// Returns ownership of the video interface registers to

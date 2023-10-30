@@ -1,10 +1,6 @@
 //! # Nintendo 64 PAC
-//!
-//! Provides access to low-level Nintendo 64 memory in a type- and memory-safe
-//! way.
 
-// Don't include the standard library on the Nintendo 64.
-#![cfg_attr(target_vendor = "nintendo64", no_std)]
+#![no_std]
 
 use core::mem::replace;
 
@@ -19,6 +15,11 @@ pub mod ri;
 pub mod si;
 pub mod sp;
 pub mod vi;
+
+pub mod prelude {
+    pub use super::ai::Ai;
+    pub use super::dpc::Dpc;
+}
 
 /// A global, static reference to the hardware peripherals of the Nintendo 64.
 pub static mut HARDWARE: Hardware = Hardware {
@@ -46,14 +47,6 @@ pub static mut HARDWARE: Hardware = Hardware {
         pif_address_read_64_bits: si::PifAddressRead64Bits,
         dram_address: si::DramAddress,
         status: si::Status,
-    }),
-    audio_interface: Peripheral::new(ai::AudioInterface {
-        dram_addr: ai::DramAddr,
-        bit_rate: ai::BitRate,
-        dac_rate: ai::DacRate,
-        control: ai::Control,
-        status: ai::Status,
-        len: ai::Len,
     }),
     program_counter: Peripheral::new(pc::ProgramCounter {
         imem_bist: pc::ImemBist,
@@ -98,16 +91,6 @@ pub static mut HARDWARE: Hardware = Hardware {
         delay: rdram::Delay,
         mode: rdram::Mode,
     }),
-    dpc: Peripheral::new(dpc::Dpc {
-        buffer_busy: dpc::BufferBusy,
-        dma_current: dpc::DmaCurrent,
-        dma_start: dpc::DmaStart,
-        pipe_busy: dpc::PipeBusy,
-        tmem_load: dpc::TmemLoad,
-        dma_end: dpc::DmaEnd,
-        status: dpc::Status,
-        clock: dpc::Clock,
-    }),
     dps: Peripheral::new(dps::Dps {
         buffer_test_address: dps::BufferTestAddress,
         buffer_test_data: dps::BufferTestData,
@@ -123,9 +106,6 @@ pub struct Hardware {
 
     /// Controlled reference to the serial interface.
     pub serial_interface: Peripheral<si::SerialInterface>,
-
-    /// Controlled reference to the audio interface.
-    pub audio_interface: Peripheral<ai::AudioInterface>,
 
     /// Controlled reference to the program counter.
     pub program_counter: Peripheral<pc::ProgramCounter>,
@@ -144,9 +124,6 @@ pub struct Hardware {
 
     /// Controlled reference to the RDRAM system.
     pub rdram: Peripheral<rdram::Rdram>,
-
-    /// Controlled reference to the DPC system.
-    pub dpc: Peripheral<dpc::Dpc>,
 
     /// Controlled reference to the DPS system.
     pub dps: Peripheral<dps::Dps>,
@@ -192,25 +169,12 @@ pub enum HardwareError {
 #[macro_export]
 macro_rules! register_access {
     ($base:expr, $reg_type:tt) => {
-        #[cfg(target_vendor = "nintendo64")]
         const REGS_BASE: usize = $base;
 
-        #[cfg(target_vendor = "nintendo64")]
         fn registers<'a>() -> &'a $reg_type {
             unsafe { &*(REGS_BASE as *const $reg_type) }
         }
 
-        #[cfg(not(target_vendor = "nintendo64"))]
         unsafe impl Sync for $reg_type {}
-
-        #[cfg(not(target_vendor = "nintendo64"))]
-        lazy_static::lazy_static! {
-            static ref REGS: $reg_type = unsafe { std::mem::zeroed() };
-        }
-
-        #[cfg(not(target_vendor = "nintendo64"))]
-        fn registers<'a>() -> &'a REGS {
-            &REGS
-        }
     };
 }

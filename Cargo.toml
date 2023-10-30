@@ -14,4 +14,5 @@ repository = "https://github.com/icorbrey/nintendo64-pac"
 
 [dependencies]
 lazy_static = "1.4.0"
+proc-bitfield = "0.3.0"
 tock-registers = "0.8.1"
