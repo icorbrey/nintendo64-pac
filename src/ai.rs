@@ -26,22 +26,22 @@ impl Deref for Ai {
 /// Audio interface register block.
 #[repr(C)]
 pub struct AiRegisters {
-    /// 0x00 - Address of audio sample in DRAM.
+    /// `0x00` - Address of audio sample in DRAM.
     pub ai_dram_addr_reg: AiDramAddrReg,
 
-    /// 0x04 - Length of audio sample.
+    /// `0x04` - Length of audio sample.
     pub ai_len_reg: AiLenReg,
 
-    /// 0x08 - Control register #TK
+    /// `0x08` - Control register #TK
     pub ai_control_reg: AiControlReg,
 
-    /// 0x0C - Status register #TK
+    /// `0x0C` - Status register #TK
     pub ai_status_reg: AiStatusReg,
 
-    /// 0x10 - DAC rate register #TK
+    /// `0x10` - DAC rate register #TK
     pub ai_dacrate_reg: AiDacrateReg,
 
-    /// 0x14 - Bitrate register #TK
+    /// `0x14` - Bitrate register #TK
     pub ai_bitrate_reg: AiBitrateReg,
 }
 

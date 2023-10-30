@@ -26,28 +26,28 @@ impl Deref for Dpc {
 /// DP command register block.
 #[repr(C)]
 pub struct DpcRegisters {
-    /// 0x00 - Start register #TK
+    /// `0x00` - Start register #TK
     pub dpc_start_reg: DpcStartReg,
 
-    /// 0x04 - End register #TK
+    /// `0x04` - End register #TK
     pub dpc_end_reg: DpcEndReg,
 
-    /// 0x08 - Current register #TK
+    /// `0x08` - Current register #TK
     pub dpc_current_reg: DpcCurrentReg,
 
-    /// 0x0C - Status register #TK
+    /// `0x0C` - Status register #TK
     pub dpc_status_reg: DpcStatusReg,
 
-    /// 0x10 - Clock register #TK
+    /// `0x10` - Clock register #TK
     pub dpc_clock_reg: DpcClockReg,
 
-    /// 0x14 - Bufbusy register #TK
+    /// `0x14` - Bufbusy register #TK
     pub dpc_bufbusy_reg: DpcBufbusyReg,
 
-    /// 0x18 - Pipebusy register #TK
+    /// `0x18` - Pipebusy register #TK
     pub dpc_pipebusy_reg: DpcPipebusyReg,
 
-    /// 0x1C - TMEM register #TK
+    /// `0x1C` - TMEM register #TK
     pub dpc_tmem_reg: DpcTmemReg,
 }
 

@@ -1,4 +1,4 @@
-//! # Stack pointer
+//! # Stack Pointer
 
 use core::ops::Deref;
 
@@ -26,28 +26,28 @@ impl Deref for Sp {
 /// Stack pointer register block.
 #[repr(C)]
 pub struct SpRegisters {
-    /// 0x00 - DMEM/IMEM address
+    /// `0x00` - DMEM/IMEM address
     pub sp_mem_addr_reg: SpMemAddrReg,
 
-    /// 0x04 - DRAM address
+    /// `0x04` - DRAM address
     pub sp_dram_addr_reg: SpDramAddrReg,
 
-    /// 0x08 - Read length
+    /// `0x08` - Read length
     pub sp_rd_len_reg: SpRdLenReg,
 
-    /// 0x0C - Write length
+    /// `0x0C` - Write length
     pub sp_wr_len_reg: SpWrLenReg,
 
-    /// 0x10 - Status
+    /// `0x10` - Status
     pub sp_status_reg: SpStatusReg,
 
-    /// 0x14 - DMA full
+    /// `0x14` - DMA full
     pub sp_dma_full_reg: SpDmaFullReg,
 
-    /// 0x18 - DMA busy
+    /// `0x18` - DMA busy
     pub sp_dma_busy_reg: SpDmaBusyReg,
 
-    /// 0x1C - Semaphore
+    /// `0x1C` - Semaphore
     pub sp_semaphore_reg: SpSemaphoreReg,
 }
 
