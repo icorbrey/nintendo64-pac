@@ -19,6 +19,8 @@ pub mod vi;
 pub mod prelude {
     pub use super::ai::Ai;
     pub use super::dpc::Dpc;
+    pub use super::rdram::Rdram;
+    pub use super::sp::Sp;
 }
 
 /// A global, static reference to the hardware peripherals of the Nintendo 64.
@@ -69,28 +71,6 @@ pub static mut HARDWARE: Hardware = Hardware {
         version: mi::Version,
         mode: mi::Mode,
     }),
-    stack_pointer: Peripheral::new(sp::StackPointer {
-        memory_address: sp::MemoryAddress,
-        dram_address: sp::DramAddress,
-        write_length: sp::WriteLength,
-        read_length: sp::ReadLength,
-        semaphore: sp::Semaphore,
-        dma_busy: sp::DmaBusy,
-        dma_full: sp::DmaFull,
-        status: sp::Status,
-    }),
-    rdram: Peripheral::new(rdram::Rdram {
-        device_manufacturer: rdram::DeviceManufacturer,
-        address_select: rdram::AddressSelect,
-        min_interval: rdram::MinInterval,
-        ras_interval: rdram::RasInterval,
-        ref_interval: rdram::RefInterval,
-        device_id: rdram::DeviceId,
-        ref_row: rdram::RefRow,
-        config: rdram::Config,
-        delay: rdram::Delay,
-        mode: rdram::Mode,
-    }),
     dps: Peripheral::new(dps::Dps {
         buffer_test_address: dps::BufferTestAddress,
         buffer_test_data: dps::BufferTestData,
@@ -118,12 +98,6 @@ pub struct Hardware {
 
     /// Controlled reference to the MIPS interface.
     pub mips_interface: Peripheral<mi::MipsInterface>,
-
-    /// Controlled reference to the stack pointer.
-    pub stack_pointer: Peripheral<sp::StackPointer>,
-
-    /// Controlled reference to the RDRAM system.
-    pub rdram: Peripheral<rdram::Rdram>,
 
     /// Controlled reference to the DPS system.
     pub dps: Peripheral<dps::Dps>,
