@@ -4,28 +4,14 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-const PC_BASE_REG: u32 = 0x0408_0000;
+use crate::{impl_deref, impl_get, impl_interface, impl_set};
 
-/// Program counter.
+/// Program Counter Interface
 pub struct Pc;
 
-impl Pc {
-    pub fn ptr() -> *const PcRegisters {
-        PC_BASE_REG as *const _
-    }
-}
+impl_interface!(Pc, PcRegisters, 0x0408_0000);
 
-unsafe impl Sync for Pc {}
-
-impl Deref for Pc {
-    type Target = PcRegisters;
-
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*Self::ptr() }
-    }
-}
-
-/// Program counter register block.
+/// # Program Counter Register Block
 #[repr(C)]
 pub struct PcRegisters {
     /// `0x00` - Program counter
@@ -36,27 +22,36 @@ pub struct PcRegisters {
 }
 
 bitfield! {
-    /// Stack pointer program counter register.
+    /// # Stack Pointer Program Counter Register
     pub struct SpPcReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub program_counter: u16 @ 0..12,
+        pub program_counter: u16 [get ProgramCounter, try_set ProgramCounter] @ 0..12,
     }
 }
 
 bitfield! {
-    /// Stack pointer IMEM BIST register.
+    /// # Stack Pointer IMEM BIST Register
     pub struct SpIbistReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub bist_check: bool @ 0,
         pub bist_go: bool @ 1,
-
         pub bist_done: bool [read_only] @ 2,
-        pub bist_fail: u8 [read_only] @ 3..7,
-
+        pub bist_fail: u8 [read_only, get BistFail] @ 3..7,
         pub bist_clear: bool [write_only] @ 2,
     }
 }
+
+/// # Program Counter
+#[derive(Debug)]
+pub struct ProgramCounter(pub u16);
+
+impl_deref!(ProgramCounter, u16);
+impl_get!(ProgramCounter, u16);
+impl_set!(ProgramCounter, u16, 0..12);
+
+/// # BIST Failure
+#[derive(Debug)]
+pub struct BistFail(pub u8);
+
+impl_deref!(BistFail, u8);
+impl_get!(BistFail, u8);
