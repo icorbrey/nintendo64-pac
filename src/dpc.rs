@@ -4,89 +4,68 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-const DPC_BASE_REG: u32 = 0x0410_0000;
+use crate::{impl_deref, impl_get, impl_interface, impl_set};
 
-/// DP command.
+/// # DP Command
 pub struct Dpc;
 
-impl Dpc {
-    pub fn ptr() -> *const DpcRegisters {
-        DPC_BASE_REG as *const _
-    }
-}
-
-unsafe impl Sync for Dpc {}
-
-impl Deref for Dpc {
-    type Target = DpcRegisters;
-
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*Self::ptr() }
-    }
-}
+impl_interface!(Dpc, DpcRegisters, 0x0410_0000);
 
 /// DP command register block.
 #[repr(C)]
 pub struct DpcRegisters {
-    /// `0x00` - Start register #TK
+    /// `0x00` - Start address
     pub dpc_start_reg: DpcStartReg,
 
-    /// `0x04` - End register #TK
+    /// `0x04` - End address
     pub dpc_end_reg: DpcEndReg,
 
-    /// `0x08` - Current register #TK
+    /// `0x08` - Current address
     pub dpc_current_reg: DpcCurrentReg,
 
-    /// `0x0C` - Status register #TK
+    /// `0x0C` - Status
     pub dpc_status_reg: DpcStatusReg,
 
-    /// `0x10` - Clock register #TK
+    /// `0x10` - Clock
     pub dpc_clock_reg: DpcClockReg,
 
-    /// `0x14` - Bufbusy register #TK
+    /// `0x14` - Bufbusy
     pub dpc_bufbusy_reg: DpcBufbusyReg,
 
-    /// `0x18` - Pipebusy register #TK
+    /// `0x18` - Pipebusy
     pub dpc_pipebusy_reg: DpcPipebusyReg,
 
-    /// `0x1C` - TMEM register #TK
+    /// `0x1C` - TMEM
     pub dpc_tmem_reg: DpcTmemReg,
 }
 
 bitfield! {
-    /// DP command start register.
+    /// # DP Command Start Register
     pub struct DpcStartReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub start_address: u32 @ 0..24,
+        pub start_address: u32 [get RdramAddress, try_set RdramAddress] @ 0..24,
     }
 }
 
 bitfield! {
-    /// DP command end register.
+    /// # DP Command End Register
     pub struct DpcEndReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub end_address: u32 @ 0..24,
+        pub end_address: u32 [get RdramAddress, try_set RdramAddress] @ 0..24,
     }
 }
 
 bitfield! {
-    /// DP command current register.
+    /// # DP Command Current Register
     pub struct DpcCurrentReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub current_address: u32 @ 0..24
+        pub current_address: u32 [read_only, get RdramAddress] @ 0..24,
     }
 }
 
 bitfield! {
-    /// DP command status register.
+    /// # DP Command Status Register
     pub struct DpcStatusReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
 
         pub xbus_dmem_dma: bool [read_only] @ 0,
@@ -115,41 +94,48 @@ bitfield! {
 }
 
 bitfield! {
-    /// DP command clock register.
+    /// # DP Command Clock Register
     pub struct DpcClockReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub clock_counter: u32 [read_only] @ 0..24,
+        pub clock_counter: u32 [read_only, get ClockCounter] @ 0..24,
     }
 }
 
 bitfield! {
-    /// DP command bufbusy register.
+    /// # DP Command Bufbusy Register
     pub struct DpcBufbusyReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub clock_counter: u32 [read_only] @ 0..24,
+        pub clock_counter: u32 [read_only, get ClockCounter] @ 0..24,
     }
 }
 
 bitfield! {
-    /// DP command pipebusy register.
+    /// # DP Command Pipebusy Register
     pub struct DpcPipebusyReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub clock_counter: u32 [read_only] @ 0..24,
+        pub clock_counter: u32 [read_only, get ClockCounter] @ 0..24,
     }
 }
 
 bitfield! {
-    /// DP command TMEM register.
+    /// # DP Command TMEM Register
     pub struct DpcTmemReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub clock_counter: u32 [read_only] @ 0..24,
+        pub clock_counter: u32 [read_only, get ClockCounter] @ 0..24,
     }
 }
+
+/// # RDRAM Address
+#[derive(Debug)]
+pub struct RdramAddress(pub u32);
+
+impl_deref!(RdramAddress, u32);
+impl_get!(RdramAddress, u32);
+impl_set!(RdramAddress, u32, 0..24);
+
+/// # Clock Counter
+#[derive(Debug)]
+pub struct ClockCounter(pub u32);
+
+impl_deref!(ClockCounter, u32);
+impl_get!(ClockCounter, u32);
