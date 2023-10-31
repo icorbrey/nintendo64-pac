@@ -5,6 +5,7 @@
 pub mod ai;
 pub mod dpc;
 pub mod dps;
+mod macros;
 pub mod mi;
 pub mod pc;
 pub mod pi;
