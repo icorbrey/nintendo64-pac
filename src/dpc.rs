@@ -11,7 +11,7 @@ pub struct Dpc;
 
 impl_interface!(Dpc, DpcRegisters, 0x0410_0000);
 
-/// DP command register block.
+/// # DP Command Register Block
 #[repr(C)]
 pub struct DpcRegisters {
     /// `0x00` - Start address
