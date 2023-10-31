@@ -14,16 +14,16 @@ impl_interface!(Dps, DpsRegisters, 0x0420_0000);
 /// # DP Span Register Block
 #[repr(C)]
 pub struct DpsRegisters {
-    /// 0x00 - TBIST
+    /// `0x00` - TBIST
     pub dps_tbist_reg: DpsTbistReg,
 
-    /// 0x04 - Test mode
+    /// `0x04` - Test mode
     pub dps_test_mode_reg: DpsTestModeReg,
 
-    /// 0x08 - Buffer test address
+    /// `0x08` - Buffer test address
     pub dps_buftest_addr_reg: DpsBuftestAddrReg,
 
-    /// 0x0C - Buffer test data
+    /// `0x0C` - Buffer test data
     pub dps_buftest_data_reg: DpsBuftestDataReg,
 }
 
