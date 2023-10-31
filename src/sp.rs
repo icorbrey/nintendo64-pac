@@ -56,6 +56,9 @@ pub struct SpRegisters {
 bitfield! {
     /// Stack pointer DMEM/IMEM address register.
     pub struct SpMemAddrReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub mem_address: u16 @ 0..12,
         pub dmem_imem: bool @ 12,
     }
@@ -64,6 +67,9 @@ bitfield! {
 bitfield! {
     /// Stack pointer RDRAM address register.
     pub struct SpDramAddrReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub rdram_address: u32 @ 0..24,
     }
 }
@@ -71,6 +77,9 @@ bitfield! {
 bitfield! {
     /// Stack pointer read length register.
     pub struct SpRdLenReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub length: u16 @ 0..12,
         pub count: u8 @ 12..20,
         pub skip: u16 @ 20..32,
@@ -80,6 +89,9 @@ bitfield! {
 bitfield! {
     /// Stack pointer write length register.
     pub struct SpWrLenReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub length: u16 @ 0..12,
         pub count: u8 @ 12..20,
         pub skip: u16 @ 20..32,
@@ -89,6 +101,9 @@ bitfield! {
 bitfield! {
     /// Stack pointer status register.
     pub struct SpStatusReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub halt: bool [read_only] @ 0,
         pub broke: bool [read_only] @ 1,
         pub dma_busy: bool [read_only] @ 2,
@@ -136,6 +151,9 @@ bitfield! {
 bitfield! {
     /// Stack pointer DMA full register.
     pub struct SpDmaFullReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub dma_full: bool [read_only] @ 0,
     }
 }
@@ -143,6 +161,9 @@ bitfield! {
 bitfield! {
     /// Stack pointer DMA busy register.
     pub struct SpDmaBusyReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub dma_busy: bool [read_only] @ 0,
     }
 }
@@ -150,6 +171,9 @@ bitfield! {
 bitfield! {
     /// Stack pointer semaphore register.
     pub struct SpSemaphoreReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         /// Note: Sets on read.
         pub semaphore_flag: bool [read_only] @ 0,
         pub clear_semaphore_flag: bool [write_only] @ 0,

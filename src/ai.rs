@@ -50,6 +50,9 @@ pub struct AiRegisters {
 bitfield! {
     /// Audio interface DRAM address register.
     pub struct AiDramAddrReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub dram_addr: u32 [write_only] @ 0..24,
     }
 }
@@ -57,6 +60,9 @@ bitfield! {
 bitfield! {
     /// Audio interface length register.
     pub struct AiLenReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub transfer_length_v1: u32 @ 0..15,
         pub transfer_length_v2: u32 @ 0..18,
     }
@@ -65,6 +71,9 @@ bitfield! {
 bitfield! {
     /// Audio interface control register.
     pub struct AiControlReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub dma_enable: bool [write_only] @ 0,
     }
 }
@@ -72,6 +81,9 @@ bitfield! {
 bitfield! {
     /// Audio interface status register.
     pub struct AiStatusReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub ai_busy: bool [read_only] @ 30,
         pub ai_full: bool [read_only] @ 31,
         pub clear_ai_intr: bool [write_only] @ 0,
@@ -81,6 +93,9 @@ bitfield! {
 bitfield! {
     /// Audio interface DAC rate register.
     pub struct AiDacrateReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub dacrate: u16 [write_only] @ 0..14,
     }
 }
@@ -88,6 +103,9 @@ bitfield! {
 bitfield! {
     /// Audio interface bitrate register.
     pub struct AiBitrateReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub bitrate: u8 [write_only] @ 0..4,
     }
 }

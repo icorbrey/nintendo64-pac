@@ -44,6 +44,9 @@ pub struct DpsRegisters {
 bitfield! {
     /// DP span TBIST register.
     pub struct DpsTbistReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub bist_check: bool @ 0,
         pub bist_go: bool @ 1,
         pub bist_clear: bool [write_only] @ 2,
@@ -55,6 +58,9 @@ bitfield! {
 bitfield! {
     /// DP span test mode register.
     pub struct DpsTestModeReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub span_buffer_test_access_enable: bool @ 0,
     }
 }
@@ -62,6 +68,9 @@ bitfield! {
 bitfield! {
     /// DP span buffer test address register.
     pub struct DpsBuftestAddrReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub span_buffer_address: u8 @ 0..7,
     }
 }
@@ -69,6 +78,9 @@ bitfield! {
 bitfield! {
     /// DP span buffer test data register.
     pub struct DpsBuftestDataReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub span_buffer_data: u32 @ 0..32,
     }
 }

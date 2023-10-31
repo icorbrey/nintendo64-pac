@@ -71,6 +71,9 @@ pub struct PiRegisters {
 bitfield! {
     /// Peripheral interface DRAM address register.
     pub struct PiDramAddrReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub starting_rdram_address: u32 @ 0..24,
     }
 }
@@ -78,6 +81,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface PBUS (cartridge) address register.
     pub struct PiCartAddrReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub starting_ad16_address: u32 @ 0..32,
     }
 }
@@ -85,6 +91,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface read length register.
     pub struct PiRdLenReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub read_data_length: u32 @ 0..24,
     }
 }
@@ -92,6 +101,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface write length register.
     pub struct PiWrLenReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub write_data_length: u32 @ 0..24,
     }
 }
@@ -99,6 +111,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface status register.
     pub struct PiStatusReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub dma_busy: bool [read_only] @ 0,
         pub io_busy: bool [read_only] @ 1,
         pub error: bool [read_only] @ 2,
@@ -111,6 +126,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface domain 1 latency register.
     pub struct PiBsdDom1LatReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub latency: u8 @ 0..8,
     }
 }
@@ -118,6 +136,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface domain 1 pulse width register.
     pub struct PiBsdDom1PwdReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub pulse_width: u8 @ 0..8,
     }
 }
@@ -125,6 +146,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface domain 1 page size register.
     pub struct PiBsdDom1PgsReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub page_size: u8 @ 0..4,
     }
 }
@@ -132,6 +156,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface domain 1 release register.
     pub struct PiBsdDom1RlsReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub release: u8 @ 0..2,
     }
 }
@@ -139,6 +166,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface domain 2 latency register.
     pub struct PiBsdDom2LatReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub latency: u8 @ 0..8,
     }
 }
@@ -146,6 +176,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface domain 2 pulse width register.
     pub struct PiBsdDom2PwdReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub pulse_width: u8 @ 0..8,
     }
 }
@@ -153,6 +186,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface domain 2 page size register.
     pub struct PiBsdDom2PgsReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub page_size: u8 @ 0..4,
     }
 }
@@ -160,6 +196,9 @@ bitfield! {
 bitfield! {
     /// Peripheral interface domain 2 release register.
     pub struct PiBsdDom2RlsReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub release: u8 @ 0..2,
     }
 }

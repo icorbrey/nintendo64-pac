@@ -56,6 +56,9 @@ pub struct DpcRegisters {
 bitfield! {
     /// DP command start register.
     pub struct DpcStartReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub start_address: u32 @ 0..24,
     }
 }
@@ -63,6 +66,9 @@ bitfield! {
 bitfield! {
     /// DP command end register.
     pub struct DpcEndReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub end_address: u32 @ 0..24,
     }
 }
@@ -70,6 +76,9 @@ bitfield! {
 bitfield! {
     /// DP command current register.
     pub struct DpcCurrentReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub current_address: u32 @ 0..24
     }
 }
@@ -77,6 +86,9 @@ bitfield! {
 bitfield! {
     /// DP command status register.
     pub struct DpcStatusReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub xbus_dmem_dma: bool [read_only] @ 0,
         pub freeze: bool [read_only] @ 1,
         pub flush: bool [read_only] @ 2,
@@ -105,6 +117,9 @@ bitfield! {
 bitfield! {
     /// DP command clock register.
     pub struct DpcClockReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub clock_counter: u32 [read_only] @ 0..24,
     }
 }
@@ -112,6 +127,9 @@ bitfield! {
 bitfield! {
     /// DP command bufbusy register.
     pub struct DpcBufbusyReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub clock_counter: u32 [read_only] @ 0..24,
     }
 }
@@ -119,6 +137,9 @@ bitfield! {
 bitfield! {
     /// DP command pipebusy register.
     pub struct DpcPipebusyReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub clock_counter: u32 [read_only] @ 0..24,
     }
 }
@@ -126,6 +147,9 @@ bitfield! {
 bitfield! {
     /// DP command TMEM register.
     pub struct DpcTmemReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub clock_counter: u32 [read_only] @ 0..24,
     }
 }

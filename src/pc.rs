@@ -38,6 +38,9 @@ pub struct PcRegisters {
 bitfield! {
     /// Stack pointer program counter register.
     pub struct SpPcReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub program_counter: u16 @ 0..12,
     }
 }
@@ -45,6 +48,9 @@ bitfield! {
 bitfield! {
     /// Stack pointer IMEM BIST register.
     pub struct SpIbistReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub bist_check: bool @ 0,
         pub bist_go: bool @ 1,
 

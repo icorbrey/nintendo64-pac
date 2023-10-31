@@ -53,6 +53,9 @@ pub struct SiRegisters {
 bitfield! {
     /// Serial interface DRAM address register.
     pub struct SiDramAddrReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub starting_rdram_address: u32 @ 0..24,
     }
 }
@@ -60,6 +63,9 @@ bitfield! {
 bitfield! {
     /// Serial interface PIF address read 64 bits register.
     pub struct SiPifAddrRd64bReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub dma_write_64b: bool [write_only] @ 0,
     }
 }
@@ -67,6 +73,9 @@ bitfield! {
 bitfield! {
     /// Serial interface PIF address write 64 bits register.
     pub struct SiPifAddrWr64bReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub dma_read_64b: bool [write_only] @ 0,
     }
 }
@@ -74,6 +83,9 @@ bitfield! {
 bitfield! {
     /// Serial interface status register.
     pub struct SiStatusReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub dma_busy: bool [read_only] @ 0,
         pub io_read_busy: bool [read_only] @ 1,
         pub dma_error: bool [read_only] @ 3,

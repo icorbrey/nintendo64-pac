@@ -44,6 +44,9 @@ pub struct MiRegisters {
 bitfield! {
     /// MIPS interface init mode register.
     pub struct MiInitModeReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub init_length: u8 @ 0..7,
 
         pub init_mode: bool [read_only] @ 7,
@@ -63,6 +66,9 @@ bitfield! {
 bitfield! {
     /// MIPS interface version register.
     pub struct MiVersionReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub io: u8 [read_only] @ 0..8,
         pub rac: u8 [read_only] @ 8..16,
         pub rdp: u8 [read_only] @ 16..24,
@@ -73,6 +79,9 @@ bitfield! {
 bitfield! {
     /// MIPS interface interrupt register.
     pub struct MiIntrReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub sp_intr: bool [read_only] @ 0,
         pub si_intr: bool [read_only] @ 1,
         pub ai_intr: bool [read_only] @ 2,
@@ -85,6 +94,9 @@ bitfield! {
 bitfield! {
     /// MIPS interface interrupt mask register.
     pub struct MiIntrMaskReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+
         pub sp_intr_mask: bool [read_only] @ 0,
         pub si_intr_mask: bool [read_only] @ 1,
         pub ai_intr_mask: bool [read_only] @ 2,

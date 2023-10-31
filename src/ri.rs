@@ -55,40 +55,64 @@ pub struct RiRegisters {
 
 bitfield! {
     /// RDRAM interface mode register.
-    pub struct RiModeReg(pub u32): Debug {}
+    pub struct RiModeReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+    }
 }
 
 bitfield! {
     /// RDRAM interface config register.
-    pub struct RiConfigReg(pub u32): Debug {}
+    pub struct RiConfigReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+    }
 }
 
 bitfield! {
     /// RDRAM interface current load register.
-    pub struct RiCurrentLoadReg(pub u32): Debug {}
+    pub struct RiCurrentLoadReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+    }
 }
 
 bitfield! {
     /// RDRAM interface select register.
-    pub struct RiSelectReg(pub u32): Debug {}
+    pub struct RiSelectReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+    }
 }
 
 bitfield! {
     /// RDRAM interface refresh register.
-    pub struct RiRefreshReg(pub u32): Debug {}
+    pub struct RiRefreshReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+    }
 }
 
 bitfield! {
     /// RDRAM interface latency register.
-    pub struct RiLatencyReg(pub u32): Debug {}
+    pub struct RiLatencyReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+    }
 }
 
 bitfield! {
     /// RDRAM interface read error register.
-    pub struct RiRerrorReg(pub u32): Debug {}
+    pub struct RiRerrorReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+    }
 }
 
 bitfield! {
     /// RDRAM interface write error register.
-    pub struct RiWerrorReg(pub u32): Debug {}
+    pub struct RiWerrorReg(pub u32): Debug {
+        /// Raw register access.
+        pub raw: u32 @ ..,
+    }
 }

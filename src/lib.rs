@@ -19,9 +19,11 @@ pub mod prelude {
     pub use super::dpc::Dpc;
     pub use super::dps::Dps;
     pub use super::mi::Mi;
+    pub use super::pc::Pc;
     pub use super::pi::Pi;
     pub use super::rdram::Rdram;
     pub use super::ri::Ri;
+    pub use super::si::Si;
     pub use super::sp::Sp;
     pub use super::vi::Vi;
 }
