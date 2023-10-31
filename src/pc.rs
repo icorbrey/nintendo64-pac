@@ -28,10 +28,10 @@ impl Deref for Pc {
 /// Program counter register block.
 #[repr(C)]
 pub struct PcRegisters {
-    /// 0x00 - Program counter
+    /// `0x00` - Program counter
     pub sp_pc_reg: SpPcReg,
 
-    /// 0x04 - IMEM BIST
+    /// `0x04` - IMEM BIST
     pub sp_ibist_reg: SpIbistReg,
 }
 

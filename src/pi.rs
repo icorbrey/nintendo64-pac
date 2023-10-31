@@ -28,43 +28,43 @@ impl Deref for Pi {
 /// Peripheral interface register block.
 #[repr(C)]
 pub struct PiRegisters {
-    /// 0x00 - DRAM address
+    /// `0x00` - DRAM address
     pub pi_dram_addr_reg: PiDramAddrReg,
 
-    /// 0x04 - PBUS (cartridge) address
+    /// `0x04` - PBUS (cartridge) address
     pub pi_cart_addr_reg: PiCartAddrReg,
 
-    /// 0x08 - Read length
+    /// `0x08` - Read length
     pub pi_rd_len_reg: PiRdLenReg,
 
-    /// 0x0C - Write length
+    /// `0x0C` - Write length
     pub pi_wr_len_reg: PiWrLenReg,
 
-    /// 0x10 - Status
+    /// `0x10` - Status
     pub pi_status_reg: PiStatusReg,
 
-    /// 0x14 - Domain 1 latency
+    /// `0x14` - Domain 1 latency
     pub pi_bsd_dom1_lat_reg: PiBsdDom1LatReg,
 
-    /// 0x18 - Domain 1 pulse width
+    /// `0x18` - Domain 1 pulse width
     pub pi_bsd_dom1_pwd_reg: PiBsdDom1PwdReg,
 
-    /// 0x1C - Domain 1 page size
+    /// `0x1C` - Domain 1 page size
     pub pi_bsd_dom1_pgs_reg: PiBsdDom1PgsReg,
 
-    /// 0x20 - Domain 1 release
+    /// `0x20` - Domain 1 release
     pub pi_bsd_dom1_rls_reg: PiBsdDom1RlsReg,
 
-    /// 0x24 - Domain 2 latency
+    /// `0x24` - Domain 2 latency
     pub pi_bsd_dom2_lat_reg: PiBsdDom2LatReg,
 
-    /// 0x28 - Domain 2 pulse width
+    /// `0x28` - Domain 2 pulse width
     pub pi_bsd_dom2_pwd_reg: PiBsdDom2PwdReg,
 
-    /// 0x2C - Domain 2 page size
+    /// `0x2C` - Domain 2 page size
     pub pi_bsd_dom2_pgs_reg: PiBsdDom2PgsReg,
 
-    /// 0x30 - Domain 2 release
+    /// `0x30` - Domain 2 release
     pub pi_bsd_dom2_rls_reg: PiBsdDom2RlsReg,
 }
 

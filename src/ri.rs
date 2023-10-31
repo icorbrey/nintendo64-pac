@@ -28,28 +28,28 @@ impl Deref for Ri {
 /// RDRAM interface register block.
 #[repr(C)]
 pub struct RiRegisters {
-    /// 0x00 - Mode
+    /// `0x00` - Mode
     pub ri_mode_reg: RiModeReg,
 
-    /// 0x04 - Config
+    /// `0x04` - Config
     pub ri_config_reg: RiConfigReg,
 
-    /// 0x08 - Current load
+    /// `0x08` - Current load
     pub ri_current_load_reg: RiCurrentLoadReg,
 
-    /// 0x0C - Select
+    /// `0x0C` - Select
     pub ri_select_reg: RiSelectReg,
 
-    /// 0x10 - Refresh
+    /// `0x10` - Refresh
     pub ri_refresh_reg: RiRefreshReg,
 
-    /// 0x14 - Latency
+    /// `0x14` - Latency
     pub ri_latency_reg: RiLatencyReg,
 
-    /// 0x18 - Read error
+    /// `0x18` - Read error
     pub ri_rerror_reg: RiRerrorReg,
 
-    /// 0x1C - Write error
+    /// `0x1C` - Write error
     pub ri_werror_reg: RiWerrorReg,
 }
 

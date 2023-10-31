@@ -28,25 +28,25 @@ impl Deref for Si {
 /// Serial interface register block.
 #[repr(C)]
 pub struct SiRegisters {
-    /// 0x00 - DRAM address
+    /// `0x00` - DRAM address
     pub si_dram_addr_reg: SiDramAddrReg,
 
-    /// 0x04 - PIF address read 64 bits
+    /// `0x04` - PIF address read 64 bits
     pub si_pif_addr_rd64b_reg: SiPifAddrRd64bReg,
 
-    /// 0x08 - Reserved
+    /// `0x08` - Reserved
     _reserved_0: u32,
 
-    /// 0x0C - Reserved
+    /// `0x0C` - Reserved
     _reserved_1: u32,
 
-    /// 0x10 - PIF address write 64 bits
+    /// `0x10` - PIF address write 64 bits
     pub si_pif_addr_wr64b_reg: SiPifAddrWr64bReg,
 
-    /// 0x14 - Reserved
+    /// `0x14` - Reserved
     _reserved_2: u32,
 
-    /// 0x18 - Status
+    /// `0x18` - Status
     pub si_status_reg: SiStatusReg,
 }
 

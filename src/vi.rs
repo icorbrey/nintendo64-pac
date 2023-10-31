@@ -28,46 +28,46 @@ impl Deref for Vi {
 /// Video interface register block.
 #[repr(C)]
 pub struct ViRegisters {
-    /// 0x00 - Status
+    /// `0x00` - Status
     pub vi_status_reg: ViStatusReg,
 
-    /// 0x04 - Frame buffer origin
+    /// `0x04` - Frame buffer origin
     pub vi_origin_reg: ViOriginReg,
 
-    /// 0x08 - Frame buffer line width
+    /// `0x08` - Frame buffer line width
     pub vi_width_reg: ViWidthReg,
 
-    /// 0x0C - Vertical interrupt
+    /// `0x0C` - Vertical interrupt
     pub vi_intr_reg: ViIntrReg,
 
-    /// 0x10 - Current vertical line
+    /// `0x10` - Current vertical line
     pub vi_current_reg: ViCurrentReg,
 
-    /// 0x14 - Timing
+    /// `0x14` - Timing
     pub vi_timing_reg: ViTimingReg,
 
-    /// 0x18 - Vertical sync
+    /// `0x18` - Vertical sync
     pub vi_v_sync_reg: ViVSyncReg,
 
-    /// 0x1C - Horizontal sync
+    /// `0x1C` - Horizontal sync
     pub vi_h_sync_reg: ViHSyncReg,
 
-    /// 0x20 - Horizontal sync leap
+    /// `0x20` - Horizontal sync leap
     pub vi_h_sync_leap_reg: ViHSyncLeapReg,
 
-    /// 0x24 - Horizontal video
+    /// `0x24` - Horizontal video
     pub vi_h_video_reg: ViHVideoReg,
 
-    /// 0x28 - Vertical video
+    /// `0x28` - Vertical video
     pub vi_v_video_reg: ViVVideoReg,
 
-    /// 0x2C - Vertical burst
+    /// `0x2C` - Vertical burst
     pub vi_v_burst_reg: ViVBurstReg,
 
-    /// 0x30 - X-scale
+    /// `0x30` - X-scale
     pub vi_x_scale_reg: ViXScaleReg,
 
-    /// 0x34 - Y-scale
+    /// `0x34` - Y-scale
     pub vi_y_scale_reg: ViYScaleReg,
 }
 
