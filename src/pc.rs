@@ -1,103 +1,56 @@
-//! # Program Counter Wrapper
-//!
-//! This module wraps the Nintendo 64's program counter registers and provides
-//! type- and memory safe ways of interacting with it.
+//! # Program Counter
 
-use tock_registers::{
-    interfaces::{Readable, Writeable},
-    register_bitfields, register_structs,
-    registers::ReadWrite,
-};
+use core::ops::Deref;
 
-use crate::{register_access, HARDWARE};
+use proc_bitfield::bitfield;
 
-register_access!(0x0408_0000, Registers);
+const PC_BASE_REG: u32 = 0x0408_0000;
 
-#[non_exhaustive]
-pub struct ProgramCounter {
-    /// Contains getters and setters for `SP_IBIST_REG`.
-    pub imem_bist: ImemBist,
+/// Program counter.
+pub struct Pc;
 
-    /// Contains getters and setters for `SP_PC_REG`.
-    pub control: Control,
-}
-
-impl ProgramCounter {
-    /// Returns ownership of the program counter registers to
-    /// [`HARDWARE`][crate::HARDWARE].
-    pub fn drop(self) {
-        unsafe { HARDWARE.program_counter.drop(self) }
+impl Pc {
+    pub fn ptr() -> *const PcRegisters {
+        PC_BASE_REG as *const _
     }
 }
 
-/// A zero-size wrapper around `SP_PC_REG`.
-#[non_exhaustive]
-pub struct Control;
+unsafe impl Sync for Pc {}
 
-impl Control {
-    pub fn program_counter(&self) -> u32 {
-        registers().pc.read(SpPcReg::PROGRAM_COUNTER)
-    }
+impl Deref for Pc {
+    type Target = PcRegisters;
 
-    pub fn set_program_counter(&self, pc: u32) {
-        registers().pc.write(SpPcReg::PROGRAM_COUNTER.val(pc))
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*Self::ptr() }
     }
 }
 
-/// A zero-size wrapper around `SP_IBIST_REG`.
-#[non_exhaustive]
-pub struct ImemBist;
+/// Program counter register block.
+#[repr(C)]
+pub struct PcRegisters {
+    /// 0x00 - Program counter
+    pub sp_pc_reg: SpPcReg,
 
-impl ImemBist {
-    pub fn get_check(&self) -> bool {
-        registers().ibist.is_set(SpIbistReg::BIST_CHECK)
-    }
+    /// 0x04 - IMEM BIST
+    pub sp_ibist_reg: SpIbistReg,
+}
 
-    pub fn get_go(&self) -> bool {
-        registers().ibist.is_set(SpIbistReg::BIST_GO)
-    }
-
-    pub fn get_done(&self) -> bool {
-        registers().ibist.is_set(SpIbistReg::BIST_DONE)
-    }
-
-    pub fn get_fail(&self) -> u32 {
-        registers().ibist.read(SpIbistReg::BIST_FAIL)
-    }
-
-    pub fn set_check(&self) {
-        registers().ibist.write(SpIbistReg::BIST_CHECK::SET)
-    }
-
-    pub fn set_go(&self) {
-        registers().ibist.write(SpIbistReg::BIST_GO::SET)
-    }
-
-    pub fn set_clear(&self) {
-        registers().ibist.write(SpIbistReg::BIST_CLEAR::SET)
+bitfield! {
+    /// Stack pointer program counter register.
+    pub struct SpPcReg(pub u32): Debug {
+        pub program_counter: u16 @ 0..12,
     }
 }
 
-register_structs! {
-    Registers {
-        (0x0000 => pub pc: ReadWrite<u32, SpPcReg::Register>),
-        (0x0004 => pub ibist: ReadWrite<u32, SpIbistReg::Register>),
-        (0x0008 => @END),
+bitfield! {
+    /// Stack pointer IMEM BIST register.
+    pub struct SpIbistReg(pub u32): Debug {
+        pub bist_check: bool @ 0,
+        pub bist_go: bool @ 1,
+
+        pub bist_done: bool [read_only] @ 2,
+        pub bist_fail: u8 [read_only] @ 3..7,
+
+        pub bist_clear: bool [write_only] @ 2,
     }
-}
-
-register_bitfields! {
-    u32,
-
-    SpPcReg [
-        PROGRAM_COUNTER OFFSET(0)  NUMBITS(12) [],
-    ],
-
-    SpIbistReg [
-        BIST_CHECK      OFFSET(0)  NUMBITS(1)  [],
-        BIST_GO         OFFSET(1)  NUMBITS(1)  [],
-        BIST_CLEAR      OFFSET(2)  NUMBITS(1)  [],
-        BIST_DONE       OFFSET(2)  NUMBITS(1)  [],
-        BIST_FAIL       OFFSET(3)  NUMBITS(4)  [],
-    ]
 }

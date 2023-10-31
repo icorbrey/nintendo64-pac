@@ -1,121 +1,185 @@
-//! # Video Interface Wrapper
-//!
-//! This module wraps the Nintendo 64's video interface registers and provides
-//! type- and memory safe ways of interacting with it.
+//! # Video Interface
 
-use tock_registers::{
-    interfaces::{Readable, Writeable},
-    register_bitfields, register_structs,
-    registers::ReadWrite,
-};
+use core::ops::Deref;
 
-use crate::HARDWARE;
+use proc_bitfield::bitfield;
 
-/// The static address of the Nintendo 64's video interface registers.
-const VI_REGS_BASE: usize = 0x0440_0000;
+const VI_BASE_REG: u32 = 0x0440_0000;
 
-#[non_exhaustive]
-pub struct VideoInterface;
+/// Video interface.
+pub struct Vi;
 
-impl VideoInterface {
-    /// Gets a reference to the video interface registers.
-    fn registers<'a>(&self) -> &'a VideoInterfaceRegisters {
-        unsafe { &mut *(VI_REGS_BASE as *mut VideoInterfaceRegisters) }
-    }
-
-    /// Returns ownership of the video interface registers to
-    /// [`HARDWARE`][crate::HARDWARE].
-    pub fn drop(self) {
-        unsafe { HARDWARE.video_interface.drop(self) }
-    }
-
-    /// Clears an existing interrupt.
-    pub fn clear_interrupt(&self) -> &Self {
-        let registers = self.registers();
-        let current_line = registers.current_halfline.read(HalfLine::HALF_LINE);
-        self.registers()
-            .current_halfline
-            .write(HalfLine::HALF_LINE.val(current_line));
-        self
+impl Vi {
+    pub fn ptr() -> *const ViRegisters {
+        VI_BASE_REG as *const _
     }
 }
 
-// This is a hack to allow code to run for development.
-#[cfg(not(target_vendor = "nintendo64"))]
-unsafe impl Sync for VideoInterfaceRegisters {}
+unsafe impl Send for Vi {}
 
-register_structs! {
-    VideoInterfaceRegisters {
-        (0x0000 => pub control: ReadWrite<u32, Control::Register>),
-        (0x0004 => pub framebuffer_address: ReadWrite<u32, DramAddress::Register>),
-        (0x0008 => pub screen_width: ReadWrite<u32, LineWidth::Register>),
-        (0x000C => pub interrupt_halfline: ReadWrite<u32, HalfLine::Register>),
-        (0x0010 => pub current_halfline: ReadWrite<u32, HalfLine::Register>),
-        (0x0014 => pub timing: ReadWrite<u32, Timing::Register>),
-        (0x0018 => pub vertical_sync: ReadWrite<u32, HalfLine::Register>),
-        (0x001C => pub horizontal_sync: ReadWrite<u32, LineWidth::Register>),
-        (0x0020 => pub horizontal_sync_2: ReadWrite<u32, Leap::Register>),
-        (0x0024 => pub horizontal_range: ReadWrite<u32, ScreenRange::Register>),
-        (0x0028 => pub vertical_range: ReadWrite<u32, ScreenRange::Register>),
-        (0x002C => pub color_burst: ReadWrite<u32, ScreenRange::Register>),
-        (0x0030 => pub horizontal_scale: ReadWrite<u32, ScreenScale::Register>),
-        (0x0034 => pub vertical_scale: ReadWrite<u32, ScreenScale::Register>),
-        (0x0038 => @END),
+impl Deref for Vi {
+    type Target = ViRegisters;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*Self::ptr() }
     }
 }
 
-register_bitfields! {
-    u32,
+/// Video interface register block.
+#[repr(C)]
+pub struct ViRegisters {
+    /// 0x00 - Status
+    pub vi_status_reg: ViStatusReg,
 
-    Control [
-        COLOR_DEPTH            OFFSET(0) NUMBITS(2)  [
-            None = 0,
-            FullColor = 2,
-            DeepColor = 3,
-        ],
-        GAMMA_DITHER_ENABLE    OFFSET(2) NUMBITS(1)  [],
-        GAMMA_ENABLE           OFFSET(3) NUMBITS(1)  [],
-        DIVOT_ENABLE           OFFSET(4) NUMBITS(1)  [],
-        SERRATE                OFFSET(6) NUMBITS(1)  [],
-        ANTIALIAS_MODE         OFFSET(8) NUMBITS(2)  [
-            Enabled = 0,
-            EnabledAsNeeded = 1,
-            ResamplingOnly = 2,
-            Disabled = 3,
-        ],
-    ],
+    /// 0x04 - Frame buffer origin
+    pub vi_origin_reg: ViOriginReg,
 
-    DramAddress [
-        ADDRESS                OFFSET(0)  NUMBITS(24) [],
-    ],
+    /// 0x08 - Frame buffer line width
+    pub vi_width_reg: ViWidthReg,
 
-    LineWidth [
-        WIDTH                  OFFSET(0)  NUMBITS(12) [],
-        LEAP_PATTERN           OFFSET(16) NUMBITS(5)  [],
-    ],
+    /// 0x0C - Vertical interrupt
+    pub vi_intr_reg: ViIntrReg,
 
-    HalfLine [
-        HALF_LINE              OFFSET(0)  NUMBITS(10) [],
-    ],
+    /// 0x10 - Current vertical line
+    pub vi_current_reg: ViCurrentReg,
 
-    Timing [
-        HORIZONTAL_SYNC_WIDTH  OFFSET(0)  NUMBITS(8)  [],
-        COLOR_BURST_WIDTH      OFFSET(8)  NUMBITS(8)  [],
-        VERTICAL_SYNC_WIDTH    OFFSET(16) NUMBITS(8)  [],
-        COLOR_BURST_START      OFFSET(24) NUMBITS(8)  [],
-    ],
+    /// 0x14 - Timing
+    pub vi_timing_reg: ViTimingReg,
 
-    Leap [
-        HORIZONTAL_SYNC_PERIOD OFFSET(0)  NUMBITS(12) [],
-    ],
+    /// 0x18 - Vertical sync
+    pub vi_v_sync_reg: ViVSyncReg,
 
-    ScreenRange [
-        END_ACTIVE_VIDEO       OFFSET(0)  NUMBITS(10) [],
-        START_ACTIVE_VIDEO     OFFSET(16) NUMBITS(10) [],
-    ],
+    /// 0x1C - Horizontal sync
+    pub vi_h_sync_reg: ViHSyncReg,
 
-    ScreenScale [
-        INVERSE_SCALE_FACTOR   OFFSET(0)  NUMBITS(12) [],
-        SUBPIXEL_OFFSET        OFFSET(16) NUMBITS(12) [],
-    ]
+    /// 0x20 - Horizontal sync leap
+    pub vi_h_sync_leap_reg: ViHSyncLeapReg,
+
+    /// 0x24 - Horizontal video
+    pub vi_h_video_reg: ViHVideoReg,
+
+    /// 0x28 - Vertical video
+    pub vi_v_video_reg: ViVVideoReg,
+
+    /// 0x2C - Vertical burst
+    pub vi_v_burst_reg: ViVBurstReg,
+
+    /// 0x30 - X-scale
+    pub vi_x_scale_reg: ViXScaleReg,
+
+    /// 0x34 - Y-scale
+    pub vi_y_scale_reg: ViYScaleReg,
+}
+
+bitfield! {
+    /// Video interface status register.
+    pub struct ViStatusReg(pub u32): Debug {
+        pub pixel_size: u8 @ 0..2,
+        pub gamma_dither_enable: bool @ 2,
+        pub gamma_enable: bool @ 3,
+        pub divot_enable: bool @ 4,
+        pub serrate: bool @ 6,
+        pub antialias_mode: u8 @ 8..10,
+    }
+}
+
+bitfield! {
+    /// Video interface frame buffer origin register.
+    pub struct ViOriginReg(pub u32): Debug {
+        pub frame_buffer_origin: u32 @ 0..24,
+    }
+}
+
+bitfield! {
+    /// Video interface frame buffer line width register.
+    pub struct ViWidthReg(pub u32): Debug {
+        pub frame_buffer_line_width: u16 @ 0..12,
+    }
+}
+
+bitfield! {
+    /// Video interface vertical interrupt register.
+    pub struct ViIntrReg(pub u32): Debug {
+        pub intr_half_line: u16 @ 0..10,
+    }
+}
+
+bitfield! {
+    /// Video interface current vertical line register.
+    pub struct ViCurrentReg(pub u32): Debug {
+        pub current_half_line: u16 @ 0..10,
+    }
+}
+
+bitfield! {
+    /// Video interface timing register.
+    pub struct ViTimingReg(pub u32): Debug {
+        pub horizontal_sync_width: u8 @ 0..8,
+        pub color_burst_width: u8 @ 8..16,
+        pub vertical_sync_width: u8 @ 16..20,
+        pub color_burst_offset: u16 @ 20..30,
+    }
+}
+
+bitfield! {
+    /// Video interface vertical sync register.
+    pub struct ViVSyncReg(pub u32): Debug {
+        pub half_lines_per_field: u16 @ 0..10,
+    }
+}
+
+bitfield! {
+    /// Video interface horizontal sync register.
+    pub struct ViHSyncReg(pub u32): Debug {
+        pub line_duration: u16 @ 0..12,
+        pub leap_pattern: u8 @ 16..21,
+    }
+}
+
+bitfield! {
+    /// Video interface horizontal sync leap register.
+    pub struct ViHSyncLeapReg(pub u32): Debug {
+        pub h_sync_period_0: u16 @ 0..12,
+        pub h_sync_period_1: u16 @ 16..28,
+    }
+}
+
+bitfield! {
+    /// Video interface horizontal video register.
+    pub struct ViHVideoReg(pub u32): Debug {
+        pub end_active_video: u16 @ 0..10,
+        pub start_active_video: u16 @ 16..26,
+    }
+}
+
+bitfield! {
+    /// Video interface vertical video register.
+    pub struct ViVVideoReg(pub u32): Debug {
+        pub end_active_video: u16 @ 0..10,
+        pub start_active_video: u16 @ 16..26,
+    }
+}
+
+bitfield! {
+    /// Video interface vertical burst register.
+    pub struct ViVBurstReg(pub u32): Debug {
+        pub end_color_burst: u16 @ 0..10,
+        pub start_color_burst: u16 @ 16..26,
+    }
+}
+
+bitfield! {
+    /// Video interface X-scale register.
+    pub struct ViXScaleReg(pub u32): Debug {
+        pub inverse_scale_factor: u16 @ 0..12,
+        pub subpixel_offset: u16 @ 16..28,
+    }
+}
+
+bitfield! {
+    /// Video interface Y-scale register.
+    pub struct ViYScaleReg(pub u32): Debug {
+        pub inverse_scale_factor: u16 @ 0..12,
+        pub subpixel_offset: u16 @ 16..28,
+    }
 }

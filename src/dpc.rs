@@ -15,6 +15,8 @@ impl Dpc {
     }
 }
 
+unsafe impl Sync for Dpc {}
+
 impl Deref for Dpc {
     type Target = DpcRegisters;
 

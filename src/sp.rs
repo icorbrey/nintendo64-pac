@@ -15,6 +15,8 @@ impl Sp {
     }
 }
 
+unsafe impl Sync for Sp {}
+
 impl Deref for Sp {
     type Target = SpRegisters;
 

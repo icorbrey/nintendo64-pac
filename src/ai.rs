@@ -15,6 +15,8 @@ impl Ai {
     }
 }
 
+unsafe impl Sync for Ai {}
+
 impl Deref for Ai {
     type Target = AiRegisters;
 

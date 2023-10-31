@@ -13,6 +13,8 @@ impl Rdram {
     }
 }
 
+unsafe impl Sync for Rdram {}
+
 impl Deref for Rdram {
     type Target = RdramRegisters;
 

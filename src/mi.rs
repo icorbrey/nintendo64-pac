@@ -1,301 +1,108 @@
-//! # MIPS Interface Wrapper
-//!
-//! This module wraps the Nintendo 64's MIPS interface registers and provides
-//! type- and memory safe ways of interacting with it.
+//! # MIPS Interface
 
-use tock_registers::{
-    interfaces::{Readable, Writeable},
-    register_bitfields, register_structs,
-    registers::{ReadOnly, ReadWrite},
-};
+use core::ops::Deref;
 
-use crate::{register_access, HARDWARE};
+use proc_bitfield::bitfield;
 
-register_access!(0x0430_0000, Registers);
+const MI_BASE_REG: u32 = 0x0430_0000;
 
-#[non_exhaustive]
-pub struct MipsInterface {
-    /// Contains getters and setters for `MI_INTR_MASK_REG`.
-    pub interrupt_masks: InterruptMasks,
+/// MIPS interface.
+pub struct Mi;
 
-    /// Contains getters and setters for `MI_INTR_REG`.
-    pub interrupts: Interrupts,
-
-    /// Contains getters and setters for `MI_VERSION_REG`.
-    pub version: Version,
-
-    /// Contains getters and setters for `MI_MODE_REG`.
-    pub mode: Mode,
-}
-
-impl MipsInterface {
-    /// Returns ownership of the MIPS interface registers to
-    /// [`HARDWARE`][crate::HARDWARE].
-    pub fn drop(self) {
-        unsafe { HARDWARE.mips_interface.drop(self) }
+impl Mi {
+    pub fn ptr() -> *const MiRegisters {
+        MI_BASE_REG as *const _
     }
 }
 
-/// A zero-size wrapper around `MI_MODE_REG`.
-#[non_exhaustive]
-pub struct Mode;
+unsafe impl Sync for Mi {}
 
-impl Mode {
-    pub fn init_length(&self) -> u32 {
-        registers().mode.read(MiModeReg::INIT_LENGTH)
-    }
+impl Deref for Mi {
+    type Target = MiRegisters;
 
-    pub fn init_mode(&self) -> bool {
-        registers().mode.is_set(MiModeReg::INIT_MODE)
-    }
-
-    pub fn ebus_test_mode(&self) -> bool {
-        registers().mode.is_set(MiModeReg::EBUS_TEST_MODE)
-    }
-
-    pub fn rdram_reg_mode(&self) -> bool {
-        registers().mode.is_set(MiModeReg::RDRAM_REG_MODE)
-    }
-
-    pub fn set_init_length(&self, init_length: u32) {
-        registers()
-            .mode
-            .write(MiModeReg::INIT_LENGTH.val(init_length))
-    }
-
-    pub fn clear_init_mode(&self) {
-        registers().mode.write(MiModeReg::CLEAR_INIT_MODE::SET)
-    }
-
-    pub fn set_init_mode(&self) {
-        registers().mode.write(MiModeReg::SET_INIT_MODE::SET)
-    }
-
-    pub fn clear_ebus_test_mode(&self) {
-        registers().mode.write(MiModeReg::CLEAR_EBUS_TEST_MODE::SET)
-    }
-
-    pub fn set_ebus_test_mode(&self) {
-        registers().mode.write(MiModeReg::SET_EBUS_TEST_MODE::SET)
-    }
-
-    pub fn clear_dp_interrupt(&self) {
-        registers().mode.write(MiModeReg::CLEAR_DP_INTERRUPT::SET)
-    }
-
-    pub fn clear_rdram_reg_mode(&self) {
-        registers().mode.write(MiModeReg::CLEAR_RDRAM_REG_MODE::SET)
-    }
-
-    pub fn set_rdram_reg_mode(&self) {
-        registers().mode.write(MiModeReg::SET_RDRAM_REG_MODE::SET)
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*Self::ptr() }
     }
 }
 
-/// A zero-size wrapper around `MI_VERSION_REG`.
-#[non_exhaustive]
-pub struct Version;
+/// MIPS interface register block.
+#[repr(C)]
+pub struct MiRegisters {
+    /// 0x00 - Init mode
+    pub mi_init_mode_reg: MiInitModeReg,
 
-impl Version {
-    pub fn io(&self) -> u32 {
-        registers().version.read(MiVersionReg::IO)
-    }
+    /// 0x04 - Version
+    pub mi_version_reg: MiVersionReg,
 
-    pub fn rac(&self) -> u32 {
-        registers().version.read(MiVersionReg::RAC)
-    }
+    /// 0x08 - Interrupts
+    pub mi_intr_reg: MiIntrReg,
 
-    pub fn rdp(&self) -> u32 {
-        registers().version.read(MiVersionReg::RDP)
-    }
+    /// 0x0C - Interrupt masks
+    pub mi_intr_mask_reg: MiIntrMaskReg,
+}
 
-    pub fn rsp(&self) -> u32 {
-        registers().version.read(MiVersionReg::RSP)
+bitfield! {
+    /// MIPS interface init mode register.
+    pub struct MiInitModeReg(pub u32): Debug {
+        pub init_length: u8 @ 0..7,
+
+        pub init_mode: bool [read_only] @ 7,
+        pub ebus_test_mode: bool [read_only] @ 8,
+        pub rdram_reg_mode: bool [read_only] @ 9,
+
+        pub clear_init_mode: bool [write_only] @ 7,
+        pub set_init_mode: bool [write_only] @ 8,
+        pub clear_ebus_test_mode: bool [write_only] @ 9,
+        pub set_ebus_test_mode: bool [write_only] @ 10,
+        pub clear_dp_intr: bool [write_only] @ 11,
+        pub clear_rdram_reg: bool [write_only] @ 12,
+        pub set_dram_reg_mode: bool [write_only] @ 13,
     }
 }
 
-/// A zero-size wrapper around `MI_INTR_REG`.
-#[non_exhaustive]
-pub struct Interrupts;
-
-impl Interrupts {
-    pub fn sp_interrupt(&self) -> bool {
-        registers().intr.is_set(MiIntrReg::SP_INTR)
-    }
-
-    pub fn si_interrupt(&self) -> bool {
-        registers().intr.is_set(MiIntrReg::SI_INTR)
-    }
-
-    pub fn ai_interrupt(&self) -> bool {
-        registers().intr.is_set(MiIntrReg::AI_INTR)
-    }
-
-    pub fn vi_interrupt(&self) -> bool {
-        registers().intr.is_set(MiIntrReg::VI_INTR)
-    }
-
-    pub fn pi_interrupt(&self) -> bool {
-        registers().intr.is_set(MiIntrReg::PI_INTR)
-    }
-
-    pub fn dp_interrupt(&self) -> bool {
-        registers().intr.is_set(MiIntrReg::DP_INTR)
+bitfield! {
+    /// MIPS interface version register.
+    pub struct MiVersionReg(pub u32): Debug {
+        pub io: u8 [read_only] @ 0..8,
+        pub rac: u8 [read_only] @ 8..16,
+        pub rdp: u8 [read_only] @ 16..24,
+        pub rsp: u8 [read_only] @ 24..32,
     }
 }
 
-/// A zero-size wrapper around `MI_INTR_MASK_REG`.
-#[non_exhaustive]
-pub struct InterruptMasks;
-
-impl InterruptMasks {
-    pub fn sp_interrupt_mask(&self) -> bool {
-        registers().intr_mask.is_set(MiIntrMaskReg::SP_INTR_MASK)
-    }
-
-    pub fn si_interrupt_mask(&self) -> bool {
-        registers().intr_mask.is_set(MiIntrMaskReg::SI_INTR_MASK)
-    }
-
-    pub fn ai_interrupt_mask(&self) -> bool {
-        registers().intr_mask.is_set(MiIntrMaskReg::AI_INTR_MASK)
-    }
-
-    pub fn vi_interrupt_mask(&self) -> bool {
-        registers().intr_mask.is_set(MiIntrMaskReg::VI_INTR_MASK)
-    }
-
-    pub fn pi_interrupt_mask(&self) -> bool {
-        registers().intr_mask.is_set(MiIntrMaskReg::PI_INTR_MASK)
-    }
-
-    pub fn dp_interrupt_mask(&self) -> bool {
-        registers().intr_mask.is_set(MiIntrMaskReg::DP_INTR_MASK)
-    }
-
-    pub fn clear_sp_interrupt_mask(&self) {
-        registers()
-            .intr_mask
-            .write(MiIntrMaskReg::CLEAR_SP_MASK::SET)
-    }
-
-    pub fn set_sp_interrupt_mask(&self) {
-        registers().intr_mask.write(MiIntrMaskReg::SET_SP_MASK::SET)
-    }
-
-    pub fn clear_si_interrupt_mask(&self) {
-        registers()
-            .intr_mask
-            .write(MiIntrMaskReg::CLEAR_SI_MASK::SET)
-    }
-
-    pub fn set_si_interrupt_mask(&self) {
-        registers().intr_mask.write(MiIntrMaskReg::SET_SI_MASK::SET)
-    }
-
-    pub fn clear_ai_interrupt_mask(&self) {
-        registers()
-            .intr_mask
-            .write(MiIntrMaskReg::CLEAR_AI_MASK::SET)
-    }
-
-    pub fn set_ai_interrupt_mask(&self) {
-        registers().intr_mask.write(MiIntrMaskReg::SET_AI_MASK::SET)
-    }
-
-    pub fn clear_vi_interrupt_mask(&self) {
-        registers()
-            .intr_mask
-            .write(MiIntrMaskReg::CLEAR_VI_MASK::SET)
-    }
-
-    pub fn set_vi_interrupt_mask(&self) {
-        registers().intr_mask.write(MiIntrMaskReg::SET_VI_MASK::SET)
-    }
-
-    pub fn clear_pi_interrupt_mask(&self) {
-        registers()
-            .intr_mask
-            .write(MiIntrMaskReg::CLEAR_PI_MASK::SET)
-    }
-
-    pub fn set_pi_interrupt_mask(&self) {
-        registers().intr_mask.write(MiIntrMaskReg::SET_PI_MASK::SET)
-    }
-
-    pub fn clear_dp_interrupt_mask(&self) {
-        registers()
-            .intr_mask
-            .write(MiIntrMaskReg::CLEAR_DP_MASK::SET)
-    }
-
-    pub fn set_dp_interrupt_mask(&self) {
-        registers().intr_mask.write(MiIntrMaskReg::SET_DP_MASK::SET)
+bitfield! {
+    /// MIPS interface interrupt register.
+    pub struct MiIntrReg(pub u32): Debug {
+        pub sp_intr: bool [read_only] @ 0,
+        pub si_intr: bool [read_only] @ 1,
+        pub ai_intr: bool [read_only] @ 2,
+        pub vi_intr: bool [read_only] @ 3,
+        pub pi_intr: bool [read_only] @ 4,
+        pub dp_intr: bool [read_only] @ 5,
     }
 }
 
-register_structs! {
-    Registers {
-        (0x0000 => pub mode: ReadWrite<u32, MiModeReg::Register>),
-        (0x0004 => pub version: ReadOnly<u32, MiVersionReg::Register>),
-        (0x0008 => pub intr: ReadOnly<u32, MiIntrReg::Register>),
-        (0x000C => pub intr_mask: ReadWrite<u32, MiIntrMaskReg::Register>),
-        (0x0010 => @END),
+bitfield! {
+    /// MIPS interface interrupt mask register.
+    pub struct MiIntrMaskReg(pub u32): Debug {
+        pub sp_intr_mask: bool [read_only] @ 0,
+        pub si_intr_mask: bool [read_only] @ 1,
+        pub ai_intr_mask: bool [read_only] @ 2,
+        pub vi_intr_mask: bool [read_only] @ 3,
+        pub pi_intr_mask: bool [read_only] @ 4,
+        pub dp_intr_mask: bool [read_only] @ 5,
+
+        pub clear_sp_mask: bool [write_only] @ 0,
+        pub set_sp_mask: bool [write_only] @ 1,
+        pub clear_si_mask: bool [write_only] @ 2,
+        pub set_si_mask: bool [write_only] @ 3,
+        pub clear_ai_mask: bool [write_only] @ 4,
+        pub set_ai_mask: bool [write_only] @ 5,
+        pub clear_vi_mask: bool [write_only] @ 6,
+        pub set_vi_mask: bool [write_only] @ 7,
+        pub clear_pi_mask: bool [write_only] @ 8,
+        pub set_pi_mask: bool [write_only] @ 9,
+        pub clear_dp_mask: bool [write_only] @ 10,
+        pub set_dp_mask: bool [write_only] @ 11,
     }
-}
-
-register_bitfields! {
-    u32,
-
-    MiModeReg [
-        INIT_LENGTH          OFFSET(0)  NUMBITS(7) [],
-        INIT_MODE            OFFSET(7)  NUMBITS(1) [],
-        EBUS_TEST_MODE       OFFSET(8)  NUMBITS(1) [],
-        RDRAM_REG_MODE       OFFSET(9)  NUMBITS(1) [],
-        CLEAR_INIT_MODE      OFFSET(7)  NUMBITS(1) [],
-        SET_INIT_MODE        OFFSET(8)  NUMBITS(1) [],
-        CLEAR_EBUS_TEST_MODE OFFSET(9)  NUMBITS(1) [],
-        SET_EBUS_TEST_MODE   OFFSET(10) NUMBITS(1) [],
-        CLEAR_DP_INTERRUPT   OFFSET(11) NUMBITS(1) [],
-        CLEAR_RDRAM_REG_MODE OFFSET(12) NUMBITS(1) [],
-        SET_RDRAM_REG_MODE   OFFSET(13) NUMBITS(1) [],
-    ],
-
-    MiVersionReg [
-        IO                   OFFSET(0)  NUMBITS(8) [],
-        RAC                  OFFSET(8)  NUMBITS(8) [],
-        RDP                  OFFSET(16) NUMBITS(8) [],
-        RSP                  OFFSET(24) NUMBITS(8) [],
-    ],
-
-    MiIntrReg [
-        SP_INTR              OFFSET(0)  NUMBITS(1) [],
-        SI_INTR              OFFSET(1)  NUMBITS(1) [],
-        AI_INTR              OFFSET(2)  NUMBITS(1) [],
-        VI_INTR              OFFSET(3)  NUMBITS(1) [],
-        PI_INTR              OFFSET(4)  NUMBITS(1) [],
-        DP_INTR              OFFSET(5)  NUMBITS(1) [],
-    ],
-
-    MiIntrMaskReg [
-        SP_INTR_MASK         OFFSET(0)  NUMBITS(1) [],
-        SI_INTR_MASK         OFFSET(1)  NUMBITS(1) [],
-        AI_INTR_MASK         OFFSET(2)  NUMBITS(1) [],
-        VI_INTR_MASK         OFFSET(3)  NUMBITS(1) [],
-        PI_INTR_MASK         OFFSET(4)  NUMBITS(1) [],
-        DP_INTR_MASK         OFFSET(5)  NUMBITS(1) [],
-
-        CLEAR_SP_MASK        OFFSET(0)  NUMBITS(1) [],
-        SET_SP_MASK          OFFSET(1)  NUMBITS(1) [],
-        CLEAR_SI_MASK        OFFSET(2)  NUMBITS(1) [],
-        SET_SI_MASK          OFFSET(3)  NUMBITS(1) [],
-        CLEAR_AI_MASK        OFFSET(4)  NUMBITS(1) [],
-        SET_AI_MASK          OFFSET(5)  NUMBITS(1) [],
-        CLEAR_VI_MASK        OFFSET(6)  NUMBITS(1) [],
-        SET_VI_MASK          OFFSET(7)  NUMBITS(1) [],
-        CLEAR_PI_MASK        OFFSET(8)  NUMBITS(1) [],
-        SET_PI_MASK          OFFSET(9)  NUMBITS(1) [],
-        CLEAR_DP_MASK        OFFSET(10) NUMBITS(1) [],
-        SET_DP_MASK          OFFSET(11) NUMBITS(1) [],
-    ]
 }
