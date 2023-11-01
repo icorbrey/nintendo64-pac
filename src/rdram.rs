@@ -4,28 +4,14 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-const RDRAM_BASE_REG: u32 = 0x03F0_0000;
+use crate::impl_interface;
 
-/// RDRAM.
+/// # RDRAM
 pub struct Rdram;
 
-impl Rdram {
-    pub fn ptr() -> *const RdramRegisters {
-        RDRAM_BASE_REG as *const _
-    }
-}
+impl_interface!(Rdram, RdramRegisters, 0x03F0_0000);
 
-unsafe impl Sync for Rdram {}
-
-impl Deref for Rdram {
-    type Target = RdramRegisters;
-
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*Self::ptr() }
-    }
-}
-
-/// RDRAM register block.
+/// # RDRAM Register Block
 #[repr(C)]
 pub struct RdramRegisters {
     /// `0x00` - Device type
@@ -60,81 +46,71 @@ pub struct RdramRegisters {
 }
 
 bitfield! {
-    /// RDRAM device type register.
+    /// # RDRAM Device Type Register
     pub struct RdramDeviceTypeReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// RDRAM device ID register.
+    /// # RDRAM Device ID Register
     pub struct RdramDeviceIdReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// RDRAM delay register.
+    /// # RDRAM Delay Register
     pub struct RdramDelayReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// RDRAM mode register.
+    /// # RDRAM Mode Register
     pub struct RdramModeReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// RDRAM ref interval register.
+    /// # RDRAM Ref Interval Register
     pub struct RdramRefIntervalReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// RDRAM ref row register.
+    /// # RDRAM Ref Row Register
     pub struct RdramRefRowReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// RDRAM ras interval register.
+    /// # RDRAM Ras Interval Register
     pub struct RdramRasIntervalReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// RDRAM min interval register.
+    /// # RDRAM Min Interval Register
     pub struct RdramMinIntervalReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// RDRAM address select register.
+    /// # RDRAM Address Select Register
     pub struct RdramAddrSelectReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// RDRAM device manufacturer register.
+    /// # RDRAM Device Manufacturer Register
     pub struct RdramDeviceManufReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
     }
 }
