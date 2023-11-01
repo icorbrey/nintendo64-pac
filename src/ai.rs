@@ -1,4 +1,22 @@
 //! # Audio Interface
+//!
+//! The Audio Interface control interface is found at `0x0450_0000`.
+//!
+//! The audio interface is one of multiple IO interfaces in the RCP, which is used to play back
+//! audio samples. It is a very simple audio processor: it fetches samples via DMA from
+//! [RDRAM][crate::rdram::Rdram] at a specified rate, then outputs them. It performs absolutely no
+//! conversion on the samples; any audio processing functionality (i.e. decompression, mixing, etc)
+//! must be performed by either the CPU or the RSP.
+//!
+//! ## Memory considerations
+//!
+//! Memory mapped registers are used to configure the audio interface and initiate DMA transfers.
+//! Because all emmory accesses in the CPU are made using virtual addresses, the following addresses
+//! must be offset appropriately. For non-cached reads/writes, add `0xA000_0000` to the address.
+//!
+//! ## See also
+//!
+//! - https://n64brew.dev/wiki/Audio_Interface
 
 use core::ops::Deref;
 
@@ -6,61 +24,78 @@ use proc_bitfield::bitfield;
 
 use crate::{impl_deref, impl_get, impl_interface, impl_set};
 
-/// # Audio Interface
+pub const AI_BASE_ADDR: u32 = 0x0450_0000;
+pub const AI_OFFSET: u32 = 0xA000_0000;
+
+/// # AI
 pub struct Ai;
 
-impl_interface!(Ai, AiRegisters, 0x0450_0000);
+impl_interface!(Ai, AiRegisters, AI_BASE_ADDR);
 
-/// # Audio Interface Register Block
+/// # AI register block
 #[repr(C)]
 pub struct AiRegisters {
-    /// `0x00` - Address of audio sample in DRAM.
+    /// Address of audio sample in DRAM.
     pub ai_dram_addr_reg: AiDramAddrReg,
 
-    /// `0x04` - Length of audio sample.
+    /// Length of audio sample.
     pub ai_len_reg: AiLenReg,
 
-    /// `0x08` - Control
+    /// Control
     pub ai_control_reg: AiControlReg,
 
-    /// `0x0C` - Status
+    /// Status
     pub ai_status_reg: AiStatusReg,
 
-    /// `0x10` - DAC rate
+    /// DAC rate
     pub ai_dacrate_reg: AiDacrateReg,
 
-    /// `0x14` - Bitrate
+    /// Bitrate
     pub ai_bitrate_reg: AiBitrateReg,
 }
 
 bitfield! {
-    /// # Audio Interface DRAM Address Register
+    /// # `AI_DRAM_ADDR_REG` (Sample address)
     pub struct AiDramAddrReg(pub u32): Debug {
         pub raw: u32 @ ..,
+
+        /// [RDRAM][crate::rdram::Rdram] address to be used for the next DMA transfer. 8B-aligned.
+        ///
+        /// ## See also:
+        ///
+        /// - <https://n64brew.dev/wiki/Audio_Interface#0x0450_0000_-_AI_DRAM_ADDR>
         pub starting_rdram_address: u32 [write_only, try_set RdramAddress] @ 0..24,
     }
 }
 
 bitfield! {
-    /// # Audio Interface Length Register
+    /// # `AI_LEN_REG` (Sample length)
     pub struct AiLenReg(pub u32): Debug {
         pub raw: u32 @ ..,
+
+        /// Length of audio sample to play. Bottom 3 bits are ignored.
         pub transfer_length_v1: u32 [get TransferLengthV1, try_set TransferLengthV1] @ 0..15,
+
+        /// Length of audio sample to play. Bottom 3 bits are ignored.
         pub transfer_length_v2: u32 [get TransferLengthV2, try_set TransferLengthV2] @ 0..18,
     }
 }
 bitfield! {
-    /// # Audio Interface Control Register
+    /// # `AI_CONTROL_REG` (Control)
     pub struct AiControlReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub is_dma_enabled: bool [write_only] @ 0,
+
+        /// Represents whether DMA is enabled.
+        pub dma_enable: bool [write_only] @ 0,
     }
 }
 
 bitfield! {
-    /// # Audio Interface Status Register
+    /// # `AI_STATUS_REG` (Status)
     pub struct AiStatusReg(pub u32): Debug {
         pub raw: u32 @ ..,
+
+        /// Represents whether any
         pub ai_busy: bool [read_only] @ 30,
         pub ai_full: bool [read_only] @ 31,
         pub clear_ai_intr: bool [write_only] @ 0,
@@ -68,7 +103,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # Audio Interface DAC Rate Register
+    /// # `AI_DACRATE_REG` (DAC rate)
     pub struct AiDacrateReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub dac_rate: u16 [write_only, try_set DacRate] @ 0..14,
@@ -76,7 +111,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # Audio Interface Bitrate Register
+    /// # `AI_BITRATE_REG` (Bitrate)
     pub struct AiBitrateReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub bitrate: u8 [write_only, try_set Bitrate] @ 0..4,

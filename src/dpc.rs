@@ -58,7 +58,7 @@ pub struct DpcRegisters {
     /// Graphics pipe busy.
     pub dpc_pipebusy_reg: DpcPipebusyReg,
 
-    /// `0x1C` - TMEM
+    /// TMEM.
     pub dpc_tmem_reg: DpcTmemReg,
 }
 

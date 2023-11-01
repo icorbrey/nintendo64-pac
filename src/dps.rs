@@ -1,4 +1,4 @@
-//! # DP Span
+//! # Display Processor Span
 
 use core::ops::Deref;
 
@@ -6,12 +6,12 @@ use proc_bitfield::bitfield;
 
 use crate::{impl_deref, impl_get, impl_interface, impl_set};
 
-/// # DP Span
+/// # Display Processor Span
 pub struct Dps;
 
 impl_interface!(Dps, DpsRegisters, 0x0420_0000);
 
-/// # DP Span Register Block
+/// # Display Processor Span Register Block
 #[repr(C)]
 pub struct DpsRegisters {
     /// `0x00` - TBIST
@@ -28,7 +28,7 @@ pub struct DpsRegisters {
 }
 
 bitfield! {
-    /// # DP Span TBIST Register
+    /// # Display Processor Span TBIST Register
     pub struct DpsTbistReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub bist_check: bool @ 0,
@@ -40,7 +40,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # DP Span Test Mode Register
+    /// # Display Processor Span Test Mode Register
     pub struct DpsTestModeReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub span_buffer_test_access_enable: bool @ 0,
@@ -48,7 +48,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # DP Span Buffer Test Address Register
+    /// # Display Processor Span Buffer Test Address Register
     pub struct DpsBuftestAddrReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub span_buffer_address: u8 [get BufferTestAddress, try_set BufferTestAddress] @ 0..7,
@@ -56,7 +56,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # DP Span Buffer Test Data Register
+    /// # Display Processor Span Buffer Test Data Register
     pub struct DpsBuftestDataReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub span_buffer_data: u32 [get BufferTestData, try_set BufferTestData] @ 0..32,
