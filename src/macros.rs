@@ -69,6 +69,28 @@ macro_rules! impl_set {
     };
 }
 
+#[macro_export]
+macro_rules! impl_enum {
+    ($e:ident, $n:ident, { $($v:expr => $k:path,)* }) => {
+		impl From<$n> for $e {
+			fn from(value: $n) -> Self {
+				match value {
+					$($v => $k,)*
+					_ => panic!(),
+				}
+			}
+		}
+
+        impl From<$e> for $n {
+            fn from(value: $e) -> Self {
+                match value {
+					$($k => $v,)*
+				}
+            }
+        }
+    };
+}
+
 #[cfg(test)]
 mod tests {
     pub struct A(pub u8);

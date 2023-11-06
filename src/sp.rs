@@ -1,109 +1,88 @@
-//! # Stack Pointer
+//! # Stack pointer (SP)
 
 use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-const SP_BASE_REG: u32 = 0x0404_0000;
+use crate::{impl_deref, impl_get, impl_interface, impl_set};
 
-/// Stack pointer.
+/// # SP base address
+pub const SP_BASE_REG: u32 = 0x0404_0000;
+
+/// # Stack pointer (SP)
 pub struct Sp;
 
-impl Sp {
-    pub fn ptr() -> *const SpRegisters {
-        SP_BASE_REG as *const _
-    }
-}
+impl_interface!(Sp, SpRegisters, SP_BASE_REG);
 
-unsafe impl Sync for Sp {}
-
-impl Deref for Sp {
-    type Target = SpRegisters;
-
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*Self::ptr() }
-    }
-}
-
-/// Stack pointer register block.
+/// # SP register block
 #[repr(C)]
 pub struct SpRegisters {
-    /// `0x00` - DMEM/IMEM address
+    /// DMEM/IMEM address
     pub sp_mem_addr_reg: SpMemAddrReg,
 
-    /// `0x04` - DRAM address
+    /// DRAM address
     pub sp_dram_addr_reg: SpDramAddrReg,
 
-    /// `0x08` - Read length
+    /// Read length
     pub sp_rd_len_reg: SpRdLenReg,
 
-    /// `0x0C` - Write length
+    /// Write length
     pub sp_wr_len_reg: SpWrLenReg,
 
-    /// `0x10` - Status
+    /// Status
     pub sp_status_reg: SpStatusReg,
 
-    /// `0x14` - DMA full
+    /// DMA full
     pub sp_dma_full_reg: SpDmaFullReg,
 
-    /// `0x18` - DMA busy
+    /// DMA busy
     pub sp_dma_busy_reg: SpDmaBusyReg,
 
-    /// `0x1C` - Semaphore
+    /// Semaphore
     pub sp_semaphore_reg: SpSemaphoreReg,
 }
 
 bitfield! {
-    /// Stack pointer DMEM/IMEM address register.
+    /// # SP DMEM/IMEM address register
     pub struct SpMemAddrReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub mem_address: u16 @ 0..12,
+        pub mem_address: u16 [get MemoryAddress, try_set MemoryAddress] @ 0..12,
         pub dmem_imem: bool @ 12,
     }
 }
 
 bitfield! {
-    /// Stack pointer RDRAM address register.
+    /// # SP RDRAM address register
     pub struct SpDramAddrReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub rdram_address: u32 @ 0..24,
+        pub rdram_address: u32 [get RdramAddress, try_set RdramAddress] @ 0..24,
     }
 }
 
 bitfield! {
-    /// Stack pointer read length register.
+    /// # SP read length register
     pub struct SpRdLenReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub length: u16 @ 0..12,
-        pub count: u8 @ 12..20,
-        pub skip: u16 @ 20..32,
+        pub length: u16 [get Length, try_set Length] @ 0..12,
+        pub count: u8 [get Count, try_set Count] @ 12..20,
+        pub skip: u16 [get Skip, try_set Skip] @ 20..32,
     }
 }
 
 bitfield! {
-    /// Stack pointer write length register.
+    /// # SP write length register
     pub struct SpWrLenReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub length: u16 @ 0..12,
-        pub count: u8 @ 12..20,
-        pub skip: u16 @ 20..32,
+        pub length: u16 [get Length, try_set Length] @ 0..12,
+        pub count: u8 [get Count, try_set Count] @ 12..20,
+        pub skip: u16 [get Skip, try_set Skip] @ 20..32,
     }
 }
 
 bitfield! {
-    /// Stack pointer status register.
+    /// # SP status register
     pub struct SpStatusReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub halt: bool [read_only] @ 0,
         pub broke: bool [read_only] @ 1,
         pub dma_busy: bool [read_only] @ 2,
@@ -119,7 +98,6 @@ bitfield! {
         pub signal_5_set: bool [read_only] @ 12,
         pub signal_6_set: bool [read_only] @ 13,
         pub signal_7_set: bool [read_only] @ 14,
-
         pub clear_halt: bool [write_only] @ 0,
         pub set_halt: bool [write_only] @ 1,
         pub clear_broke: bool [write_only] @ 2,
@@ -149,33 +127,61 @@ bitfield! {
 }
 
 bitfield! {
-    /// Stack pointer DMA full register.
+    /// # SP DMA full register
     pub struct SpDmaFullReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub dma_full: bool [read_only] @ 0,
     }
 }
 
 bitfield! {
-    /// Stack pointer DMA busy register.
+    /// # SP DMA busy register
     pub struct SpDmaBusyReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub dma_busy: bool [read_only] @ 0,
     }
 }
 
 bitfield! {
-    /// Stack pointer semaphore register.
+    /// # SP semaphore register
     pub struct SpSemaphoreReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        /// Note: Sets on read.
         pub semaphore_flag: bool [read_only] @ 0,
         pub clear_semaphore_flag: bool [write_only] @ 0,
     }
 }
+
+#[derive(Debug)]
+pub struct MemoryAddress(pub u16);
+
+impl_deref!(MemoryAddress, u16);
+impl_get!(MemoryAddress, u16);
+impl_set!(MemoryAddress, u16, 0..12);
+
+#[derive(Debug)]
+pub struct RdramAddress(pub u32);
+
+impl_deref!(RdramAddress, u32);
+impl_get!(RdramAddress, u32);
+impl_set!(RdramAddress, u32, 0..24);
+
+#[derive(Debug)]
+pub struct Length(pub u16);
+
+impl_deref!(Length, u16);
+impl_get!(Length, u16);
+impl_set!(Length, u16, 0..12);
+
+#[derive(Debug)]
+pub struct Count(pub u8);
+
+impl_deref!(Count, u8);
+impl_get!(Count, u8);
+impl_set!(Count, u8, 12..20);
+
+#[derive(Debug)]
+pub struct Skip(pub u16);
+
+impl_deref!(Skip, u16);
+impl_get!(Skip, u16);
+impl_set!(Skip, u16, 20..32);

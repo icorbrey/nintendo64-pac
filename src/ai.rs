@@ -1,4 +1,4 @@
-//! # Audio Interface
+//! # Audio interface (AI)
 
 use core::ops::Deref;
 
@@ -86,13 +86,13 @@ bitfield! {
     }
 }
 
-/// # RDRAM Address
+/// # RDRAM address
 pub struct RdramAddress(pub u32);
 
 impl_deref!(RdramAddress, u32);
 impl_set!(RdramAddress, u32, 0..24);
 
-/// # Transfer Length (v1.0)
+/// # Transfer length (v1.0)
 #[derive(Debug)]
 pub struct TransferLengthV1(pub u32);
 
@@ -100,7 +100,7 @@ impl_deref!(TransferLengthV1, u32);
 impl_get!(TransferLengthV1, u32);
 impl_set!(TransferLengthV1, u32, 0..15);
 
-/// # Transfer Length (v2.0)
+/// # Transfer length (v2.0)
 #[derive(Debug)]
 pub struct TransferLengthV2(pub u32);
 
@@ -108,7 +108,7 @@ impl_deref!(TransferLengthV2, u32);
 impl_get!(TransferLengthV2, u32);
 impl_set!(TransferLengthV2, u32, 0..18);
 
-/// # DAC Rate
+/// # DAC rate
 pub struct DacRate(pub u16);
 
 impl_deref!(DacRate, u16);

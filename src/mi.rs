@@ -1,4 +1,4 @@
-//! # MIPS Interface
+//! # MIPS interface (MI)
 
 use core::ops::Deref;
 
@@ -6,29 +6,32 @@ use proc_bitfield::bitfield;
 
 use crate::{impl_deref, impl_get, impl_interface, impl_set};
 
-/// # MIPS Interface
+/// # MI base address
+pub const MI_BASE_ADDR: u32 = 0x0430_0000;
+
+/// # MIPS interface (MI)
 pub struct Mi;
 
-impl_interface!(Mi, MiRegisters, 0x0430_0000);
+impl_interface!(Mi, MiRegisters, MI_BASE_ADDR);
 
-/// # MIPS Interface Register Block
+/// # MI register block
 #[repr(C)]
 pub struct MiRegisters {
-    /// `0x00` - Init Mode
+    /// Init mode
     pub mi_init_mode_reg: MiInitModeReg,
 
-    /// `0x04` - Version
+    /// Version
     pub mi_version_reg: MiVersionReg,
 
-    /// `0x08` - Interrupts
+    /// Interrupts
     pub mi_intr_reg: MiIntrReg,
 
-    /// `0x0C` - Interrupt Masks
+    /// Interrupt masks
     pub mi_intr_mask_reg: MiIntrMaskReg,
 }
 
 bitfield! {
-    /// # MIPS Interface Init Mode Register
+    /// # MI init mode register
     pub struct MiInitModeReg(pub u32): Debug {
         pub raw: u32 @ ..,
 
@@ -49,7 +52,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # MIPS Interface Version Register
+    /// # MI version register
     pub struct MiVersionReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub io: u8 [read_only, get Version] @ 0..8,
@@ -60,7 +63,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # MIPS Interface Interrupt Register
+    /// # MI interrupt register
     pub struct MiIntrReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub sp_intr: bool [read_only] @ 0,
@@ -73,7 +76,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # MIPS Interface Interrupt Mask Register
+    /// # MI interrupt mask register
     pub struct MiIntrMaskReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub sp_intr_mask: bool [read_only] @ 0,
@@ -97,7 +100,7 @@ bitfield! {
     }
 }
 
-/// # Init Length
+/// # Init length
 #[derive(Debug)]
 pub struct InitLength(pub u8);
 

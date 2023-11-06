@@ -1,4 +1,4 @@
-//! # Program Counter
+//! # Program counter (PC)
 
 use core::ops::Deref;
 
@@ -6,23 +6,26 @@ use proc_bitfield::bitfield;
 
 use crate::{impl_deref, impl_get, impl_interface, impl_set};
 
-/// Program Counter Interface
+/// # PC base address.
+pub const PC_BASE_ADDR: u32 = 0x0408_0000;
+
+/// # Program counter (PC)
 pub struct Pc;
 
-impl_interface!(Pc, PcRegisters, 0x0408_0000);
+impl_interface!(Pc, PcRegisters, PC_BASE_ADDR);
 
-/// # Program Counter Register Block
+/// # PC register block
 #[repr(C)]
 pub struct PcRegisters {
-    /// `0x00` - Program counter
+    /// Program counter
     pub sp_pc_reg: SpPcReg,
 
-    /// `0x04` - IMEM BIST
+    /// IMEM BIST
     pub sp_ibist_reg: SpIbistReg,
 }
 
 bitfield! {
-    /// # Stack Pointer Program Counter Register
+    /// # SP program counter register
     pub struct SpPcReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub program_counter: u16 [get ProgramCounter, try_set ProgramCounter] @ 0..12,
@@ -30,7 +33,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # Stack Pointer IMEM BIST Register
+    /// # SP IMEM BIST register
     pub struct SpIbistReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub bist_check: bool @ 0,
@@ -41,7 +44,7 @@ bitfield! {
     }
 }
 
-/// # Program Counter
+/// # Program counter
 #[derive(Debug)]
 pub struct ProgramCounter(pub u16);
 
@@ -49,7 +52,7 @@ impl_deref!(ProgramCounter, u16);
 impl_get!(ProgramCounter, u16);
 impl_set!(ProgramCounter, u16, 0..12);
 
-/// # BIST Failure
+/// # BIST failure
 #[derive(Debug)]
 pub struct BistFail(pub u8);
 

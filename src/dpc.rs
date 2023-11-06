@@ -1,4 +1,4 @@
-//! # Display Processor Command
+//! # Display processor command (DPC)
 
 use core::ops::Deref;
 
@@ -126,7 +126,7 @@ bitfield! {
     }
 }
 
-/// # RDRAM Address
+/// # RDRAM address
 #[derive(Debug)]
 pub struct RdramAddress(pub u32);
 
@@ -134,7 +134,7 @@ impl_deref!(RdramAddress, u32);
 impl_get!(RdramAddress, u32);
 impl_set!(RdramAddress, u32, 0..24);
 
-/// # RDP Command Source
+/// # RDP command source
 #[derive(Debug)]
 pub enum RdpCommandSource {
     RspDmem,
@@ -151,7 +151,7 @@ impl From<bool> for RdpCommandSource {
     }
 }
 
-/// # Clock Counter
+/// # Clock counter
 #[derive(Debug)]
 pub struct ClockCounter(pub u32);
 

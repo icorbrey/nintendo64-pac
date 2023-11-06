@@ -1,4 +1,4 @@
-//! # Display Processor Span
+//! # Display processor span (DPS)
 
 use core::ops::Deref;
 
@@ -6,29 +6,32 @@ use proc_bitfield::bitfield;
 
 use crate::{impl_deref, impl_get, impl_interface, impl_set};
 
-/// # Display Processor Span
+/// # DPS base address
+pub const DPS_BASE_ADDR: u32 = 0x0420_0000;
+
+/// # Display processor span (DPS)
 pub struct Dps;
 
-impl_interface!(Dps, DpsRegisters, 0x0420_0000);
+impl_interface!(Dps, DpsRegisters, DPS_BASE_ADDR);
 
-/// # Display Processor Span Register Block
+/// # DPS Register Block
 #[repr(C)]
 pub struct DpsRegisters {
-    /// `0x00` - TBIST
+    /// TBIST
     pub dps_tbist_reg: DpsTbistReg,
 
-    /// `0x04` - Test mode
+    /// Test mode
     pub dps_test_mode_reg: DpsTestModeReg,
 
-    /// `0x08` - Buffer test address
+    /// Buffer test address
     pub dps_buftest_addr_reg: DpsBuftestAddrReg,
 
-    /// `0x0C` - Buffer test data
+    /// Buffer test data
     pub dps_buftest_data_reg: DpsBuftestDataReg,
 }
 
 bitfield! {
-    /// # Display Processor Span TBIST Register
+    /// # `DPS_TBIST_REG`
     pub struct DpsTbistReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub bist_check: bool @ 0,
@@ -40,7 +43,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # Display Processor Span Test Mode Register
+    /// # `DPS_TEST_MODE_REG`
     pub struct DpsTestModeReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub span_buffer_test_access_enable: bool @ 0,
@@ -48,7 +51,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # Display Processor Span Buffer Test Address Register
+    /// # `DPS_BUFTEST_ADDR_REG`
     pub struct DpsBuftestAddrReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub span_buffer_address: u8 [get BufferTestAddress, try_set BufferTestAddress] @ 0..7,
@@ -56,21 +59,21 @@ bitfield! {
 }
 
 bitfield! {
-    /// # Display Processor Span Buffer Test Data Register
+    /// # `DPS_BUFTEST_DATA_REG`
     pub struct DpsBuftestDataReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub span_buffer_data: u32 [get BufferTestData, try_set BufferTestData] @ 0..32,
     }
 }
 
-/// # BIST Failure
+/// # BIST failure
 #[derive(Debug)]
 pub struct BistFail(pub u8);
 
 impl_deref!(BistFail, u8);
 impl_get!(BistFail, u8);
 
-/// # Buffer Test Address
+/// # Buffer test address
 #[derive(Debug)]
 pub struct BufferTestAddress(pub u8);
 
@@ -78,7 +81,7 @@ impl_deref!(BufferTestAddress, u8);
 impl_get!(BufferTestAddress, u8);
 impl_set!(BufferTestAddress, u8, 0..7);
 
-/// # Buffer Test Data
+/// # Buffer test data
 #[derive(Debug)]
 pub struct BufferTestData(pub u32);
 

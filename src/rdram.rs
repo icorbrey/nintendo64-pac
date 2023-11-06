@@ -11,105 +11,105 @@ pub struct Rdram;
 
 impl_interface!(Rdram, RdramRegisters, 0x03F0_0000);
 
-/// # RDRAM Register Block
+/// # RDRAM register block
 #[repr(C)]
 pub struct RdramRegisters {
-    /// `0x00` - Device type
+    /// Device type
     pub rdram_device_type_reg: RdramDeviceTypeReg,
 
-    /// `0x04` - Device ID
+    /// Device ID
     pub rdram_device_id_reg: RdramDeviceIdReg,
 
-    /// `0x08` - Delay
+    /// Delay
     pub rdram_delay_reg: RdramDelayReg,
 
-    /// `0x0C` - Mode
+    /// Mode
     pub rdram_mode_reg: RdramModeReg,
 
-    /// `0x10` - Ref interval
+    /// Ref interval
     pub rdram_ref_interval_reg: RdramRefIntervalReg,
 
-    /// `0x14` - Ref row
+    /// Ref row
     pub rdram_ref_row_reg: RdramRefRowReg,
 
-    /// `0x18` - Ras interval
+    /// Ras interval
     pub rdram_ras_interval_reg: RdramRasIntervalReg,
 
-    /// `0x1C` - Minimum interval
+    /// Minimum interval
     pub rdram_min_interval_reg: RdramMinIntervalReg,
 
-    /// `0x20` - Address select
+    /// Address select
     pub rdram_addr_select_reg: RdramAddrSelectReg,
 
-    /// `0x24` - Device manufacturer
+    /// Device manufacturer
     pub rdram_device_manuf_reg: RdramDeviceManufReg,
 }
 
 bitfield! {
-    /// # RDRAM Device Type Register
+    /// # RDRAM device type register
     pub struct RdramDeviceTypeReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// # RDRAM Device ID Register
+    /// # RDRAM device ID register
     pub struct RdramDeviceIdReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// # RDRAM Delay Register
+    /// # RDRAM delay register
     pub struct RdramDelayReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// # RDRAM Mode Register
+    /// # RDRAM mode register
     pub struct RdramModeReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// # RDRAM Ref Interval Register
+    /// # RDRAM ref interval register
     pub struct RdramRefIntervalReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// # RDRAM Ref Row Register
+    /// # RDRAM ref row register
     pub struct RdramRefRowReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// # RDRAM Ras Interval Register
+    /// # RDRAM ras interval register
     pub struct RdramRasIntervalReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// # RDRAM Min Interval Register
+    /// # RDRAM min interval register
     pub struct RdramMinIntervalReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// # RDRAM Address Select Register
+    /// # RDRAM address select register
     pub struct RdramAddrSelectReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }
 }
 
 bitfield! {
-    /// # RDRAM Device Manufacturer Register
+    /// # RDRAM device manufacturer register
     pub struct RdramDeviceManufReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }

@@ -1,137 +1,114 @@
-//! # Video Interface
+//! # Video interface (VI)
 
 use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-const VI_BASE_REG: u32 = 0x0440_0000;
+use crate::{impl_deref, impl_enum, impl_get, impl_interface, impl_set};
 
-/// Video interface.
+/// # VI base address
+pub const VI_BASE_ADDR: u32 = 0x0440_0000;
+
+/// # Video interface (VI)
 pub struct Vi;
 
-impl Vi {
-    pub fn ptr() -> *const ViRegisters {
-        VI_BASE_REG as *const _
-    }
-}
+impl_interface!(Vi, ViRegisters, VI_BASE_ADDR);
 
-unsafe impl Send for Vi {}
-
-impl Deref for Vi {
-    type Target = ViRegisters;
-
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*Self::ptr() }
-    }
-}
-
-/// Video interface register block.
+/// # VI register block
 #[repr(C)]
 pub struct ViRegisters {
-    /// `0x00` - Status
+    /// Status
     pub vi_status_reg: ViStatusReg,
 
-    /// `0x04` - Frame buffer origin
+    /// Frame buffer origin
     pub vi_origin_reg: ViOriginReg,
 
-    /// `0x08` - Frame buffer line width
+    /// Frame buffer line width
     pub vi_width_reg: ViWidthReg,
 
-    /// `0x0C` - Vertical interrupt
+    /// Vertical interrupt
     pub vi_intr_reg: ViIntrReg,
 
-    /// `0x10` - Current vertical line
+    /// Current vertical line
     pub vi_current_reg: ViCurrentReg,
 
-    /// `0x14` - Timing
+    /// Timing
     pub vi_timing_reg: ViTimingReg,
 
-    /// `0x18` - Vertical sync
+    /// Vertical sync
     pub vi_v_sync_reg: ViVSyncReg,
 
-    /// `0x1C` - Horizontal sync
+    /// Horizontal sync
     pub vi_h_sync_reg: ViHSyncReg,
 
-    /// `0x20` - Horizontal sync leap
+    /// Horizontal sync leap
     pub vi_h_sync_leap_reg: ViHSyncLeapReg,
 
-    /// `0x24` - Horizontal video
+    /// Horizontal video
     pub vi_h_video_reg: ViHVideoReg,
 
-    /// `0x28` - Vertical video
+    /// Vertical video
     pub vi_v_video_reg: ViVVideoReg,
 
-    /// `0x2C` - Vertical burst
+    /// Vertical burst
     pub vi_v_burst_reg: ViVBurstReg,
 
-    /// `0x30` - X-scale
+    /// X-scale
     pub vi_x_scale_reg: ViXScaleReg,
 
-    /// `0x34` - Y-scale
+    /// Y-scale
     pub vi_y_scale_reg: ViYScaleReg,
 }
 
 bitfield! {
-    /// Video interface status register.
+    /// # VI status register
     pub struct ViStatusReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub pixel_size: u8 @ 0..2,
+        pub pixel_size: u8 [get PixelSize, set PixelSize] @ 0..2,
         pub gamma_dither_enable: bool @ 2,
         pub gamma_enable: bool @ 3,
         pub divot_enable: bool @ 4,
         pub serrate: bool @ 6,
-        pub antialias_mode: u8 @ 8..10,
+        pub antialias_mode: u8 [get AntialiasMode, set AntialiasMode] @ 8..10,
     }
 }
 
 bitfield! {
-    /// Video interface frame buffer origin register.
+    /// # VI frame buffer origin register
     pub struct ViOriginReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub frame_buffer_origin: u32 @ 0..24,
+        pub frame_buffer_origin: u32 [get RdramAddress, try_set RdramAddress] @ 0..24,
     }
 }
 
 bitfield! {
-    /// Video interface frame buffer line width register.
+    /// # VI frame buffer line width register
     pub struct ViWidthReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub frame_buffer_line_width: u16 @ 0..12,
+        pub frame_buffer_line_width: u16 [get LineWidth, try_set LineWidth] @ 0..12,
     }
 }
 
 bitfield! {
-    /// Video interface vertical interrupt register.
+    /// # VI vertical interrupt register
     pub struct ViIntrReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
-        pub intr_half_line: u16 @ 0..10,
+        pub intr_half_line: u16 [get HalflineIndex, try_set HalflineIndex] @ 0..10,
     }
 }
 
 bitfield! {
-    /// Video interface current vertical line register.
+    /// # VI current vertical line register
     pub struct ViCurrentReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub current_half_line: u16 @ 0..10,
     }
 }
 
 bitfield! {
-    /// Video interface timing register.
+    /// # VI timing register
     pub struct ViTimingReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub horizontal_sync_width: u8 @ 0..8,
         pub color_burst_width: u8 @ 8..16,
         pub vertical_sync_width: u8 @ 16..20,
@@ -140,88 +117,126 @@ bitfield! {
 }
 
 bitfield! {
-    /// Video interface vertical sync register.
+    /// # VI vertical sync register
     pub struct ViVSyncReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub half_lines_per_field: u16 @ 0..10,
     }
 }
 
 bitfield! {
-    /// Video interface horizontal sync register.
+    /// # VI horizontal sync register
     pub struct ViHSyncReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub line_duration: u16 @ 0..12,
         pub leap_pattern: u8 @ 16..21,
     }
 }
 
 bitfield! {
-    /// Video interface horizontal sync leap register.
+    /// # VI horizontal sync leap register
     pub struct ViHSyncLeapReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub h_sync_period_0: u16 @ 0..12,
         pub h_sync_period_1: u16 @ 16..28,
     }
 }
 
 bitfield! {
-    /// Video interface horizontal video register.
+    /// # VI horizontal video register
     pub struct ViHVideoReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub end_active_video: u16 @ 0..10,
         pub start_active_video: u16 @ 16..26,
     }
 }
 
 bitfield! {
-    /// Video interface vertical video register.
+    /// # VI vertical video register
     pub struct ViVVideoReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub end_active_video: u16 @ 0..10,
         pub start_active_video: u16 @ 16..26,
     }
 }
 
 bitfield! {
-    /// Video interface vertical burst register.
+    /// # VI vertical burst register
     pub struct ViVBurstReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub end_color_burst: u16 @ 0..10,
         pub start_color_burst: u16 @ 16..26,
     }
 }
 
 bitfield! {
-    /// Video interface X-scale register.
+    /// # VI X-scale register
     pub struct ViXScaleReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub inverse_scale_factor: u16 @ 0..12,
         pub subpixel_offset: u16 @ 16..28,
     }
 }
 
 bitfield! {
-    /// Video interface Y-scale register.
+    /// # VI Y-scale register
     pub struct ViYScaleReg(pub u32): Debug {
-        /// Raw register access.
         pub raw: u32 @ ..,
-
         pub inverse_scale_factor: u16 @ 0..12,
         pub subpixel_offset: u16 @ 16..28,
     }
 }
+
+/// # Pixel size
+#[derive(Debug)]
+pub enum PixelSize {
+    Blank,
+    SixteenBit,
+    ThirtyTwoBit,
+}
+
+impl_enum!(PixelSize, u8, {
+    0 => PixelSize::Blank,
+    2 => PixelSize::SixteenBit,
+    3 => PixelSize::ThirtyTwoBit,
+});
+
+/// # Antialias mode
+#[derive(Debug)]
+pub enum AntialiasMode {
+    Full,
+    Optimized,
+    ResampleOnly,
+    None,
+}
+
+impl_enum!(AntialiasMode, u8, {
+    0 => AntialiasMode::Full,
+    1 => AntialiasMode::Optimized,
+    2 => AntialiasMode::ResampleOnly,
+    3 => AntialiasMode::None,
+});
+
+/// # RDRAM address
+#[derive(Debug)]
+pub struct RdramAddress(pub u32);
+
+impl_deref!(RdramAddress, u32);
+impl_get!(RdramAddress, u32);
+impl_set!(RdramAddress, u32, 0..24);
+
+/// # Line width
+#[derive(Debug)]
+pub struct LineWidth(pub u16);
+
+impl_deref!(LineWidth, u16);
+impl_get!(LineWidth, u16);
+impl_set!(LineWidth, u16, 0..12);
+
+/// # Halfline index
+#[derive(Debug)]
+pub struct HalflineIndex(pub u16);
+
+impl_deref!(HalflineIndex, u16);
+impl_get!(HalflineIndex, u16);
+impl_set!(HalflineIndex, u16, 0..10);
