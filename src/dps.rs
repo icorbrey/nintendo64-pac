@@ -1,186 +1,72 @@
-//! # DPS Wrapper
-//!
-//! This module wraps the Nintendo 64's DPC registers and provides type- and
-//! memory safe ways of interacting with it.
+//! # Display processor span (DPS)
 
-use tock_registers::{
-    interfaces::{Readable, Writeable},
-    register_bitfields, register_structs,
-    registers::ReadWrite,
-};
+use proc_bitfield::bitfield;
 
-use crate::{register_access, HARDWARE};
+use crate::{fields, registers};
 
-register_access!(0x0420_0000, Registers);
+/// # DPS base address
+pub const DPS_BASE_ADDR: u32 = 0x0420_0000;
 
-/// A zero-size wrapper around the Nintendo 64's DPC registers.
-///
-/// This structure must be acquired via the global [`HARDWARE`][crate::HARDWARE]
-/// variable:
-///
-/// ```rust
-/// # use nintendo64_pac::{HARDWARE, HardwareError};
-/// # unsafe fn test() -> Result<(), HardwareError> {
-/// let dps = HARDWARE.dps.take()?;
-/// #
-/// # assert!(HARDWARE.dps.take().is_err());
-/// # dps.drop();
-/// # assert!(HARDWARE.dps.take().is_ok());
-/// #
-/// # Ok(())
-/// # }
-/// # assert!(unsafe { test() }.is_ok());
-/// ```
-///
-/// Once a reference has been acquired, registers can be accessed.
-///
-/// If needed, the reference can be given back to the global variable:
-///
-/// ```rust
-/// # use nintendo64_pac::{HARDWARE, HardwareError};
-/// # unsafe fn test() -> Result<(), HardwareError> {
-/// # let dps = HARDWARE.dps.take()?;
-/// #
-/// # assert!(HARDWARE.dps.take().is_err());
-/// dps.drop();
-/// # assert!(HARDWARE.dps.take().is_ok());
-/// #
-/// # Ok(())
-/// # }
-/// # assert!(unsafe { test() }.is_ok());
-/// ```
-#[non_exhaustive]
-pub struct Dps {
-    /// Contains getters and setters for `DPS_BUFTEST_ADDR_REG`.
-    pub buffer_test_address: BufferTestAddress,
+registers! {
+    /// # Display processor span (DPS)
+    DPS_BASE_ADDR => Dps {
+        /// TBIST.
+        pub dps_tbist_reg: DpsTbistReg,
 
-    /// Contains getters and setters for `DPS_BUFTEST_DATA_REG`.
-    pub buffer_test_data: BufferTestData,
+        /// Test mode.
+        pub dps_test_mode_reg: DpsTestModeReg,
 
-    /// Contains getters and setters for `DPS_TEST_MODE_REG`.
-    pub buffer_test_mode: BufferTestMode,
+        /// Buffer test address.
+        pub dps_buftest_addr_reg: DpsBuftestAddrReg,
 
-    /// Contains getters and setters for `DPS_TBIST_REG`.
-    pub tmem_bist: TmemBist,
-}
-
-impl Dps {
-    /// Returns ownership of the DPS registers to [`HARDWARE`][crate::HARDWARE].
-    pub fn drop(self) {
-        unsafe { HARDWARE.dps.drop(self) }
+        /// Buffer test data.
+        pub dps_buftest_data_reg: DpsBuftestDataReg,
     }
 }
 
-/// A zero-size wrapper around `DPS_TBIST_REG`.
-#[non_exhaustive]
-pub struct TmemBist;
-
-impl TmemBist {
-    pub fn get_check(&self) -> bool {
-        registers().tbist.is_set(DpsTbistReg::BIST_CHECK)
-    }
-
-    pub fn get_go(&self) -> bool {
-        registers().tbist.is_set(DpsTbistReg::BIST_GO)
-    }
-
-    pub fn get_done(&self) -> bool {
-        registers().tbist.is_set(DpsTbistReg::BIST_DONE)
-    }
-
-    pub fn get_fail(&self) -> u32 {
-        registers().tbist.read(DpsTbistReg::BIST_FAIL)
-    }
-
-    pub fn set_check(&self) {
-        registers().tbist.write(DpsTbistReg::BIST_CHECK::SET)
-    }
-
-    pub fn set_go(&self) {
-        registers().tbist.write(DpsTbistReg::BIST_GO::SET)
-    }
-
-    pub fn set_clear(&self) {
-        registers().tbist.write(DpsTbistReg::BIST_CLEAR::SET)
+bitfield! {
+    /// # `DPS_TBIST_REG`
+    pub struct DpsTbistReg(pub u32): Debug {
+        pub raw: u32 @ ..,
+        pub bist_check: bool @ 0,
+        pub bist_go: bool @ 1,
+        pub bist_clear: bool [write_only] @ 2,
+        pub bist_done: bool [read_only] @ 2,
+        pub bist_fail: u8 [read_only, get BistFail] @ 3..11,
     }
 }
 
-/// A zero-size wrapper around `DPS_TEST_MODE_REG`.
-#[non_exhaustive]
-pub struct BufferTestMode;
-
-impl BufferTestMode {
-    pub fn enable(&self) {
-        registers().test_mode.write(DpsTestModeReg::MODE::SET)
-    }
-
-    pub fn disable(&self) {
-        registers().test_mode.write(DpsTestModeReg::MODE::CLEAR)
+bitfield! {
+    /// # `DPS_TEST_MODE_REG`
+    pub struct DpsTestModeReg(pub u32): Debug {
+        pub raw: u32 @ ..,
+        pub span_buffer_test_access_enable: bool @ 0,
     }
 }
 
-/// A zero-size wrapper around `DPS_BUFTEST_ADDR_REG`.
-#[non_exhaustive]
-pub struct BufferTestAddress;
-
-impl BufferTestAddress {
-    pub fn get(&self) -> u32 {
-        registers().buf_test_addr.read(DpsBufTestAddrReg::ADDR)
-    }
-
-    pub fn set(&self, address: u32) {
-        registers()
-            .buf_test_addr
-            .write(DpsBufTestAddrReg::ADDR.val(address))
+bitfield! {
+    /// # `DPS_BUFTEST_ADDR_REG`
+    pub struct DpsBuftestAddrReg(pub u32): Debug {
+        pub raw: u32 @ ..,
+        pub span_buffer_address: u8 [BufferTestAddress] @ 0..7,
     }
 }
 
-/// A zero-size wrapper around `DPS_BUFTEST_DATA_REG`.
-#[non_exhaustive]
-pub struct BufferTestData;
-
-impl BufferTestData {
-    pub fn get(&self) -> u32 {
-        registers().buf_test_data.read(DpsBufTestDataReg::DATA)
-    }
-
-    pub fn set(&self, data: u32) {
-        registers()
-            .buf_test_data
-            .write(DpsBufTestDataReg::DATA.val(data))
+bitfield! {
+    /// # `DPS_BUFTEST_DATA_REG`
+    pub struct DpsBuftestDataReg(pub u32): Debug {
+        pub raw: u32 @ ..,
+        pub span_buffer_data: u32 [BufferTestData] @ 0..32,
     }
 }
 
-register_structs! {
-    Registers {
-        (0x0000 => pub tbist: ReadWrite<u32, DpsTbistReg::Register>),
-        (0x0004 => pub test_mode: ReadWrite<u32, DpsTestModeReg::Register>),
-        (0x0008 => pub buf_test_addr: ReadWrite<u32, DpsBufTestAddrReg::Register>),
-        (0x000C => pub buf_test_data: ReadWrite<u32, DpsBufTestDataReg::Register>),
-        (0x0010 => @END),
-    }
-}
+fields! [
+    /// # BIST failure
+    u8 => BistFail,
 
-register_bitfields! {
-    u32,
+    /// # Buffer test address
+    ux::u7 => BufferTestAddress,
 
-    DpsTbistReg [
-        BIST_CHECK OFFSET(0) NUMBITS(1)  [],
-        BIST_GO    OFFSET(1) NUMBITS(1)  [],
-        BIST_DONE  OFFSET(2) NUMBITS(1)  [],
-        BIST_FAIL  OFFSET(3) NUMBITS(8)  [],
-        BIST_CLEAR OFFSET(2) NUMBITS(1)  [],
-    ],
-
-    DpsTestModeReg [
-        MODE       OFFSET(0) NUMBITS(1)  [],
-    ],
-
-    DpsBufTestAddrReg [
-        ADDR       OFFSET(0) NUMBITS(7)  [],
-    ],
-
-    DpsBufTestDataReg [
-        DATA       OFFSET(0) NUMBITS(32) [],
-    ]
-}
+    /// # Buffer test data
+    u32 => BufferTestData,
+];

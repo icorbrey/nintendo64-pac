@@ -1,5 +1,5 @@
 [![Crates.io](https://img.shields.io/crates/v/nintendo64-pac?style=flat-square)][package]
-[![License](https://img.shields.io/crates/l/nintendo64-pac?style=flat-square)][license]
+[![License](https://img.shields.io/crates/l/nintendo64-pac?style=flat-square)](#license)
 [![Documentation](https://img.shields.io/docsrs/nintendo64-pac?style=flat-square)][docs]
 [![Build Status](https://img.shields.io/github/actions/workflow/status/icorbrey/nintendo64-pac/rust.yml?branch=master&style=flat-square)][status]
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/icorbrey?style=flat-square)][sponsors]
@@ -16,7 +16,12 @@ Run the following Cargo command in your project directory:
 cargo add nintendo64-pac
 ```
 
-[license]: ./LICENSE
+## License
+
+This project is licensed under either [Apache 2.0][license-apache] or [MIT][license-mit].
+
+[license-apache]: ./LICENSE-APACHE
+[license-mit]: ./LICENSE-MIT
 [sponsors]: https://github.com/sponsors/icorbrey
 [package]: https://crates.io/crates/nintendo64-pac
 [status]: https://github.com/icorbrey/nintendo64-pac/actions

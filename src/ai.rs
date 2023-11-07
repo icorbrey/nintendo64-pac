@@ -1,250 +1,98 @@
-//! # Audio Interface Wrapper
-//!
-//! This module wraps the Nintendo 64's AI registers and provides type- and
-//! memory safe ways of interacting with it.
+//! # Audio interface (AI)
 
-use tock_registers::{
-    interfaces::{Readable, Writeable},
-    register_bitfields, register_structs,
-    registers::{ReadWrite, WriteOnly},
-};
+use proc_bitfield::bitfield;
 
-use crate::{register_access, HARDWARE};
+use crate::{fields, registers};
 
-register_access!(0x0450_0000, Registers);
+pub const AI_BASE_ADDR: u32 = 0x0450_0000;
+pub const AI_OFFSET: u32 = 0xA000_0000;
 
-/// A zero-size wrapper around the Nintendo 64's audio interface registers.
-///
-/// This structure must be acquired via the global [`HARDWARE`][crate::HARDWARE]
-/// variable:
-///
-/// ```rust
-/// # use nintendo64_pac::{HARDWARE, HardwareError};
-/// # unsafe fn test() -> Result<(), HardwareError> {
-/// let ai = HARDWARE.audio_interface.take()?;
-/// #
-/// # let is_busy = ai.status.is_busy();
-/// # let is_full = ai.status.is_full();
-/// #
-/// # ai.dram_addr.set(0x12345678);
-/// # ai.len.set_v1(123);
-/// # ai.dac_rate.set(0x12345678);
-/// # ai.control.enable_dma();
-/// #
-/// # assert!(HARDWARE.audio_interface.take().is_err());
-/// # ai.drop();
-/// # assert!(HARDWARE.audio_interface.take().is_ok());
-/// #
-/// # Ok(())
-/// # }
-/// # assert!(unsafe { test() }.is_ok());
-/// ```
-///
-/// Once a reference has been acquired, registers can be accessed:
-///
-/// ```rust
-/// # use nintendo64_pac::{HARDWARE, HardwareError};
-/// # unsafe fn test() -> Result<(), HardwareError> {
-/// # let ai = HARDWARE.audio_interface.take()?;
-/// #
-/// let is_busy = ai.status.is_busy();
-/// let is_full = ai.status.is_full();
-///
-/// ai.dram_addr.set(0x12345678);
-/// ai.len.set_v1(123);
-/// ai.dac_rate.set(0x12345678);
-/// ai.control.enable_dma();
-/// #
-/// # assert!(HARDWARE.audio_interface.take().is_err());
-/// # ai.drop();
-/// # assert!(HARDWARE.audio_interface.take().is_ok());
-/// #
-/// # Ok(())
-/// # }
-/// # assert!(unsafe { test() }.is_ok());
-/// ```
-///
-/// If needed, the reference can be given back to the global variable:
-///
-/// ```rust
-/// # use nintendo64_pac::{HARDWARE, HardwareError};
-/// # unsafe fn test() -> Result<(), HardwareError> {
-/// # let ai = HARDWARE.audio_interface.take()?;
-/// #
-/// # let is_busy = ai.status.is_busy();
-/// # let is_full = ai.status.is_full();
-/// #
-/// # ai.dram_addr.set(0x12345678);
-/// # ai.len.set_v1(123);
-/// # ai.dac_rate.set(0x12345678);
-/// # ai.control.enable_dma();
-/// #
-/// # assert!(HARDWARE.audio_interface.take().is_err());
-/// ai.drop();
-/// # assert!(HARDWARE.audio_interface.take().is_ok());
-/// #
-/// # Ok(())
-/// # }
-/// # assert!(unsafe { test() }.is_ok());
-/// ```
-#[non_exhaustive]
-pub struct AudioInterface {
-    /// Contains getters and setters for `AI_DRAM_ADDR_REG`.
-    pub dram_addr: DramAddr,
+registers! {
+    /// # Audio interface (AI)
+    AI_BASE_ADDR => Ai {
+        /// Address of audio sample in DRAM.
+        pub ai_dram_addr_reg: AiDramAddrReg,
 
-    /// Contains getters and setters for `AI_BITRATE_REG`.
-    pub bit_rate: BitRate,
+        /// Length of audio sample.
+        pub ai_len_reg: AiLenReg,
 
-    /// Contains getters and setters for `AI_DACRATE_REG`.
-    pub dac_rate: DacRate,
+        /// Control.
+        pub ai_control_reg: AiControlReg,
 
-    /// Contains getters and setters for `AI_CONTROL_REG`.
-    pub control: Control,
+        /// Status.
+        pub ai_status_reg: AiStatusReg,
 
-    /// Contains getters and setters for `AI_STATUS_REG`.
-    pub status: Status,
+        /// DAC rate.
+        pub ai_dacrate_reg: AiDacrateReg,
 
-    /// Contains getters and setters for `AI_LEN_REG`.
-    pub len: Len,
-}
-
-impl AudioInterface {
-    /// Returns ownership of the audio interface registers to
-    /// [`HARDWARE`][crate::HARDWARE].
-    pub fn drop(self) {
-        unsafe { HARDWARE.audio_interface.drop(self) }
+        /// Bitrate.
+        pub ai_bitrate_reg: AiBitrateReg,
     }
 }
 
-/// A zero-size wrapper around `AI_DRAM_ADDR_REG`.
-#[non_exhaustive]
-pub struct DramAddr;
-
-impl DramAddr {
-    pub fn set(&self, dram_addr: u32) {
-        registers()
-            .dram_addr
-            .write(AiDramAddrReg::STARTING_RDRAM_ADDRESS.val(dram_addr))
+bitfield! {
+    /// # `AI_DRAM_ADDR_REG`
+    pub struct AiDramAddrReg(pub u32): Debug {
+        pub raw: u32 @ ..,
+        pub starting_rdram_address: u32 [RdramAddress] @ 0..24,
     }
 }
 
-/// A zero-size wrapper around `AI_LEN_REG`.
-#[non_exhaustive]
-pub struct Len;
-
-impl Len {
-    pub fn get_v1(&self) -> u32 {
-        registers().len.read(AiLenReg::TRANSFER_LENGTH_V1)
+bitfield! {
+    /// # `AI_LEN_REG`
+    pub struct AiLenReg(pub u32): Debug {
+        pub raw: u32 @ ..,
+        pub transfer_length_v1: u32 [TransferLengthV1] @ 0..15,
+        pub transfer_length_v2: u32 [TransferLengthV2] @ 0..18,
     }
-
-    pub fn set_v1(&self, len: u32) {
-        registers().len.write(AiLenReg::TRANSFER_LENGTH_V1.val(len))
-    }
-
-    pub fn get_v2(&self) -> u32 {
-        registers().len.read(AiLenReg::TRANSFER_LENGTH_V2)
-    }
-
-    pub fn set_v2(&self, len: u32) {
-        registers().len.write(AiLenReg::TRANSFER_LENGTH_V2.val(len))
+}
+bitfield! {
+    /// # `AI_CONTROL_REG`
+    pub struct AiControlReg(pub u32): Debug {
+        pub raw: u32 @ ..,
+        pub dma_enable: bool [write_only] @ 0,
     }
 }
 
-/// A zero-size wrapper around `AI_CONTROL_REG`.
-#[non_exhaustive]
-pub struct Control;
-
-impl Control {
-    pub fn enable_dma(&self) {
-        registers().control.write(AiControlReg::DMA_ENABLE::SET)
-    }
-
-    pub fn disable_dma(&self) {
-        registers().control.write(AiControlReg::DMA_ENABLE::CLEAR)
+bitfield! {
+    /// # `AI_STATUS_REG`
+    pub struct AiStatusReg(pub u32): Debug {
+        pub raw: u32 @ ..,
+        pub ai_busy: bool [read_only] @ 30,
+        pub ai_full: bool [read_only] @ 31,
+        pub clear_ai_intr: bool [write_only] @ 0,
     }
 }
 
-/// A zero-size wrapper around `AI_STATUS_REG`.
-#[non_exhaustive]
-pub struct Status;
-
-impl Status {
-    pub fn is_busy(&self) -> bool {
-        registers().status.is_set(AiStatusReg::BUSY)
-    }
-
-    pub fn is_full(&self) -> bool {
-        registers().status.is_set(AiStatusReg::FULL)
-    }
-
-    pub fn clear_interrupt(&self) {
-        registers().status.write(AiStatusReg::CLEAR_INTERRUPT::SET)
+bitfield! {
+    /// # `AI_DACRATE_REG`
+    pub struct AiDacrateReg(pub u32): Debug {
+        pub raw: u32 @ ..,
+        pub dac_rate: u16 [write_only, set DacRate] @ 0..14,
     }
 }
 
-/// A zero-size wrapper around `AI_DACRATE_REG`.
-#[non_exhaustive]
-pub struct DacRate;
-
-impl DacRate {
-    pub fn set(&self, dac_rate: u32) {
-        registers()
-            .dac_rate
-            .write(AiDacrateReg::DAC_RATE.val(dac_rate))
+bitfield! {
+    /// # `AI_BITRATE_REG`
+    pub struct AiBitrateReg(pub u32): Debug {
+        pub raw: u32 @ ..,
+        pub bitrate: u8 [write_only, set Bitrate] @ 0..4,
     }
 }
 
-/// A zero-size wrapper around `AI_BITRATE_REG`.
-#[non_exhaustive]
-pub struct BitRate;
+fields! [
+    /// # Bitrate
+    ux::u4 => Bitrate,
 
-impl BitRate {
-    pub fn set(&self, bit_rate: u32) {
-        registers()
-            .bit_rate
-            .write(AiBitrateReg::BIT_RATE.val(bit_rate))
-    }
-}
+    /// # DAC rate
+    ux::u14 => DacRate,
 
-register_structs! {
-    Registers {
-        (0x0000 => pub dram_addr: WriteOnly<u32, AiDramAddrReg::Register>),
-        (0x0004 => pub len: ReadWrite<u32, AiLenReg::Register>),
-        (0x0008 => pub control: WriteOnly<u32, AiControlReg::Register>),
-        (0x000C => pub status: ReadWrite<u32, AiStatusReg::Register>),
-        (0x0010 => pub dac_rate: WriteOnly<u32, AiDacrateReg::Register>),
-        (0x0014 => pub bit_rate: WriteOnly<u32, AiBitrateReg::Register>),
-        (0x0018 => @END),
-    }
-}
+    /// # RDRAM address
+    ux::u24 => RdramAddress,
 
-register_bitfields! {
-    u32,
+    /// # Transfer length (v1.0)
+    ux::u14 => TransferLengthV1,
 
-    AiDramAddrReg [
-        STARTING_RDRAM_ADDRESS OFFSET(0)  NUMBITS(24) [],
-    ],
-
-    AiLenReg [
-        TRANSFER_LENGTH_V1     OFFSET(0)  NUMBITS(15) [],
-        TRANSFER_LENGTH_V2     OFFSET(0)  NUMBITS(18) [],
-    ],
-
-    AiControlReg [
-        DMA_ENABLE             OFFSET(0)  NUMBITS(1)  [],
-    ],
-
-    AiStatusReg [
-        CLEAR_INTERRUPT        OFFSET(0)  NUMBITS(1)  [],
-        BUSY                   OFFSET(30) NUMBITS(1)  [],
-        FULL                   OFFSET(31) NUMBITS(1)  [],
-    ],
-
-    AiDacrateReg [
-        DAC_RATE               OFFSET(0)  NUMBITS(14) [],
-    ],
-
-    AiBitrateReg [
-        BIT_RATE               OFFSET(0)  NUMBITS(4)  [],
-    ],
-}
+    /// # Transfer length (v2.0)
+    ux::u18 => TransferLengthV2,
+];
