@@ -1,12 +1,12 @@
 [package]
 name = "nintendo64-pac"
 authors = ["Isaac Corbrey <icorbrey@gmail.com>"]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 readme = "README.md"
-license = "GPL-3.0-only"
-categories = ["development-tools"]
-keywords = ["pac", "nintendo64", "n64", "embedded"]
+license = "MIT"
+categories = ["no-std", "embedded", "hardware-support"]
+keywords = ["pac", "nintendo64", "n64", "embedded", "no_std"]
 description = "A peripheral access crate for the Nintendo 64."
 repository = "https://github.com/icorbrey/nintendo64-pac"
 
