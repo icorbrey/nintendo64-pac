@@ -1,45 +1,39 @@
 //! # Display processor command (DPC)
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::{enums, fields, interface};
+use crate::{enums, fields, registers};
 
 /// # DPC base address
 pub const DPC_BASE_ADDR: u32 = 0x0410_0000;
 
-/// # Display processor command
-pub struct Dpc;
+registers! {
+    /// # Display processor command (DPC)
+    DPC_BASE_ADDR => Dpc {
+        /// Command start location.
+        pub dpc_start_reg: DpcStartReg,
 
-interface!(Dpc, DpcRegisters, DPC_BASE_ADDR);
+        /// Command end location.
+        pub dpc_end_reg: DpcEndReg,
 
-/// # DPC register block
-#[repr(C)]
-pub struct DpcRegisters {
-    /// Command start location.
-    pub dpc_start_reg: DpcStartReg,
+        /// Current command load location.
+        pub dpc_current_reg: DpcCurrentReg,
 
-    /// Command end location.
-    pub dpc_end_reg: DpcEndReg,
+        /// Status.
+        pub dpc_status_reg: DpcStatusReg,
 
-    /// Current command load location.
-    pub dpc_current_reg: DpcCurrentReg,
+        /// Clock.
+        pub dpc_clock_reg: DpcClockReg,
 
-    /// Status.
-    pub dpc_status_reg: DpcStatusReg,
+        /// Command buffer busy.
+        pub dpc_bufbusy_reg: DpcBufbusyReg,
 
-    /// Clock.
-    pub dpc_clock_reg: DpcClockReg,
+        /// Graphics pipe busy.
+        pub dpc_pipebusy_reg: DpcPipebusyReg,
 
-    /// Command buffer busy.
-    pub dpc_bufbusy_reg: DpcBufbusyReg,
-
-    /// Graphics pipe busy.
-    pub dpc_pipebusy_reg: DpcPipebusyReg,
-
-    /// TMEM.
-    pub dpc_tmem_reg: DpcTmemReg,
+        /// TMEM.
+        pub dpc_tmem_reg: DpcTmemReg,
+    }
 }
 
 bitfield! {

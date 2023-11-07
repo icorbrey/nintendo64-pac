@@ -1,27 +1,21 @@
 //! # Program counter (PC)
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::{fields, interface};
+use crate::{fields, registers};
 
-/// # PC base address.
+/// # PC base address
 pub const PC_BASE_ADDR: u32 = 0x0408_0000;
 
-/// # Program counter (PC)
-pub struct Pc;
+registers! {
+    /// # Program counter (PC)
+    PC_BASE_ADDR => Pc {
+        /// Program counter.
+        pub sp_pc_reg: SpPcReg,
 
-interface!(Pc, PcRegisters, PC_BASE_ADDR);
-
-/// # PC register block
-#[repr(C)]
-pub struct PcRegisters {
-    /// Program counter
-    pub sp_pc_reg: SpPcReg,
-
-    /// IMEM BIST
-    pub sp_ibist_reg: SpIbistReg,
+        /// IMEM BIST.
+        pub sp_ibist_reg: SpIbistReg,
+    }
 }
 
 bitfield! {

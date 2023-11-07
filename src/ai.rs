@@ -1,39 +1,33 @@
 //! # Audio interface (AI)
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::{fields, interface};
+use crate::{fields, registers};
 
 pub const AI_BASE_ADDR: u32 = 0x0450_0000;
 pub const AI_OFFSET: u32 = 0xA000_0000;
 
-/// # Audio interface (AI)
-pub struct Ai;
+registers! {
+    /// # Audio interface (AI)
+    AI_BASE_ADDR => Ai {
+        /// Address of audio sample in DRAM.
+        pub ai_dram_addr_reg: AiDramAddrReg,
 
-interface!(Ai, AiRegisters, AI_BASE_ADDR);
+        /// Length of audio sample.
+        pub ai_len_reg: AiLenReg,
 
-/// # AI register block
-#[repr(C)]
-pub struct AiRegisters {
-    /// Address of audio sample in DRAM.
-    pub ai_dram_addr_reg: AiDramAddrReg,
+        /// Control.
+        pub ai_control_reg: AiControlReg,
 
-    /// Length of audio sample.
-    pub ai_len_reg: AiLenReg,
+        /// Status.
+        pub ai_status_reg: AiStatusReg,
 
-    /// Control
-    pub ai_control_reg: AiControlReg,
+        /// DAC rate.
+        pub ai_dacrate_reg: AiDacrateReg,
 
-    /// Status
-    pub ai_status_reg: AiStatusReg,
-
-    /// DAC rate
-    pub ai_dacrate_reg: AiDacrateReg,
-
-    /// Bitrate
-    pub ai_bitrate_reg: AiBitrateReg,
+        /// Bitrate.
+        pub ai_bitrate_reg: AiBitrateReg,
+    }
 }
 
 bitfield! {

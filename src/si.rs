@@ -1,42 +1,36 @@
 //! # Serial interface (SI)
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::{fields, interface};
+use crate::{fields, registers};
 
 /// # SI base address
 pub const SI_BASE_REG: u32 = 0x0480_0000;
 
-/// # Serial interface (SI)
-pub struct Si;
+registers! {
+    /// # Serial interface (SI)
+    SI_BASE_REG => Si {
+        /// DRAM address
+        pub si_dram_addr_reg: SiDramAddrReg,
 
-interface!(Si, SiRegisters, SI_BASE_REG);
+        /// PIF address read 64 bits
+        pub si_pif_addr_rd64b_reg: SiPifAddrRd64bReg,
 
-/// # SI register block
-#[repr(C)]
-pub struct SiRegisters {
-    /// DRAM address
-    pub si_dram_addr_reg: SiDramAddrReg,
+        /// Reserved
+        _reserved_0: u32,
 
-    /// PIF address read 64 bits
-    pub si_pif_addr_rd64b_reg: SiPifAddrRd64bReg,
+        /// Reserved
+        _reserved_1: u32,
 
-    /// Reserved
-    _reserved_0: u32,
+        /// PIF address write 64 bits
+        pub si_pif_addr_wr64b_reg: SiPifAddrWr64bReg,
 
-    /// Reserved
-    _reserved_1: u32,
+        /// Reserved
+        _reserved_2: u32,
 
-    /// PIF address write 64 bits
-    pub si_pif_addr_wr64b_reg: SiPifAddrWr64bReg,
-
-    /// Reserved
-    _reserved_2: u32,
-
-    /// Status
-    pub si_status_reg: SiStatusReg,
+        /// Status
+        pub si_status_reg: SiStatusReg,
+    }
 }
 
 bitfield! {

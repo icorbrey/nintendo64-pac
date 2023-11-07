@@ -1,63 +1,57 @@
 //! # Video interface (VI)
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::{enums, fields, interface};
+use crate::{enums, fields, registers};
 
 /// # VI base address
 pub const VI_BASE_ADDR: u32 = 0x0440_0000;
 
-/// # Video interface (VI)
-pub struct Vi;
+registers! {
+    /// # Video interface (VI)
+    VI_BASE_ADDR => Vi {
+        /// Status
+        pub vi_status_reg: ViStatusReg,
 
-interface!(Vi, ViRegisters, VI_BASE_ADDR);
+        /// Frame buffer origin
+        pub vi_origin_reg: ViOriginReg,
 
-/// # VI register block
-#[repr(C)]
-pub struct ViRegisters {
-    /// Status
-    pub vi_status_reg: ViStatusReg,
+        /// Frame buffer line width
+        pub vi_width_reg: ViWidthReg,
 
-    /// Frame buffer origin
-    pub vi_origin_reg: ViOriginReg,
+        /// Vertical interrupt
+        pub vi_intr_reg: ViIntrReg,
 
-    /// Frame buffer line width
-    pub vi_width_reg: ViWidthReg,
+        /// Current vertical line
+        pub vi_current_reg: ViCurrentReg,
 
-    /// Vertical interrupt
-    pub vi_intr_reg: ViIntrReg,
+        /// Timing
+        pub vi_timing_reg: ViTimingReg,
 
-    /// Current vertical line
-    pub vi_current_reg: ViCurrentReg,
+        /// Vertical sync
+        pub vi_v_sync_reg: ViVSyncReg,
 
-    /// Timing
-    pub vi_timing_reg: ViTimingReg,
+        /// Horizontal sync
+        pub vi_h_sync_reg: ViHSyncReg,
 
-    /// Vertical sync
-    pub vi_v_sync_reg: ViVSyncReg,
+        /// Horizontal sync leap
+        pub vi_h_sync_leap_reg: ViHSyncLeapReg,
 
-    /// Horizontal sync
-    pub vi_h_sync_reg: ViHSyncReg,
+        /// Horizontal video
+        pub vi_h_video_reg: ViHVideoReg,
 
-    /// Horizontal sync leap
-    pub vi_h_sync_leap_reg: ViHSyncLeapReg,
+        /// Vertical video
+        pub vi_v_video_reg: ViVVideoReg,
 
-    /// Horizontal video
-    pub vi_h_video_reg: ViHVideoReg,
+        /// Vertical burst
+        pub vi_v_burst_reg: ViVBurstReg,
 
-    /// Vertical video
-    pub vi_v_video_reg: ViVVideoReg,
+        /// X-scale
+        pub vi_x_scale_reg: ViXScaleReg,
 
-    /// Vertical burst
-    pub vi_v_burst_reg: ViVBurstReg,
-
-    /// X-scale
-    pub vi_x_scale_reg: ViXScaleReg,
-
-    /// Y-scale
-    pub vi_y_scale_reg: ViYScaleReg,
+        /// Y-scale
+        pub vi_y_scale_reg: ViYScaleReg,
+    }
 }
 
 bitfield! {

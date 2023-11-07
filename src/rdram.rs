@@ -1,48 +1,45 @@
 //! # RDRAM
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::interface;
+use crate::registers;
 
-/// # RDRAM
-pub struct Rdram;
+/// # RDRAM base address
+pub const RDRAM_BASE_ADDR: u32 = 0x03F0_0000;
 
-interface!(Rdram, RdramRegisters, 0x03F0_0000);
+registers! {
+    /// # RDRAM
+    RDRAM_BASE_ADDR => Rdram {
+        /// Device type
+        pub rdram_device_type_reg: RdramDeviceTypeReg,
 
-/// # RDRAM register block
-#[repr(C)]
-pub struct RdramRegisters {
-    /// Device type
-    pub rdram_device_type_reg: RdramDeviceTypeReg,
+        /// Device ID
+        pub rdram_device_id_reg: RdramDeviceIdReg,
 
-    /// Device ID
-    pub rdram_device_id_reg: RdramDeviceIdReg,
+        /// Delay
+        pub rdram_delay_reg: RdramDelayReg,
 
-    /// Delay
-    pub rdram_delay_reg: RdramDelayReg,
+        /// Mode
+        pub rdram_mode_reg: RdramModeReg,
 
-    /// Mode
-    pub rdram_mode_reg: RdramModeReg,
+        /// Ref interval
+        pub rdram_ref_interval_reg: RdramRefIntervalReg,
 
-    /// Ref interval
-    pub rdram_ref_interval_reg: RdramRefIntervalReg,
+        /// Ref row
+        pub rdram_ref_row_reg: RdramRefRowReg,
 
-    /// Ref row
-    pub rdram_ref_row_reg: RdramRefRowReg,
+        /// Ras interval
+        pub rdram_ras_interval_reg: RdramRasIntervalReg,
 
-    /// Ras interval
-    pub rdram_ras_interval_reg: RdramRasIntervalReg,
+        /// Minimum interval
+        pub rdram_min_interval_reg: RdramMinIntervalReg,
 
-    /// Minimum interval
-    pub rdram_min_interval_reg: RdramMinIntervalReg,
+        /// Address select
+        pub rdram_addr_select_reg: RdramAddrSelectReg,
 
-    /// Address select
-    pub rdram_addr_select_reg: RdramAddrSelectReg,
-
-    /// Device manufacturer
-    pub rdram_device_manuf_reg: RdramDeviceManufReg,
+        /// Device manufacturer
+        pub rdram_device_manuf_reg: RdramDeviceManufReg,
+    }
 }
 
 bitfield! {

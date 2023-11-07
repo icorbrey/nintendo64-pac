@@ -1,49 +1,43 @@
 //! # RDRAM interface (RI)
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::{fields, interface};
+use crate::{fields, registers};
 
 /// # RI base address
 pub const RI_BASE_ADDR: u32 = 0x0470_0000;
 
-/// # RDRAM interface (RI)
-pub struct Ri;
+registers! {
+    /// # RDRAM interface (RI)
+    RI_BASE_ADDR => Ri {
+        /// Mode
+        pub ri_mode_reg: RiModeReg,
 
-interface!(Ri, RiRegisters, RI_BASE_ADDR);
+        /// Config
+        pub ri_config_reg: RiConfigReg,
 
-/// # RI register block
-#[repr(C)]
-pub struct RiRegisters {
-    /// Mode
-    pub ri_mode_reg: RiModeReg,
+        /// Current load
+        pub ri_current_load_reg: RiCurrentLoadReg,
 
-    /// Config
-    pub ri_config_reg: RiConfigReg,
+        /// Select
+        pub ri_select_reg: RiSelectReg,
 
-    /// Current load
-    pub ri_current_load_reg: RiCurrentLoadReg,
+        /// Refresh
+        pub ri_refresh_reg: RiRefreshReg,
 
-    /// Select
-    pub ri_select_reg: RiSelectReg,
+        /// Latency
+        pub ri_latency_reg: RiLatencyReg,
 
-    /// Refresh
-    pub ri_refresh_reg: RiRefreshReg,
+        /// Read error
+        pub ri_rerror_reg: RiRerrorReg,
 
-    /// Latency
-    pub ri_latency_reg: RiLatencyReg,
-
-    /// Read error
-    pub ri_rerror_reg: RiRerrorReg,
-
-    /// Write error
-    pub ri_werror_reg: RiWerrorReg,
+        /// Write error
+        pub ri_werror_reg: RiWerrorReg,
+    }
 }
 
 bitfield! {
-    /// # # RI Mode Registe
+    /// # RI mode register
     pub struct RiModeReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub operating_mode: u8 [OperatingMode] @ 0..2,
@@ -53,7 +47,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # # RI Config Registe
+    /// # RI config register
     pub struct RiConfigReg(pub u32): Debug {
         pub raw: u32 @ ..,
         pub current_control_input: u8 [ControlInput] @ 0..6,
@@ -62,7 +56,7 @@ bitfield! {
 }
 
 bitfield! {
-    /// # # RI Current Load Registe
+    /// # RI current load register
     pub struct RiCurrentLoadReg(pub u32): Debug {
         pub raw: u32 @ ..,
     }

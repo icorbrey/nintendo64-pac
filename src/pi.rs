@@ -1,59 +1,54 @@
 //! # Peripheral interface (PI)
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::{fields, interface};
+use crate::{fields, registers};
 
+/// # PI base address
 pub const PI_BASE_ADDR: u32 = 0x0460_0000;
 
-/// # Peripheral interface (PI)
-pub struct Pi;
+registers! {
+    /// # Peripheral interface (PI)
+    PI_BASE_ADDR => Pi {
+        /// DRAM address
+        pub pi_dram_addr_reg: PiDramAddrReg,
 
-interface!(Pi, PiRegisters, PI_BASE_ADDR);
+        /// PBUS (cartridge) address
+        pub pi_cart_addr_reg: PiCartAddrReg,
 
-/// # PI register block
-#[repr(C)]
-pub struct PiRegisters {
-    /// DRAM address
-    pub pi_dram_addr_reg: PiDramAddrReg,
+        /// Read length
+        pub pi_rd_len_reg: PiRdLenReg,
 
-    /// PBUS (cartridge) address
-    pub pi_cart_addr_reg: PiCartAddrReg,
+        /// Write length
+        pub pi_wr_len_reg: PiWrLenReg,
 
-    /// Read length
-    pub pi_rd_len_reg: PiRdLenReg,
+        /// Status
+        pub pi_status_reg: PiStatusReg,
 
-    /// Write length
-    pub pi_wr_len_reg: PiWrLenReg,
+        /// Domain 1 latency
+        pub pi_bsd_dom1_lat_reg: PiBsdDom1LatReg,
 
-    /// Status
-    pub pi_status_reg: PiStatusReg,
+        /// Domain 1 pulse width
+        pub pi_bsd_dom1_pwd_reg: PiBsdDom1PwdReg,
 
-    /// Domain 1 latency
-    pub pi_bsd_dom1_lat_reg: PiBsdDom1LatReg,
+        /// Domain 1 page size
+        pub pi_bsd_dom1_pgs_reg: PiBsdDom1PgsReg,
 
-    /// Domain 1 pulse width
-    pub pi_bsd_dom1_pwd_reg: PiBsdDom1PwdReg,
+        /// Domain 1 release
+        pub pi_bsd_dom1_rls_reg: PiBsdDom1RlsReg,
 
-    /// Domain 1 page size
-    pub pi_bsd_dom1_pgs_reg: PiBsdDom1PgsReg,
+        /// Domain 2 latency
+        pub pi_bsd_dom2_lat_reg: PiBsdDom2LatReg,
 
-    /// Domain 1 release
-    pub pi_bsd_dom1_rls_reg: PiBsdDom1RlsReg,
+        /// Domain 2 pulse width
+        pub pi_bsd_dom2_pwd_reg: PiBsdDom2PwdReg,
 
-    /// Domain 2 latency
-    pub pi_bsd_dom2_lat_reg: PiBsdDom2LatReg,
+        /// Domain 2 page size
+        pub pi_bsd_dom2_pgs_reg: PiBsdDom2PgsReg,
 
-    /// Domain 2 pulse width
-    pub pi_bsd_dom2_pwd_reg: PiBsdDom2PwdReg,
-
-    /// Domain 2 page size
-    pub pi_bsd_dom2_pgs_reg: PiBsdDom2PgsReg,
-
-    /// Domain 2 release
-    pub pi_bsd_dom2_rls_reg: PiBsdDom2RlsReg,
+        /// Domain 2 release
+        pub pi_bsd_dom2_rls_reg: PiBsdDom2RlsReg,
+    }
 }
 
 bitfield! {

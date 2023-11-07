@@ -1,45 +1,39 @@
 //! # Stack pointer (SP)
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::{fields, interface};
+use crate::{fields, registers};
 
 /// # SP base address
 pub const SP_BASE_REG: u32 = 0x0404_0000;
 
-/// # Stack pointer (SP)
-pub struct Sp;
+registers! {
+    /// # Stack pointer (SP)
+    SP_BASE_REG => Sp {
+        /// DMEM/IMEM address
+        pub sp_mem_addr_reg: SpMemAddrReg,
 
-interface!(Sp, SpRegisters, SP_BASE_REG);
+        /// DRAM address
+        pub sp_dram_addr_reg: SpDramAddrReg,
 
-/// # SP register block
-#[repr(C)]
-pub struct SpRegisters {
-    /// DMEM/IMEM address
-    pub sp_mem_addr_reg: SpMemAddrReg,
+        /// Read length
+        pub sp_rd_len_reg: SpRdLenReg,
 
-    /// DRAM address
-    pub sp_dram_addr_reg: SpDramAddrReg,
+        /// Write length
+        pub sp_wr_len_reg: SpWrLenReg,
 
-    /// Read length
-    pub sp_rd_len_reg: SpRdLenReg,
+        /// Status
+        pub sp_status_reg: SpStatusReg,
 
-    /// Write length
-    pub sp_wr_len_reg: SpWrLenReg,
+        /// DMA full
+        pub sp_dma_full_reg: SpDmaFullReg,
 
-    /// Status
-    pub sp_status_reg: SpStatusReg,
+        /// DMA busy
+        pub sp_dma_busy_reg: SpDmaBusyReg,
 
-    /// DMA full
-    pub sp_dma_full_reg: SpDmaFullReg,
-
-    /// DMA busy
-    pub sp_dma_busy_reg: SpDmaBusyReg,
-
-    /// Semaphore
-    pub sp_semaphore_reg: SpSemaphoreReg,
+        /// Semaphore
+        pub sp_semaphore_reg: SpSemaphoreReg,
+    }
 }
 
 bitfield! {

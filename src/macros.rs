@@ -20,6 +20,52 @@ macro_rules! interface {
 }
 
 #[macro_export]
+macro_rules! registers {
+    ($(#[$($name_attrss:tt)*])* $base:path => $name:ident {
+		$(
+			$(#[$($reg_attrss:tt)*])*
+			$v:vis $reg:ident: $t:ty,
+		)*
+	}) => {
+		$(#[$($name_attrss)*])*
+		pub struct $name(core::marker::PhantomData<()>);
+
+		impl $name {
+			pub unsafe fn new() -> Self {
+				Self(core::marker::PhantomData)
+			}
+
+			pub fn ptr() -> *mut Registers {
+				$base as *mut _
+			}
+		}
+
+		impl core::ops::Deref for $name {
+			type Target = Registers;
+
+			fn deref(&self) -> &Self::Target {
+				unsafe { &*Self::ptr() }
+			}
+		}
+
+		impl core::ops::DerefMut for $name {
+			fn deref_mut(&mut self) -> &mut Self::Target {
+				unsafe { &mut *Self::ptr() }
+			}
+		}
+
+		/// # Register block
+		#[repr(C)]
+		pub struct Registers {
+			$(
+				$(#[$($reg_attrss)*])*
+				$v $reg: $t,
+			)*
+		}
+	};
+}
+
+#[macro_export]
 macro_rules! fields {
     [$($(#[$($attrss:tt)*])* $size:path => $name:ident,)*] => {
 		$(

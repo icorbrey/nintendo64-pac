@@ -1,33 +1,27 @@
 //! # MIPS interface (MI)
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::{fields, interface};
+use crate::{fields, registers};
 
 /// # MI base address
 pub const MI_BASE_ADDR: u32 = 0x0430_0000;
 
-/// # MIPS interface (MI)
-pub struct Mi;
+registers! {
+    /// # MIPS interface (MI)
+    MI_BASE_ADDR => Mi {
+        /// Init mode.
+        pub mi_init_mode_reg: MiInitModeReg,
 
-interface!(Mi, MiRegisters, MI_BASE_ADDR);
+        /// Version.
+        pub mi_version_reg: MiVersionReg,
 
-/// # MI register block
-#[repr(C)]
-pub struct MiRegisters {
-    /// Init mode
-    pub mi_init_mode_reg: MiInitModeReg,
+        /// Interrupts.
+        pub mi_intr_reg: MiIntrReg,
 
-    /// Version
-    pub mi_version_reg: MiVersionReg,
-
-    /// Interrupts
-    pub mi_intr_reg: MiIntrReg,
-
-    /// Interrupt masks
-    pub mi_intr_mask_reg: MiIntrMaskReg,
+        /// Interrupt masks.
+        pub mi_intr_mask_reg: MiIntrMaskReg,
+    }
 }
 
 bitfield! {

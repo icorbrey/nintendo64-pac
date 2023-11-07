@@ -1,33 +1,27 @@
 //! # Display processor span (DPS)
 
-use core::ops::Deref;
-
 use proc_bitfield::bitfield;
 
-use crate::{fields, interface};
+use crate::{fields, registers};
 
 /// # DPS base address
 pub const DPS_BASE_ADDR: u32 = 0x0420_0000;
 
-/// # Display processor span (DPS)
-pub struct Dps;
+registers! {
+    /// # Display processor span (DPS)
+    DPS_BASE_ADDR => Dps {
+        /// TBIST.
+        pub dps_tbist_reg: DpsTbistReg,
 
-interface!(Dps, DpsRegisters, DPS_BASE_ADDR);
+        /// Test mode.
+        pub dps_test_mode_reg: DpsTestModeReg,
 
-/// # DPS Register Block
-#[repr(C)]
-pub struct DpsRegisters {
-    /// TBIST
-    pub dps_tbist_reg: DpsTbistReg,
+        /// Buffer test address.
+        pub dps_buftest_addr_reg: DpsBuftestAddrReg,
 
-    /// Test mode
-    pub dps_test_mode_reg: DpsTestModeReg,
-
-    /// Buffer test address
-    pub dps_buftest_addr_reg: DpsBuftestAddrReg,
-
-    /// Buffer test data
-    pub dps_buftest_data_reg: DpsBuftestDataReg,
+        /// Buffer test data.
+        pub dps_buftest_data_reg: DpsBuftestDataReg,
+    }
 }
 
 bitfield! {
