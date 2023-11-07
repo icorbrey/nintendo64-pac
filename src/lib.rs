@@ -5,6 +5,7 @@
 pub mod ai;
 pub mod dpc;
 pub mod dps;
+pub mod hardware;
 mod macros;
 pub mod mi;
 pub mod pc;
@@ -19,6 +20,7 @@ pub mod prelude {
     pub use super::ai::Ai;
     pub use super::dpc::Dpc;
     pub use super::dps::Dps;
+    pub use super::hardware::Hardware;
     pub use super::mi::Mi;
     pub use super::pc::Pc;
     pub use super::pi::Pi;
