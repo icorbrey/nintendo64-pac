@@ -4,7 +4,7 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-use crate::{impl_deref, impl_get, impl_interface, impl_set};
+use crate::{fields, interface};
 
 /// # SI base address
 pub const SI_BASE_REG: u32 = 0x0480_0000;
@@ -12,7 +12,7 @@ pub const SI_BASE_REG: u32 = 0x0480_0000;
 /// # Serial interface (SI)
 pub struct Si;
 
-impl_interface!(Si, SiRegisters, SI_BASE_REG);
+interface!(Si, SiRegisters, SI_BASE_REG);
 
 /// # SI register block
 #[repr(C)]
@@ -43,7 +43,7 @@ bitfield! {
     /// # SI DRAM address register
     pub struct SiDramAddrReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub starting_rdram_address: u32 [get RdramAddress, try_set RdramAddress] @ 0..24,
+        pub starting_rdram_address: u32 [RdramAddress] @ 0..24,
     }
 }
 
@@ -75,10 +75,7 @@ bitfield! {
     }
 }
 
-/// # RDRAM address
-#[derive(Debug)]
-pub struct RdramAddress(pub u32);
-
-impl_deref!(RdramAddress, u32);
-impl_get!(RdramAddress, u32);
-impl_set!(RdramAddress, u32, 0..24);
+fields! [
+    /// # RDRAM address
+    ux::u24 => RdramAddress,
+];

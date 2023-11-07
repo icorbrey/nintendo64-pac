@@ -4,7 +4,7 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-use crate::{impl_deref, impl_get, impl_interface, impl_set};
+use crate::{fields, interface};
 
 pub const AI_BASE_ADDR: u32 = 0x0450_0000;
 pub const AI_OFFSET: u32 = 0xA000_0000;
@@ -12,7 +12,7 @@ pub const AI_OFFSET: u32 = 0xA000_0000;
 /// # Audio interface (AI)
 pub struct Ai;
 
-impl_interface!(Ai, AiRegisters, AI_BASE_ADDR);
+interface!(Ai, AiRegisters, AI_BASE_ADDR);
 
 /// # AI register block
 #[repr(C)]
@@ -40,7 +40,7 @@ bitfield! {
     /// # `AI_DRAM_ADDR_REG`
     pub struct AiDramAddrReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub starting_rdram_address: u32 [write_only, try_set RdramAddress] @ 0..24,
+        pub starting_rdram_address: u32 [RdramAddress] @ 0..24,
     }
 }
 
@@ -48,8 +48,8 @@ bitfield! {
     /// # `AI_LEN_REG`
     pub struct AiLenReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub transfer_length_v1: u32 [get TransferLengthV1, try_set TransferLengthV1] @ 0..15,
-        pub transfer_length_v2: u32 [get TransferLengthV2, try_set TransferLengthV2] @ 0..18,
+        pub transfer_length_v1: u32 [TransferLengthV1] @ 0..15,
+        pub transfer_length_v2: u32 [TransferLengthV2] @ 0..18,
     }
 }
 bitfield! {
@@ -74,7 +74,7 @@ bitfield! {
     /// # `AI_DACRATE_REG`
     pub struct AiDacrateReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub dac_rate: u16 [write_only, try_set DacRate] @ 0..14,
+        pub dac_rate: u16 [write_only, set DacRate] @ 0..14,
     }
 }
 
@@ -82,40 +82,23 @@ bitfield! {
     /// # `AI_BITRATE_REG`
     pub struct AiBitrateReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub bitrate: u8 [write_only, try_set Bitrate] @ 0..4,
+        pub bitrate: u8 [write_only, set Bitrate] @ 0..4,
     }
 }
 
-/// # RDRAM address
-pub struct RdramAddress(pub u32);
+fields! [
+    /// # Bitrate
+    ux::u4 => Bitrate,
 
-impl_deref!(RdramAddress, u32);
-impl_set!(RdramAddress, u32, 0..24);
+    /// # DAC rate
+    ux::u14 => DacRate,
 
-/// # Transfer length (v1.0)
-#[derive(Debug)]
-pub struct TransferLengthV1(pub u32);
+    /// # RDRAM address
+    ux::u24 => RdramAddress,
 
-impl_deref!(TransferLengthV1, u32);
-impl_get!(TransferLengthV1, u32);
-impl_set!(TransferLengthV1, u32, 0..15);
+    /// # Transfer length (v1.0)
+    ux::u14 => TransferLengthV1,
 
-/// # Transfer length (v2.0)
-#[derive(Debug)]
-pub struct TransferLengthV2(pub u32);
-
-impl_deref!(TransferLengthV2, u32);
-impl_get!(TransferLengthV2, u32);
-impl_set!(TransferLengthV2, u32, 0..18);
-
-/// # DAC rate
-pub struct DacRate(pub u16);
-
-impl_deref!(DacRate, u16);
-impl_set!(DacRate, u16, 0..14);
-
-/// # Bitrate
-pub struct Bitrate(pub u8);
-
-impl_deref!(Bitrate, u8);
-impl_set!(Bitrate, u8, 0..4);
+    /// # Transfer length (v2.0)
+    ux::u18 => TransferLengthV2,
+];

@@ -4,7 +4,7 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-use crate::{impl_deref, impl_get, impl_interface, impl_set};
+use crate::{enums, fields, interface};
 
 /// # DPC base address
 pub const DPC_BASE_ADDR: u32 = 0x0410_0000;
@@ -12,7 +12,7 @@ pub const DPC_BASE_ADDR: u32 = 0x0410_0000;
 /// # Display processor command
 pub struct Dpc;
 
-impl_interface!(Dpc, DpcRegisters, DPC_BASE_ADDR);
+interface!(Dpc, DpcRegisters, DPC_BASE_ADDR);
 
 /// # DPC register block
 #[repr(C)]
@@ -46,7 +46,7 @@ bitfield! {
     /// # `DPC_START_REG`
     pub struct DpcStartReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub start_address: u32 [get RdramAddress, try_set RdramAddress] @ 0..24,
+        pub start_address: u32 [RdramAddress] @ 0..24,
     }
 }
 
@@ -54,7 +54,7 @@ bitfield! {
     /// # `DPC_END_REG`
     pub struct DpcEndReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub end_address: u32 [get RdramAddress, try_set RdramAddress] @ 0..24,
+        pub end_address: u32 [RdramAddress] @ 0..24,
     }
 }
 
@@ -126,34 +126,18 @@ bitfield! {
     }
 }
 
-/// # RDRAM address
-#[derive(Debug)]
-pub struct RdramAddress(pub u32);
+fields! [
+    /// # Clock counter
+    ux::u24 => ClockCounter,
 
-impl_deref!(RdramAddress, u32);
-impl_get!(RdramAddress, u32);
-impl_set!(RdramAddress, u32, 0..24);
+    /// # RDRAM address
+    ux::u24 => RdramAddress,
+];
 
-/// # RDP command source
-#[derive(Debug)]
-pub enum RdpCommandSource {
-    RspDmem,
-    Rdram,
-}
-
-impl From<bool> for RdpCommandSource {
-    fn from(value: bool) -> Self {
-        if value {
-            Self::RspDmem
-        } else {
-            Self::Rdram
-        }
-    }
-}
-
-/// # Clock counter
-#[derive(Debug)]
-pub struct ClockCounter(pub u32);
-
-impl_deref!(ClockCounter, u32);
-impl_get!(ClockCounter, u32);
+enums! [
+    /// # RDP command source
+    bool => RdpCommandSource {
+        true => RspDmem,
+        false => Rdram,
+    },
+];

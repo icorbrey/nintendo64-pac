@@ -4,14 +4,14 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-use crate::{impl_deref, impl_get, impl_interface, impl_set};
+use crate::{fields, interface};
 
 pub const PI_BASE_ADDR: u32 = 0x0460_0000;
 
 /// # Peripheral interface (PI)
 pub struct Pi;
 
-impl_interface!(Pi, PiRegisters, PI_BASE_ADDR);
+interface!(Pi, PiRegisters, PI_BASE_ADDR);
 
 /// # PI register block
 #[repr(C)]
@@ -60,7 +60,7 @@ bitfield! {
     /// # PI DRAM address register
     pub struct PiDramAddrReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub starting_rdram_address: u32 [get RdramAddress, try_set RdramAddress] @ 0..24,
+        pub starting_rdram_address: u32 [RdramAddress] @ 0..24,
     }
 }
 
@@ -68,7 +68,7 @@ bitfield! {
     /// # PI PBUS (cartridge) address register
     pub struct PiCartAddrReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub starting_ad16_address: u32 [get Ad16Address, try_set Ad16Address] @ 0..32,
+        pub starting_ad16_address: u32 [Ad16Address] @ 0..32,
     }
 }
 
@@ -76,7 +76,7 @@ bitfield! {
     /// # PI read length register
     pub struct PiRdLenReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub read_data_length: u32 [get DataLength, try_set DataLength] @ 0..24,
+        pub read_data_length: u32 [DataLength] @ 0..24,
     }
 }
 
@@ -84,7 +84,7 @@ bitfield! {
     /// # PI write length register
     pub struct PiWrLenReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub write_data_length: u32 [get DataLength, try_set DataLength] @ 0..24,
+        pub write_data_length: u32 [DataLength] @ 0..24,
     }
 }
 
@@ -104,7 +104,7 @@ bitfield! {
     /// # PI domain 1 latency register
     pub struct PiBsdDom1LatReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub latency: u8 [get Latency, try_set Latency] @ 0..8,
+        pub latency: u8 [Latency] @ 0..8,
     }
 }
 
@@ -112,7 +112,7 @@ bitfield! {
     /// # PI domain 1 pulse width register
     pub struct PiBsdDom1PwdReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub pulse_width: u8 [get PulseWidth, try_set PulseWidth] @ 0..8,
+        pub pulse_width: u8 [PulseWidth] @ 0..8,
     }
 }
 
@@ -120,7 +120,7 @@ bitfield! {
     /// # PI domain 1 page size register
     pub struct PiBsdDom1PgsReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub page_size: u8 [get PageSize, try_set PageSize] @ 0..4,
+        pub page_size: u8 [PageSize] @ 0..4,
     }
 }
 
@@ -128,7 +128,7 @@ bitfield! {
     /// # PI domain 1 release register
     pub struct PiBsdDom1RlsReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub release: u8 [get Release, try_set Release] @ 0..2,
+        pub release: u8 [Release] @ 0..2,
     }
 }
 
@@ -136,7 +136,7 @@ bitfield! {
     /// # PI domain 2 latency register
     pub struct PiBsdDom2LatReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub latency: u8 [get Latency, try_set Latency] @ 0..8,
+        pub latency: u8 [Latency] @ 0..8,
     }
 }
 
@@ -144,7 +144,7 @@ bitfield! {
     /// # PI domain 2 pulse width register
     pub struct PiBsdDom2PwdReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub pulse_width: u8 [get PulseWidth, try_set PulseWidth] @ 0..8,
+        pub pulse_width: u8 [PulseWidth] @ 0..8,
     }
 }
 
@@ -152,7 +152,7 @@ bitfield! {
     /// # PI domain 2 page size register
     pub struct PiBsdDom2PgsReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub page_size: u8 [get PageSize, try_set PageSize] @ 0..4,
+        pub page_size: u8 [PageSize] @ 0..4,
     }
 }
 
@@ -160,62 +160,29 @@ bitfield! {
     /// # PI domain 2 release register
     pub struct PiBsdDom2RlsReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub release: u8 [get Release, try_set Release] @ 0..2,
+        pub release: u8 [Release] @ 0..2,
     }
 }
 
-/// # RDRAM Address
-#[derive(Debug)]
-pub struct RdramAddress(pub u32);
+fields! [
+    /// # AD16 address
+    u32 => Ad16Address,
 
-impl_deref!(RdramAddress, u32);
-impl_get!(RdramAddress, u32);
-impl_set!(RdramAddress, u32, 0..24);
+    /// # Data length
+    ux::u24 => DataLength,
 
-/// # AD16 Address
-#[derive(Debug)]
-pub struct Ad16Address(pub u32);
+    /// # Latency
+    u8 => Latency,
 
-impl_deref!(Ad16Address, u32);
-impl_get!(Ad16Address, u32);
-impl_set!(Ad16Address, u32, 0..32);
+    /// # Page size
+    ux::u4 => PageSize,
 
-/// # Data Length
-#[derive(Debug)]
-pub struct DataLength(pub u32);
+    /// # Pulse width
+    u8 => PulseWidth,
 
-impl_deref!(DataLength, u32);
-impl_get!(DataLength, u32);
-impl_set!(DataLength, u32, 0..24);
+    /// # RDRAM address
+    ux::u24 => RdramAddress,
 
-/// # Latency
-#[derive(Debug)]
-pub struct Latency(pub u8);
-
-impl_deref!(Latency, u8);
-impl_get!(Latency, u8);
-impl_set!(Latency, u8, 0..8);
-
-/// # Pulse Width
-#[derive(Debug)]
-pub struct PulseWidth(pub u8);
-
-impl_deref!(PulseWidth, u8);
-impl_get!(PulseWidth, u8);
-impl_set!(PulseWidth, u8, 0..8);
-
-/// # Page Size
-#[derive(Debug)]
-pub struct PageSize(pub u8);
-
-impl_deref!(PageSize, u8);
-impl_get!(PageSize, u8);
-impl_set!(PageSize, u8, 0..4);
-
-/// # Release
-#[derive(Debug)]
-pub struct Release(pub u8);
-
-impl_deref!(Release, u8);
-impl_get!(Release, u8);
-impl_set!(Release, u8, 0..2);
+    /// # Release
+    ux::u2 => Release,
+];

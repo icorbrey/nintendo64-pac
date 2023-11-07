@@ -4,12 +4,12 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-use crate::impl_interface;
+use crate::interface;
 
 /// # RDRAM
 pub struct Rdram;
 
-impl_interface!(Rdram, RdramRegisters, 0x03F0_0000);
+interface!(Rdram, RdramRegisters, 0x03F0_0000);
 
 /// # RDRAM register block
 #[repr(C)]

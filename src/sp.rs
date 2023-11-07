@@ -4,7 +4,7 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-use crate::{impl_deref, impl_get, impl_interface, impl_set};
+use crate::{fields, interface};
 
 /// # SP base address
 pub const SP_BASE_REG: u32 = 0x0404_0000;
@@ -12,7 +12,7 @@ pub const SP_BASE_REG: u32 = 0x0404_0000;
 /// # Stack pointer (SP)
 pub struct Sp;
 
-impl_interface!(Sp, SpRegisters, SP_BASE_REG);
+interface!(Sp, SpRegisters, SP_BASE_REG);
 
 /// # SP register block
 #[repr(C)]
@@ -46,7 +46,7 @@ bitfield! {
     /// # SP DMEM/IMEM address register
     pub struct SpMemAddrReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub mem_address: u16 [get MemoryAddress, try_set MemoryAddress] @ 0..12,
+        pub mem_address: u16 [MemoryAddress] @ 0..12,
         pub dmem_imem: bool @ 12,
     }
 }
@@ -55,7 +55,7 @@ bitfield! {
     /// # SP RDRAM address register
     pub struct SpDramAddrReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub rdram_address: u32 [get RdramAddress, try_set RdramAddress] @ 0..24,
+        pub rdram_address: u32 [RdramAddress] @ 0..24,
     }
 }
 
@@ -63,9 +63,9 @@ bitfield! {
     /// # SP read length register
     pub struct SpRdLenReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub length: u16 [get Length, try_set Length] @ 0..12,
-        pub count: u8 [get Count, try_set Count] @ 12..20,
-        pub skip: u16 [get Skip, try_set Skip] @ 20..32,
+        pub length: u16 [Length] @ 0..12,
+        pub count: u8 [Count] @ 12..20,
+        pub skip: u16 [Skip] @ 20..32,
     }
 }
 
@@ -73,9 +73,9 @@ bitfield! {
     /// # SP write length register
     pub struct SpWrLenReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub length: u16 [get Length, try_set Length] @ 0..12,
-        pub count: u8 [get Count, try_set Count] @ 12..20,
-        pub skip: u16 [get Skip, try_set Skip] @ 20..32,
+        pub length: u16 [Length] @ 0..12,
+        pub count: u8 [Count] @ 12..20,
+        pub skip: u16 [Skip] @ 20..32,
     }
 }
 
@@ -151,37 +151,19 @@ bitfield! {
     }
 }
 
-#[derive(Debug)]
-pub struct MemoryAddress(pub u16);
+fields! [
+    /// # Memory address
+    ux::u12 => MemoryAddress,
 
-impl_deref!(MemoryAddress, u16);
-impl_get!(MemoryAddress, u16);
-impl_set!(MemoryAddress, u16, 0..12);
+    /// # RDRAM address
+    ux::u24 => RdramAddress,
 
-#[derive(Debug)]
-pub struct RdramAddress(pub u32);
+    /// # Length
+    ux::u12 => Length,
 
-impl_deref!(RdramAddress, u32);
-impl_get!(RdramAddress, u32);
-impl_set!(RdramAddress, u32, 0..24);
+    /// # Count
+    u8 => Count,
 
-#[derive(Debug)]
-pub struct Length(pub u16);
-
-impl_deref!(Length, u16);
-impl_get!(Length, u16);
-impl_set!(Length, u16, 0..12);
-
-#[derive(Debug)]
-pub struct Count(pub u8);
-
-impl_deref!(Count, u8);
-impl_get!(Count, u8);
-impl_set!(Count, u8, 12..20);
-
-#[derive(Debug)]
-pub struct Skip(pub u16);
-
-impl_deref!(Skip, u16);
-impl_get!(Skip, u16);
-impl_set!(Skip, u16, 20..32);
+    /// # Skip
+    ux::u12 => Skip,
+];

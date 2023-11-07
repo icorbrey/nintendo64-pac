@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! impl_interface {
+macro_rules! interface {
     ($interface:ty, $registers:ty, $base:expr) => {
         impl $interface {
             pub fn ptr() -> *const $registers {
@@ -20,120 +20,85 @@ macro_rules! impl_interface {
 }
 
 #[macro_export]
-macro_rules! impl_deref {
-    ($t:ty, $inner:ty) => {
-        impl core::ops::Deref for $t {
-            type Target = $inner;
+macro_rules! fields {
+    [$($(#[$($attrss:tt)*])* $t:path => $f:ident,)*] => {
+		$(
+			$(#[$($attrss)*])*
+			#[derive(Debug)]
+			pub struct $f(pub $t);
 
-            fn deref(&self) -> &Self::Target {
-                &self.0
-            }
-        }
-    };
-}
+			impl core::ops::Deref for $f {
+				type Target = $t;
 
-#[macro_export]
-macro_rules! impl_get {
-    ($to:ty, $from:ty) => {
-        impl From<$from> for $to {
-            fn from(value: $from) -> Self {
-                Self(value)
-            }
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! impl_set {
-    ($from:ident, $to:ident, $low:literal .. $high:literal) => {
-        impl $from {
-            #[allow(arithmetic_overflow)]
-            const MASK: $to = if $high - $low != <$to>::BITS as $to {
-                !((1 << ($high - $low)) - 1)
-            } else {
-                0
-            };
-        }
-
-        impl TryFrom<$from> for $to {
-            type Error = ();
-
-            fn try_from(value: $from) -> Result<Self, Self::Error> {
-                if value.0 & <$from>::MASK == 0 {
-                    Ok(value.0)
-                } else {
-                    Err(())
-                }
-            }
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! impl_enum {
-    ($e:ident, $n:ident, { $($v:expr => $k:path,)* }) => {
-		impl From<$n> for $e {
-			fn from(value: $n) -> Self {
-				match value {
-					$($v => $k,)*
-					_ => panic!(),
+				fn deref(&self) -> &Self::Target {
+					&self.0
 				}
 			}
-		}
 
-        impl From<$e> for $n {
-            fn from(value: $e) -> Self {
-                match value {
-					$($k => $v,)*
+			impl From<$f> for u8 {
+				fn from(value: $f) -> Self {
+					value.into()
 				}
-            }
-        }
+			}
+
+			impl From<$f> for u16 {
+				fn from(value: $f) -> Self {
+					value.into()
+				}
+			}
+
+			impl From<$f> for u32 {
+				fn from(value: $f) -> Self {
+					value.into()
+				}
+			}
+
+			impl From<u8> for $f {
+				fn from(value: u8) -> Self {
+					value.into()
+				}
+			}
+
+			impl From<u16> for $f {
+				fn from(value: u16) -> Self {
+					value.into()
+				}
+			}
+
+			impl From<u32> for $f {
+				fn from(value: u32) -> Self {
+					value.into()
+				}
+			}
+		)*
     };
 }
 
-#[cfg(test)]
-mod tests {
-    pub struct A(pub u8);
-    pub struct B(pub u8);
-    pub struct C(pub u8);
-    pub struct D(pub u8);
+#[macro_export]
+macro_rules! enums {
+    [$($(#[$($attrss:tt)*])* $t:path => $f:ident { $($v:expr => $k:ident,)* },)*] => {
+		$(
+			$(#[$($attrss)*])*
+			#[derive(Debug)]
+			pub enum $f { $($k,)* }
 
-    impl_set!(A, u8, 0..3);
-    impl_set!(B, u8, 3..5);
-    impl_set!(C, u8, 5..8);
-    impl_set!(D, u8, 0..8);
+			impl From<$t> for $f {
+				fn from(value: $t) -> Self {
+					match value {
+						$($v => <$f>::$k,)*
+						#[allow(unreachable_patterns)]
+						_ => panic!(),
+					}
+				}
+			}
 
-    #[test]
-    fn test_a() {
-        let ok: Result<u8, ()> = A(0b111).try_into();
-        let err: Result<u8, ()> = A(0b1111).try_into();
-
-        assert!(ok.is_ok());
-        assert!(err.is_err());
-    }
-
-    #[test]
-    fn test_b() {
-        let ok: Result<u8, ()> = B(0b11).try_into();
-        let err: Result<u8, ()> = B(0b111).try_into();
-
-        assert!(ok.is_ok());
-        assert!(err.is_err());
-    }
-
-    #[test]
-    fn test_c() {
-        let ok: Result<u8, ()> = C(0b111).try_into();
-        let err: Result<u8, ()> = C(0b1111).try_into();
-
-        assert!(ok.is_ok());
-        assert!(err.is_err());
-    }
-
-    #[test]
-    fn test_d() {
-        let ok: Result<u8, ()> = D(0b11111111).try_into();
-
-        assert!(ok.is_ok());
-    }
+			impl From<$f> for $t {
+				fn from(value: $f) -> Self {
+					match value {
+						$(<$f>::$k => $v,)*
+					}
+				}
+			}
+		)*
+	};
 }

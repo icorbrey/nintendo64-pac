@@ -4,7 +4,7 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-use crate::{impl_deref, impl_get, impl_interface, impl_set};
+use crate::{fields, interface};
 
 /// # RI base address
 pub const RI_BASE_ADDR: u32 = 0x0470_0000;
@@ -12,7 +12,7 @@ pub const RI_BASE_ADDR: u32 = 0x0470_0000;
 /// # RDRAM interface (RI)
 pub struct Ri;
 
-impl_interface!(Ri, RiRegisters, RI_BASE_ADDR);
+interface!(Ri, RiRegisters, RI_BASE_ADDR);
 
 /// # RI register block
 #[repr(C)]
@@ -46,7 +46,7 @@ bitfield! {
     /// # # RI Mode Registe
     pub struct RiModeReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub operating_mode: u8 [get OperatingMode, try_set OperatingMode] @ 0..2,
+        pub operating_mode: u8 [OperatingMode] @ 0..2,
         pub stop_transmit_active: bool @ 2,
         pub stop_receive_active: bool @ 3,
     }
@@ -56,7 +56,7 @@ bitfield! {
     /// # # RI Config Registe
     pub struct RiConfigReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub current_control_input: u8 [get ControlInput, try_set ControlInput] @ 0..6,
+        pub current_control_input: u8 [ControlInput] @ 0..6,
         pub current_control_enable: bool @ 6,
     }
 }
@@ -72,6 +72,8 @@ bitfield! {
     /// # RI select register
     pub struct RiSelectReg(pub u32): Debug {
         pub raw: u32 @ ..,
+        pub transmit_select: u8 [SignalTimings] @ 0..4,
+        pub receive_select: u8 [SignalTimings] @ 4..8,
     }
 }
 
@@ -79,6 +81,11 @@ bitfield! {
     /// # RI refresh register
     pub struct RiRefreshReg(pub u32): Debug {
         pub raw: u32 @ ..,
+        pub clean_refresh_delay: u8 [RefreshDelay] @ 0..7,
+        pub dirty_refresh_delay: u8 [RefreshDelay] @ 8..15,
+        pub refresh_bank: bool @ 16,
+        pub refresh_enable: bool @ 17,
+        pub refresh_optimize: bool @ 18,
     }
 }
 
@@ -86,6 +93,7 @@ bitfield! {
     /// # RI latency register
     pub struct RiLatencyReg(pub u32): Debug {
         pub raw: u32 @ ..,
+        pub dma_latency_overlap: u8 [DmaLatencyOverlap] @ 0..4,
     }
 }
 
@@ -93,6 +101,8 @@ bitfield! {
     /// # RI read error register
     pub struct RiRerrorReg(pub u32): Debug {
         pub raw: u32 @ ..,
+        pub nack_error: bool [read_only] @ 0,
+        pub ack_error: bool [read_only] @ 1,
     }
 }
 
@@ -103,18 +113,19 @@ bitfield! {
     }
 }
 
-/// # Operating mode
-#[derive(Debug)]
-pub struct OperatingMode(pub u8);
+fields! [
+    /// # Control input
+    ux::u6 => ControlInput,
 
-impl_deref!(OperatingMode, u8);
-impl_get!(OperatingMode, u8);
-impl_set!(OperatingMode, u8, 0..2);
+    /// # DMA latency/overlap
+    ux::u4 => DmaLatencyOverlap,
 
-/// # Control input
-#[derive(Debug)]
-pub struct ControlInput(pub u8);
+    /// # Operating mode
+    ux::u2 => OperatingMode,
 
-impl_deref!(ControlInput, u8);
-impl_get!(ControlInput, u8);
-impl_set!(ControlInput, u8, 0..6);
+    /// # Refresh delay
+    ux::u7 => RefreshDelay,
+
+    /// # Signal timings
+    ux::u4 => SignalTimings,
+];

@@ -4,7 +4,7 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-use crate::{impl_deref, impl_get, impl_interface, impl_set};
+use crate::{fields, interface};
 
 /// # DPS base address
 pub const DPS_BASE_ADDR: u32 = 0x0420_0000;
@@ -12,7 +12,7 @@ pub const DPS_BASE_ADDR: u32 = 0x0420_0000;
 /// # Display processor span (DPS)
 pub struct Dps;
 
-impl_interface!(Dps, DpsRegisters, DPS_BASE_ADDR);
+interface!(Dps, DpsRegisters, DPS_BASE_ADDR);
 
 /// # DPS Register Block
 #[repr(C)]
@@ -54,7 +54,7 @@ bitfield! {
     /// # `DPS_BUFTEST_ADDR_REG`
     pub struct DpsBuftestAddrReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub span_buffer_address: u8 [get BufferTestAddress, try_set BufferTestAddress] @ 0..7,
+        pub span_buffer_address: u8 [BufferTestAddress] @ 0..7,
     }
 }
 
@@ -62,29 +62,17 @@ bitfield! {
     /// # `DPS_BUFTEST_DATA_REG`
     pub struct DpsBuftestDataReg(pub u32): Debug {
         pub raw: u32 @ ..,
-        pub span_buffer_data: u32 [get BufferTestData, try_set BufferTestData] @ 0..32,
+        pub span_buffer_data: u32 [BufferTestData] @ 0..32,
     }
 }
 
-/// # BIST failure
-#[derive(Debug)]
-pub struct BistFail(pub u8);
+fields! [
+    /// # BIST failure
+    u8 => BistFail,
 
-impl_deref!(BistFail, u8);
-impl_get!(BistFail, u8);
+    /// # Buffer test address
+    ux::u7 => BufferTestAddress,
 
-/// # Buffer test address
-#[derive(Debug)]
-pub struct BufferTestAddress(pub u8);
-
-impl_deref!(BufferTestAddress, u8);
-impl_get!(BufferTestAddress, u8);
-impl_set!(BufferTestAddress, u8, 0..7);
-
-/// # Buffer test data
-#[derive(Debug)]
-pub struct BufferTestData(pub u32);
-
-impl_deref!(BufferTestData, u32);
-impl_get!(BufferTestData, u32);
-impl_set!(BufferTestData, u32, 0..32);
+    /// # Buffer test data
+    u32 => BufferTestData,
+];

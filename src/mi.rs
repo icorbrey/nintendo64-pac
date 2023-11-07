@@ -4,7 +4,7 @@ use core::ops::Deref;
 
 use proc_bitfield::bitfield;
 
-use crate::{impl_deref, impl_get, impl_interface, impl_set};
+use crate::{fields, interface};
 
 /// # MI base address
 pub const MI_BASE_ADDR: u32 = 0x0430_0000;
@@ -12,7 +12,7 @@ pub const MI_BASE_ADDR: u32 = 0x0430_0000;
 /// # MIPS interface (MI)
 pub struct Mi;
 
-impl_interface!(Mi, MiRegisters, MI_BASE_ADDR);
+interface!(Mi, MiRegisters, MI_BASE_ADDR);
 
 /// # MI register block
 #[repr(C)]
@@ -34,13 +34,10 @@ bitfield! {
     /// # MI init mode register
     pub struct MiInitModeReg(pub u32): Debug {
         pub raw: u32 @ ..,
-
-        pub init_length: u8 [get InitLength, try_set InitLength] @ 0..7,
-
+        pub init_length: u8 [InitLength] @ 0..7,
         pub init_mode: bool [read_only] @ 7,
         pub ebus_test_mode: bool [read_only] @ 8,
         pub rdram_reg_mode: bool [read_only] @ 9,
-
         pub clear_init_mode: bool [write_only] @ 7,
         pub set_init_mode: bool [write_only] @ 8,
         pub clear_ebus_test_mode: bool [write_only] @ 9,
@@ -100,17 +97,10 @@ bitfield! {
     }
 }
 
-/// # Init length
-#[derive(Debug)]
-pub struct InitLength(pub u8);
+fields! {
+    /// # Init length
+    ux::u7 => InitLength,
 
-impl_deref!(InitLength, u8);
-impl_get!(InitLength, u8);
-impl_set!(InitLength, u8, 0..7);
-
-/// # Version
-#[derive(Debug)]
-pub struct Version(pub u8);
-
-impl_deref!(Version, u8);
-impl_get!(Version, u8);
+    /// # Version
+    u8 => Version,
+}
