@@ -1,0 +1,37 @@
+name: Publish crate
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Dry run
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: build
+        run: cargo build
+      - name: test
+        run: cargo test
+
+  publish-dry-run:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: ${{ inputs.dry_run }}
+    steps:
+      - name: publish
+        run: cargo publish --dry-run
+
+  publish:
+    needs: [test]
+    runs-on: ubuntu-latest
+    environment: crates.io
+    if: ${{ !inputs.dry_run }}
+    steps:
+      - name: publish
+        run: cargo publish
